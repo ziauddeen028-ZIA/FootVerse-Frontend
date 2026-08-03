@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Trophy, 
@@ -22,6 +22,13 @@ import { useAuth, ROLES, ROLE_LABELS } from '../context/AuthContext';
 export const DashboardShell = () => {
   const { activeRole, profile, user } = useAuth();
   const navigate = useNavigate();
+
+  // Organizer users should always land in their dedicated panel
+  useEffect(() => {
+    if (activeRole === ROLES.ORGANIZER) {
+      navigate('/organizer', { replace: true });
+    }
+  }, [activeRole, navigate]);
 
   // Mock data for Phase 1 preview
   const liveMatch = {

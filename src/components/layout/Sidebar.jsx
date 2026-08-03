@@ -11,9 +11,7 @@ import {
   Bell, 
   Settings, 
   LogOut, 
-  User,
-  Sparkles,
-  ChevronRight
+  User
 } from 'lucide-react';
 import { useAuth, ROLE_LABELS } from '../../context/AuthContext';
 
@@ -109,6 +107,7 @@ export const Sidebar = () => {
             </NavLink>
           );
         })}
+
       </div>
 
       {/* Bottom User Profile Section */}
