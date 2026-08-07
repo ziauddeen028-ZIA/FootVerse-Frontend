@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -26,6 +26,7 @@ import { Tournaments as OrganizerTournaments } from './pages/organizer/Tournamen
 import { Teams as OrganizerTeams } from './pages/organizer/Teams';
 import { Matches as OrganizerMatches } from './pages/organizer/Matches';
 import { Players as OrganizerPlayers } from './pages/organizer/Players';
+import { LiveMatch } from './pages/organizer/LiveMatch';
 
 function AppContent() {
   const { loading } = useAuth();
@@ -53,6 +54,7 @@ function AppContent() {
         <Route path="/organizer/teams" element={<OrganizerTeams />} />
         <Route path="/organizer/players" element={<OrganizerPlayers />} />
         <Route path="/organizer/matches" element={<OrganizerMatches />} />
+        <Route path="/organizer/matches/:matchId/live" element={<LiveMatch />} />
       </Route>
 
       {/* ─── Public Section ────────────────────────────────────────────────
