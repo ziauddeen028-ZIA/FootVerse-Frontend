@@ -5,8 +5,14 @@ export const ConfirmDialog = ({ isOpen, title, message, confirmLabel = 'Confirm'
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#141C2E] rounded-2xl w-full max-w-md shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div
+      onClick={onCancel}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="bg-white dark:bg-[#141C2E] rounded-2xl w-full max-w-md shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+      >
         <div className="p-6">
           <div className="flex justify-between items-start">
             <div className={`p-3 rounded-xl ${isDestructive ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'}`}>

@@ -36,16 +36,17 @@ export const Dashboard = () => {
         // Fetch matches for all tournaments concurrently
         const matchPromises = tournaments.map(t => matchService.getByTournament(t.id).catch(() => ({ matches: [] })));
         const matchesResults = await Promise.all(matchPromises);
-        
+
         // Flatten and filter for upcoming matches
         const allMatches = matchesResults.flatMap(res => res.matches || []);
         const upcomingMatches = allMatches.filter(m => m.status !== 'Completed').length;
 
         // Fetch team members (players) across all teams
         // Using Promise.all with catch to prevent single team errors from breaking the dashboard
-        const memberPromises = teams.map(t => playerService.getTeamMembers(t.id).catch(() => ({ teamMembers: [] })));
-        const membersResults = await Promise.all(memberPromises);
-        const totalPlayers = membersResults.reduce((acc, curr) => acc + (curr.teamMembers?.length || 0), 0);
+        // Fetch all players
+        const playersRes = await playerService.getAll();
+
+        const totalPlayers = playersRes.teamMembers?.length || 0;
 
         setStats({
           tournaments: tournaments.length,
@@ -67,7 +68,7 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      
+
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -126,7 +127,7 @@ export const Dashboard = () => {
             Recent Activity
           </h2>
         </div>
-        
+
         <div className="p-6">
           {loading ? (
             <div className="space-y-4 animate-pulse">
@@ -163,7 +164,7 @@ export const Dashboard = () => {
           )}
         </div>
       </div>
-      
+
     </div>
   );
 };
