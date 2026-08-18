@@ -7,6 +7,7 @@ export const matchService = {
   create: (data) => api.post('/matches', data),
   update: (id, data) => api.put(`/matches/${id}`, data),
   delete: (id) => api.delete(`/matches/${id}`),
+  updateKnockoutResult: (tournamentId, matchId, data) => api.put(`/tournaments/${tournamentId}/knockout/matches/${matchId}/result`, data),
   
   // Match Events
   getEvents: (matchId) => api.get(`/match-events/match/${matchId}`),

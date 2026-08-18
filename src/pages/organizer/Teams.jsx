@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Filter, Edit2, Trash2, MapPin, Building, Trophy, Shield } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Plus, Search, Filter, Edit2, Trash2, MapPin, Building, Trophy, Shield, AlertCircle } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -11,6 +12,10 @@ import { teamService } from '../../services/teamService';
 import { tournamentService } from '../../services/tournamentService';
 
 export const Teams = () => {
+  const [searchParams] = useSearchParams();
+  const urlTournamentId = searchParams.get('tournamentId');
+  const urlAction = searchParams.get('action');
+
   const [teams, setTeams] = useState([]);
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +59,34 @@ export const Teams = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Handle URL query parameters for tournament filtering and registration action
+  useEffect(() => {
+    if (urlTournamentId) {
+      setTournamentFilter(urlTournamentId);
+    }
+    if (urlAction === 'register') {
+      setSelectedTeam(null);
+      setIsFormOpen(true);
+    }
+  }, [urlTournamentId, urlAction]);
+
+  // Derived active tournament details for capacity check
+  const activeTournament = useMemo(() => {
+    if (tournamentFilter === 'all') return null;
+    return tournaments.find(t => t.id === tournamentFilter);
+  }, [tournaments, tournamentFilter]);
+
+  const activeTournamentTeamCount = useMemo(() => {
+    if (!activeTournament) return 0;
+    return teams.filter(t => (t.tournamentId || t.tournament?.id) === activeTournament.id).length;
+  }, [teams, activeTournament]);
+
+  const isActiveTournamentFull = useMemo(() => {
+    if (!activeTournament) return false;
+    const maxTeams = activeTournament.maxTeams || 16;
+    return activeTournamentTeamCount >= maxTeams;
+  }, [activeTournament, activeTournamentTeamCount]);
 
   // Derived state (Filtering and Sorting)
   const filteredTeams = useMemo(() => {
@@ -155,10 +188,24 @@ export const Teams = () => {
       <PageHeader
         title="Teams"
         subtitle="Manage participating clubs, squads, and registrations."
-        actionLabel="Create Team"
-        actionIcon={Plus}
-        onAction={handleOpenCreate}
+        actionLabel={isActiveTournamentFull ? `Tournament Full (${activeTournamentTeamCount}/${activeTournament?.maxTeams || 16})` : "Create Team"}
+        actionIcon={isActiveTournamentFull ? AlertCircle : Plus}
+        onAction={isActiveTournamentFull ? () => showToast(`Tournament is full (${activeTournamentTeamCount}/${activeTournament?.maxTeams || 16} teams). No more teams can be registered.`, 'error') : handleOpenCreate}
       />
+
+      {activeTournament && isActiveTournamentFull && (
+        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/80 rounded-2xl flex items-center justify-between text-amber-800 dark:text-amber-300">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div>
+              <h4 className="font-semibold text-sm">Registration Closed</h4>
+              <p className="text-xs opacity-90">
+                Tournament is full ({activeTournamentTeamCount}/{activeTournament.maxTeams} teams). No more teams can be registered.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters & Search Toolbar */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-[#141C2E] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
@@ -335,6 +382,7 @@ export const Teams = () => {
         tournaments={tournaments}
         existingTeams={teams}
         isLoading={isSubmitting}
+        defaultTournamentId={urlTournamentId || ''}
       />
 
       <ConfirmDialog

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Filter, Edit2, Trash2, Calendar, MapPin, Eye } from 'lucide-react';
+import { Plus, Search, Filter, Edit2, Trash2, Calendar, MapPin, Eye, Users, GitBranch } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -10,6 +11,7 @@ import { TournamentFormModal } from '../../components/organizer/TournamentFormMo
 import { tournamentService } from '../../services/tournamentService';
 
 export const Tournaments = () => {
+  const navigate = useNavigate();
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,6 +26,11 @@ export const Tournaments = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Bracket Generation state
+  const [isBracketConfirmOpen, setIsBracketConfirmOpen] = useState(false);
+  const [selectedTournamentForBracket, setSelectedTournamentForBracket] = useState(null);
+  const [isGeneratingBracket, setIsGeneratingBracket] = useState(false);
 
   // Toast state
   const [toast, setToast] = useState({ message: '', type: 'success' });
@@ -85,6 +92,28 @@ export const Tournaments = () => {
   const handleOpenDelete = (tournament) => {
     setSelectedTournament(tournament);
     setIsConfirmOpen(true);
+  };
+
+  const handleOpenGenerateBracket = (tournament) => {
+    setSelectedTournamentForBracket(tournament);
+    setIsBracketConfirmOpen(true);
+  };
+
+  const handleGenerateBracketConfirm = async () => {
+    if (!selectedTournamentForBracket) return;
+    setIsGeneratingBracket(true);
+    try {
+      const res = await tournamentService.generateKnockoutBracket(selectedTournamentForBracket.id);
+      showToast(res.message || 'Knockout bracket generated successfully!');
+      setIsBracketConfirmOpen(false);
+      setSelectedTournamentForBracket(null);
+      await fetchTournaments();
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to generate knockout bracket.';
+      showToast(errorMsg, 'error');
+    } finally {
+      setIsGeneratingBracket(false);
+    }
   };
 
   const handleFormSubmit = async (formData) => {
@@ -209,9 +238,17 @@ export const Tournaments = () => {
             <div key={tournament.id} className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col">
               <div className="p-6 flex-1">
                 <div className="flex justify-between items-start mb-4">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(tournament.status)}`}>
-                    {formatStatus(tournament.status)}
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(tournament.status)}`}>
+                      {formatStatus(tournament.status)}
+                    </span>
+                    {(tournament.registeredTeamsCount || 0) >= (tournament.maxTeams || 16) && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 border border-red-200 dark:border-red-800/60">
+                        <Users className="w-2.5 h-2.5" />
+                        Full
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => handleOpenEdit(tournament)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Edit">
                       <Edit2 className="w-4 h-4" />
@@ -243,11 +280,45 @@ export const Tournaments = () => {
               </div>
               
               <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
-                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Teams: <span className="text-slate-900 dark:text-white">{tournament.registeredTeamsCount || 0}/{tournament.maxTeams || 16}</span>
-                </div>
-                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Fee: <span className="text-slate-900 dark:text-white">{tournament.entryFee > 0 ? `$${tournament.entryFee}` : 'Free'}</span>
+                {(() => {
+                  const count = tournament.registeredTeamsCount || 0;
+                  const max = tournament.maxTeams || 16;
+                  const isFull = count >= max;
+                  return (
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                      <Users className={`w-3.5 h-3.5 ${isFull ? 'text-red-500' : 'text-slate-400'}`} />
+                      Teams:
+                      <span className={isFull ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-900 dark:text-white'}>
+                        {count}/{max}
+                      </span>
+                    </div>
+                  );
+                })()}
+                
+                <div className="flex flex-wrap items-center gap-2">
+                  {(tournament.format === 'knockout' || tournament.format === 'hybrid') && (
+                    <button
+                      onClick={() => navigate(`/organizer/matches?tournament=${tournament.id}&view=bracket`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors shadow-sm"
+                      title="View Tournament Bracket"
+                    >
+                      <GitBranch className="w-3.5 h-3.5" />
+                      View Bracket
+                    </button>
+                  )}
+                  {tournament.format === 'knockout' && (tournament.registeredTeamsCount || 0) >= (tournament.maxTeams || 16) && (
+                    <button
+                      onClick={() => handleOpenGenerateBracket(tournament)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors shadow-sm"
+                      title="Generate Knockout Bracket"
+                    >
+                      <GitBranch className="w-3.5 h-3.5" />
+                      Generate Bracket
+                    </button>
+                  )}
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Fee: <span className="text-slate-900 dark:text-white">{tournament.entryFee > 0 ? `$${tournament.entryFee}` : 'Free'}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -262,6 +333,19 @@ export const Tournaments = () => {
         onSubmit={handleFormSubmit}
         initialData={selectedTournament}
         isLoading={isSubmitting}
+      />
+
+      <ConfirmDialog 
+        isOpen={isBracketConfirmOpen}
+        title="Generate Knockout Bracket"
+        message={`Are you sure you want to generate the knockout tournament bracket for "${selectedTournamentForBracket?.name}"? This will seed all registered teams and generate the full tournament fixtures tree.`}
+        confirmLabel="Generate Bracket"
+        onConfirm={handleGenerateBracketConfirm}
+        onCancel={() => {
+          setIsBracketConfirmOpen(false);
+          setSelectedTournamentForBracket(null);
+        }}
+        isLoading={isGeneratingBracket}
       />
 
       <ConfirmDialog 

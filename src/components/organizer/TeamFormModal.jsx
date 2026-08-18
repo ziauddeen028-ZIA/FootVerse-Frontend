@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Shield, Palette, MapPin, Building, Trophy } from 'lucide-react';
+import { X, Shield, Palette, MapPin, Building, Trophy, AlertCircle } from 'lucide-react';
 
 export const TeamFormModal = ({
   isOpen,
@@ -8,7 +8,8 @@ export const TeamFormModal = ({
   initialData = null,
   tournaments = [],
   existingTeams = [],
-  isLoading = false
+  isLoading = false,
+  defaultTournamentId = ''
 }) => {
   const [formData, setFormData] = useState({
     tournamentId: '',
@@ -23,11 +24,30 @@ export const TeamFormModal = ({
 
   const [errors, setErrors] = useState({});
 
+  const isTournamentLocked = Boolean(defaultTournamentId && !initialData);
+
+  // Per-tournament capacity helpers
+  const getTeamCount = (t) =>
+    existingTeams.filter(tm => (tm.tournamentId || tm.tournament?.id) === t.id).length ||
+    t.registeredTeamsCount ||
+    0;
+  const isTournamentFull = (t) => t.maxTeams !== null && getTeamCount(t) >= t.maxTeams;
+
+  const selectedTournamentObj = tournaments.find(t => t.id === formData.tournamentId);
+  const teamCountForSelected = selectedTournamentObj ? getTeamCount(selectedTournamentObj) : 0;
+  const maxTeamsForSelected = selectedTournamentObj?.maxTeams || 16;
+  // For create: block if full. For edit: only block if user picked a *different* full tournament.
+  const currentTournamentId = initialData?.tournamentId || initialData?.tournament?.id;
+  const isSelectedTournamentFull =
+    Boolean(selectedTournamentObj) &&
+    isTournamentFull(selectedTournamentObj) &&
+    formData.tournamentId !== currentTournamentId;
+
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         setFormData({
-          tournamentId: initialData.tournamentId || initialData.tournament?.id || (tournaments[0]?.id || ''),
+          tournamentId: initialData.tournamentId || initialData.tournament?.id || defaultTournamentId || (tournaments[0]?.id || ''),
           name: initialData.name || '',
           shortName: initialData.shortName || '',
           city: initialData.city || '',
@@ -38,7 +58,7 @@ export const TeamFormModal = ({
         });
       } else {
         setFormData({
-          tournamentId: tournaments[0]?.id || '',
+          tournamentId: defaultTournamentId || tournaments[0]?.id || '',
           name: '',
           shortName: '',
           city: '',
@@ -50,7 +70,7 @@ export const TeamFormModal = ({
       }
       setErrors({});
     }
-  }, [isOpen, initialData, tournaments]);
+  }, [isOpen, initialData, tournaments, defaultTournamentId]);
 
   if (!isOpen) return null;
 
@@ -59,6 +79,8 @@ export const TeamFormModal = ({
 
     if (!formData.tournamentId) {
       newErrors.tournamentId = 'Please select a tournament for the team.';
+    } else if (!initialData && isSelectedTournamentFull) {
+      newErrors.tournamentId = `Tournament is full (${teamCountForSelected}/${maxTeamsForSelected} teams). No more teams can be registered.`;
     }
 
     if (!formData.name.trim()) {
@@ -154,19 +176,44 @@ export const TeamFormModal = ({
               name="tournamentId"
               value={formData.tournamentId}
               onChange={handleChange}
+              disabled={isTournamentLocked}
               className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
                 errors.tournamentId ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-              } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                isTournamentLocked ? 'opacity-75 cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''
+              }`}
             >
               <option value="" disabled>
                 Select a Tournament
               </option>
-              {tournaments.map(t => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
+              {tournaments.map(t => {
+                const count = getTeamCount(t);
+                const max = t.maxTeams || 16;
+                const full = isTournamentFull(t);
+                // Allow selecting the team's current tournament even when editing
+                const isCurrentTournament = t.id === currentTournamentId;
+                const disableOption = full && !isCurrentTournament;
+                const label = full
+                  ? `${t.name} (Full — ${count}/${max})`
+                  : `${t.name} (${count}/${max})`;
+                return (
+                  <option key={t.id} value={t.id} disabled={disableOption}>
+                    {label}
+                  </option>
+                );
+              })}
             </select>
+            {isTournamentLocked && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Tournament selection is locked for this registration.
+              </p>
+            )}
+            {isSelectedTournamentFull && (
+              <div className="p-3 mt-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/80 rounded-xl text-red-600 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Tournament is full ({teamCountForSelected}/{maxTeamsForSelected} teams). No more teams can be registered.</span>
+              </div>
+            )}
             {errors.tournamentId && <p className="text-xs text-red-500 mt-1">{errors.tournamentId}</p>}
             {tournaments.length === 0 && (
               <p className="text-xs text-amber-500 mt-1">
@@ -327,7 +374,7 @@ export const TeamFormModal = ({
             </button>
             <button
               type="submit"
-              disabled={isLoading || tournaments.length === 0}
+              disabled={isLoading || tournaments.length === 0 || isSelectedTournamentFull}
               className="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
             >
               {isLoading && (
