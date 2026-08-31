@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Filter, Calendar, MapPin, Edit2, Trash2, Trophy, Shield, Clock, Activity, Zap, Radio, FileText, LayoutGrid, GitBranch } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, MapPin, Edit2, Trash2, Trophy, Shield, Clock, Activity, Zap, Radio, FileText, LayoutGrid, GitBranch, Table } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -8,6 +8,7 @@ import { Toast } from '../../components/common/Toast';
 import { LoadingSkeleton } from '../../components/organizer/LoadingSkeleton';
 import { MatchFormModal } from '../../components/organizer/MatchFormModal';
 import { KnockoutBracket } from '../../components/organizer/KnockoutBracket';
+import { LeagueDashboard } from '../../components/organizer/LeagueDashboard';
 
 import { matchService } from '../../services/matchService';
 import { tournamentService } from '../../services/tournamentService';
@@ -17,7 +18,11 @@ export const Matches = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTournament = searchParams.get('tournament') || 'all';
-  const initialView = searchParams.get('view') === 'bracket' ? 'bracket' : 'list';
+  const initialView = searchParams.get('view') === 'bracket' 
+    ? 'bracket' 
+    : searchParams.get('view') === 'league' 
+    ? 'league' 
+    : 'list';
 
   const [matches, setMatches] = useState([]);
   const [tournaments, setTournaments] = useState([]);
@@ -334,6 +339,25 @@ export const Matches = () => {
               <GitBranch className="w-3.5 h-3.5" />
               <span>Knockout Bracket</span>
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setViewMode('league');
+                setSearchParams(prev => {
+                  const n = new URLSearchParams(prev);
+                  n.set('view', 'league');
+                  return n;
+                });
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === 'league'
+                  ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20'
+                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Table className="w-3.5 h-3.5" />
+              <span>League Table</span>
+            </button>
           </div>
 
           {/* Tournament Filter */}
@@ -344,10 +368,19 @@ export const Matches = () => {
               onChange={e => {
                 const val = e.target.value;
                 setTournamentFilter(val);
+                // If a league tournament is chosen while in bracket mode, auto-switch to league view
+                const selectedTourney = tournaments.find(t => t.id === val);
+                if (selectedTourney?.format === 'league' && viewMode === 'bracket') {
+                  setViewMode('league');
+                } else if (selectedTourney?.format === 'knockout' && viewMode === 'league') {
+                  setViewMode('bracket');
+                }
                 setSearchParams(prev => {
                   const n = new URLSearchParams(prev);
                   if (val === 'all') n.delete('tournament');
                   else n.set('tournament', val);
+                  if (selectedTourney?.format === 'league') n.set('view', 'league');
+                  else if (selectedTourney?.format === 'knockout') n.set('view', 'bracket');
                   return n;
                 });
               }}
@@ -395,7 +428,7 @@ export const Matches = () => {
         </div>
       )}
 
-      {/* Content Rendering: Bracket View vs List View */}
+      {/* Content Rendering: Bracket View vs League View vs List View */}
       {viewMode === 'bracket' ? (
         <KnockoutBracket
           matches={matches}
@@ -410,6 +443,26 @@ export const Matches = () => {
               return n;
             });
           }}
+        />
+      ) : viewMode === 'league' ? (
+        <LeagueDashboard
+          matches={matches}
+          tournaments={tournaments}
+          teams={teams}
+          selectedTournamentId={tournamentFilter}
+          onSelectTournament={(tId) => {
+            setTournamentFilter(tId);
+            setSearchParams(prev => {
+              const n = new URLSearchParams(prev);
+              if (tId === 'all') n.delete('tournament');
+              else n.set('tournament', tId);
+              return n;
+            });
+          }}
+          onOpenCreateMatch={handleOpenCreate}
+          onOpenEditMatch={handleOpenEdit}
+          onOpenDeleteMatch={handleOpenDelete}
+          onRefresh={fetchData}
         />
       ) : (
         /* Matches Grid / Empty state */

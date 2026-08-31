@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Filter, Edit2, Trash2, Calendar, MapPin, Eye, Users, GitBranch } from 'lucide-react';
+import { Plus, Search, Filter, Edit2, Trash2, Calendar, MapPin, Eye, Users, GitBranch, Table, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -31,6 +31,11 @@ export const Tournaments = () => {
   const [isBracketConfirmOpen, setIsBracketConfirmOpen] = useState(false);
   const [selectedTournamentForBracket, setSelectedTournamentForBracket] = useState(null);
   const [isGeneratingBracket, setIsGeneratingBracket] = useState(false);
+
+  // League Generation state
+  const [isLeagueConfirmOpen, setIsLeagueConfirmOpen] = useState(false);
+  const [selectedTournamentForLeague, setSelectedTournamentForLeague] = useState(null);
+  const [isGeneratingLeague, setIsGeneratingLeague] = useState(false);
 
   // Toast state
   const [toast, setToast] = useState({ message: '', type: 'success' });
@@ -113,6 +118,28 @@ export const Tournaments = () => {
       showToast(errorMsg, 'error');
     } finally {
       setIsGeneratingBracket(false);
+    }
+  };
+
+  const handleOpenGenerateLeague = (tournament) => {
+    setSelectedTournamentForLeague(tournament);
+    setIsLeagueConfirmOpen(true);
+  };
+
+  const handleGenerateLeagueConfirm = async () => {
+    if (!selectedTournamentForLeague) return;
+    setIsGeneratingLeague(true);
+    try {
+      const res = await tournamentService.generateLeagueFixtures(selectedTournamentForLeague.id);
+      showToast(res.message || 'League fixtures generated successfully!');
+      setIsLeagueConfirmOpen(false);
+      setSelectedTournamentForLeague(null);
+      await fetchTournaments();
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to generate league fixtures.';
+      showToast(errorMsg, 'error');
+    } finally {
+      setIsGeneratingLeague(false);
     }
   };
 
@@ -306,6 +333,16 @@ export const Tournaments = () => {
                       View Bracket
                     </button>
                   )}
+                  {tournament.format === 'league' && (
+                    <button
+                      onClick={() => navigate(`/organizer/matches?tournament=${tournament.id}&view=league`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors shadow-sm"
+                      title="View League Standings & Schedule"
+                    >
+                      <Table className="w-3.5 h-3.5" />
+                      View League
+                    </button>
+                  )}
                   {tournament.format === 'knockout' && (tournament.registeredTeamsCount || 0) >= (tournament.maxTeams || 16) && (
                     <button
                       onClick={() => handleOpenGenerateBracket(tournament)}
@@ -314,6 +351,16 @@ export const Tournaments = () => {
                     >
                       <GitBranch className="w-3.5 h-3.5" />
                       Generate Bracket
+                    </button>
+                  )}
+                  {tournament.format === 'league' && (tournament.registeredTeamsCount || 0) >= 2 && tournament.status !== 'completed' && (
+                    <button
+                      onClick={() => handleOpenGenerateLeague(tournament)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors shadow-sm"
+                      title="Generate Round-Robin League Fixtures"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Generate Fixtures
                     </button>
                   )}
                   <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -346,6 +393,19 @@ export const Tournaments = () => {
           setSelectedTournamentForBracket(null);
         }}
         isLoading={isGeneratingBracket}
+      />
+
+      <ConfirmDialog 
+        isOpen={isLeagueConfirmOpen}
+        title="Generate League Fixtures"
+        message={`Are you sure you want to generate round-robin league fixtures for "${selectedTournamentForLeague?.name}"? This will pair every registered team against one another across structured matchdays.`}
+        confirmLabel="Generate Fixtures"
+        onConfirm={handleGenerateLeagueConfirm}
+        onCancel={() => {
+          setIsLeagueConfirmOpen(false);
+          setSelectedTournamentForLeague(null);
+        }}
+        isLoading={isGeneratingLeague}
       />
 
       <ConfirmDialog 
