@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LeagueStandings } from './LeagueStandings';
+import { GroupStageStandings } from './GroupStageStandings';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Toast } from '../common/Toast';
 import { tournamentService } from '../../services/tournamentService';
@@ -41,12 +42,13 @@ export const LeagueDashboard = ({
   const navigate = useNavigate();
 
   // Standings state
-  const [standingsData, setStandingsData] = useState({ standings: [] });
+  const [standingsData, setStandingsData] = useState({ standings: [], groups: [] });
   const [loadingStandings, setLoadingStandings] = useState(false);
   const [activeMatchday, setActiveMatchday] = useState('all');
 
   // Fixture generation state
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingKnockout, setIsGeneratingKnockout] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success' });
 
@@ -83,27 +85,24 @@ export const LeagueDashboard = ({
     try {
       setLoadingStandings(true);
       const res = await tournamentService.getStandings(tourneyId);
-      let flatStandings = res.standings || [];
-      if (res.groups && res.groups.length > 0 && flatStandings.length === 0) {
-        // Flatten all groups into a single sorted league table
-        const combined = res.groups.flatMap(g => g.standings || []);
-        combined.sort((a, b) => {
-          if (b.points !== a.points) return b.points - a.points;
-          if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-          if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-          if (b.won !== a.won) return b.won - a.won;
-          return (a.team?.name || '').localeCompare(b.team?.name || '');
+
+      // If the API returns per-group standings (group_stage / group_knockout),
+      // preserve each group independently — never flatten into one table.
+      if (res.groups && res.groups.length > 0) {
+        setStandingsData({
+          standings: [],
+          groups: res.groups   // [{ name: 'Group A', standings: [...] }, ...]
         });
-        flatStandings = combined.map((entry, idx) => ({
-          ...entry,
-          position: idx + 1
-        }));
+        return;
       }
+
+      // League format: flat standings list
       setStandingsData({
-        standings: flatStandings
+        standings: res.standings || [],
+        groups: []
       });
     } catch (err) {
-      console.error('Failed to fetch league standings:', err);
+      console.error('Failed to fetch standings:', err);
     } finally {
       setLoadingStandings(false);
     }
@@ -156,7 +155,20 @@ export const LeagueDashboard = ({
     return { total, completed, live, scheduled, percentage, leader };
   }, [tournamentMatches, standingsData]);
 
-  // Handle generating fixtures
+  // Group stage completion: all non-bracket matches are fulltime
+  const groupStageComplete = useMemo(() => {
+    const groupMatches = tournamentMatches.filter(m => !m.bracketPosition);
+    return groupMatches.length > 0 && groupMatches.every(
+      m => m.status === 'fulltime' || m.status === 'completed'
+    );
+  }, [tournamentMatches]);
+
+  // Whether knockout bracket already exists
+  const hasKnockoutBracket = useMemo(() => {
+    return tournamentMatches.some(m => m.bracketPosition != null);
+  }, [tournamentMatches]);
+
+  // Handle generating league fixtures
   const handleGenerateFixtures = async () => {
     if (!activeId) return;
     setIsGenerating(true);
@@ -172,6 +184,26 @@ export const LeagueDashboard = ({
       showToast(errMsg, 'error');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // Handle generating knockout bracket from group stage qualifiers
+  const handleGenerateGroupKnockout = async () => {
+    if (!activeId) return;
+    setIsGeneratingKnockout(true);
+    try {
+      const res = await tournamentService.generateGroupKnockout(activeId, 2);
+      showToast(
+        res.message || `Knockout bracket generated! ${res.totalMatches} matches created.`
+      );
+      if (onRefresh) await onRefresh();
+      await fetchStandings(activeId);
+    } catch (err) {
+      console.error('Error generating knockout bracket:', err);
+      const errMsg = err.response?.data?.error || err.message || 'Failed to generate knockout bracket.';
+      showToast(errMsg, 'error');
+    } finally {
+      setIsGeneratingKnockout(false);
     }
   };
 
@@ -244,7 +276,7 @@ export const LeagueDashboard = ({
                 {currentTournament?.name || 'Select League Tournament'}
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                League Format
+                {currentTournament?.format ? currentTournament.format.replace('_', ' ') : 'League'} Format
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -260,19 +292,11 @@ export const LeagueDashboard = ({
             onChange={(e) => onSelectTournament && onSelectTournament(e.target.value)}
             className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:flex-none"
           >
-            {leagueTournaments.length > 0 ? (
-              leagueTournaments.map(t => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({t.status})
-                </option>
-              ))
-            ) : (
-              tournaments.map(t => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({t.format})
-                </option>
-              ))
-            )}
+            {tournaments.map(t => (
+              <option key={t.id} value={t.id}>
+                {t.name} ({t.format ? t.format.replace('_', ' ') : 'League'})
+              </option>
+            ))}
           </select>
 
           {/* Quick Schedule match button */}
@@ -377,12 +401,23 @@ export const LeagueDashboard = ({
         </div>
       )}
 
-      {/* Standings Table Component */}
-      <LeagueStandings
-        standings={standingsData.standings}
-        tournamentName={currentTournament?.name}
-        isLoading={loadingStandings}
-      />
+      {/* Standings: group_stage / group_knockout → per-group tables; league → flat table */}
+      {standingsData.groups && standingsData.groups.length > 0 ? (
+        <GroupStageStandings
+          groups={standingsData.groups}
+          isLoading={loadingStandings}
+          groupStageComplete={groupStageComplete}
+          hasKnockoutBracket={hasKnockoutBracket}
+          isGeneratingKnockout={isGeneratingKnockout}
+          onGenerateKnockout={handleGenerateGroupKnockout}
+        />
+      ) : (
+        <LeagueStandings
+          standings={standingsData.standings}
+          tournamentName={currentTournament?.name}
+          isLoading={loadingStandings}
+        />
+      )}
 
       {/* Matchday Fixtures Section */}
       {tournamentMatches.length > 0 && (
@@ -515,7 +550,7 @@ export const LeagueDashboard = ({
                     <div className="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto">
                       {match.status === 'scheduled' && (
                         <button
-                          onClick={() => navigate(`/organizer/matches/${match.id}/live`)}
+                          onClick={() => navigate(`/organizer/matches/${match.id}/live?tournament=${activeId}`)}
                           className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
                         >
                           <Zap className="w-3.5 h-3.5" />
@@ -525,7 +560,7 @@ export const LeagueDashboard = ({
 
                       {match.status === 'live' && (
                         <button
-                          onClick={() => navigate(`/organizer/matches/${match.id}/live`)}
+                          onClick={() => navigate(`/organizer/matches/${match.id}/live?tournament=${activeId}`)}
                           className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                         >
                           <Radio className="w-3.5 h-3.5 animate-pulse" />
@@ -535,7 +570,7 @@ export const LeagueDashboard = ({
 
                       {(match.status === 'completed' || match.status === 'fulltime') && (
                         <button
-                          onClick={() => navigate(`/organizer/matches/${match.id}/live?readonly=true`)}
+                          onClick={() => navigate(`/organizer/matches/${match.id}/live?tournament=${activeId}&readonly=true`)}
                           className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                         >
                           <FileText className="w-3.5 h-3.5" />

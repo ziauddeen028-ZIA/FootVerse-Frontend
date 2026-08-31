@@ -78,6 +78,47 @@ export const Matches = () => {
     fetchData();
   }, []);
 
+  // Sync tournamentFilter from searchParams when searchParams change (e.g. returning from LiveMatch)
+  useEffect(() => {
+    const tParam = searchParams.get('tournament');
+    if (tParam && tParam !== tournamentFilter) {
+      setTournamentFilter(tParam);
+    }
+  }, [searchParams]);
+
+  // Selected tournament object helper
+  const selectedTournamentObj = useMemo(() => {
+    if (!tournamentFilter || tournamentFilter === 'all') return null;
+    return tournaments.find(t => t.id === tournamentFilter) || null;
+  }, [tournamentFilter, tournaments]);
+
+  // Disabled states for view controls
+  const isBracketDisabled = useMemo(() => {
+    if (tournamentFilter === 'all') return true;
+    if (selectedTournamentObj?.format === 'league') return true;
+    return false;
+  }, [tournamentFilter, selectedTournamentObj]);
+
+  const isLeagueDisabled = useMemo(() => {
+    if (tournamentFilter === 'all') return true;
+    if (selectedTournamentObj?.format === 'knockout') return true;
+    return false;
+  }, [tournamentFilter, selectedTournamentObj]);
+
+  // Automatically adapt view mode based on selected tournament format
+  useEffect(() => {
+    if (tournamentFilter === 'all') {
+      if (viewMode !== 'list') setViewMode('list');
+    } else if (selectedTournamentObj) {
+      const format = selectedTournamentObj.format;
+      if (format === 'knockout' && viewMode === 'league') {
+        setViewMode('bracket');
+      } else if (format === 'league' && viewMode === 'bracket') {
+        setViewMode('league');
+      }
+    }
+  }, [tournamentFilter, selectedTournamentObj, viewMode]);
+
   // Derived state (Filtering and Sorting)
   const filteredMatches = useMemo(() => {
     let result = [...matches];
@@ -316,13 +357,17 @@ export const Matches = () => {
                   ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
+              title="List View (All Fixtures)"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
               <span>List View</span>
             </button>
+
             <button
               type="button"
+              disabled={isBracketDisabled}
               onClick={() => {
+                if (isBracketDisabled) return;
                 setViewMode('bracket');
                 setSearchParams(prev => {
                   const n = new URLSearchParams(prev);
@@ -331,17 +376,29 @@ export const Matches = () => {
                 });
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                viewMode === 'bracket'
+                isBracketDisabled
+                  ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
+                  : viewMode === 'bracket'
                   ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-500/20'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
+              title={
+                tournamentFilter === 'all'
+                  ? 'Select a specific tournament to view bracket'
+                  : isBracketDisabled
+                  ? 'Knockout bracket not applicable for league format'
+                  : 'Knockout Bracket View'
+              }
             >
               <GitBranch className="w-3.5 h-3.5" />
               <span>Knockout Bracket</span>
             </button>
+
             <button
               type="button"
+              disabled={isLeagueDisabled}
               onClick={() => {
+                if (isLeagueDisabled) return;
                 setViewMode('league');
                 setSearchParams(prev => {
                   const n = new URLSearchParams(prev);
@@ -350,10 +407,19 @@ export const Matches = () => {
                 });
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                viewMode === 'league'
+                isLeagueDisabled
+                  ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
+                  : viewMode === 'league'
                   ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
+              title={
+                tournamentFilter === 'all'
+                  ? 'Select a specific tournament to view standings'
+                  : isLeagueDisabled
+                  ? 'Standings table not applicable for knockout format'
+                  : 'League / Group Standings View'
+              }
             >
               <Table className="w-3.5 h-3.5" />
               <span>League Table</span>
@@ -368,19 +434,34 @@ export const Matches = () => {
               onChange={e => {
                 const val = e.target.value;
                 setTournamentFilter(val);
-                // If a league tournament is chosen while in bracket mode, auto-switch to league view
                 const selectedTourney = tournaments.find(t => t.id === val);
-                if (selectedTourney?.format === 'league' && viewMode === 'bracket') {
-                  setViewMode('league');
-                } else if (selectedTourney?.format === 'knockout' && viewMode === 'league') {
-                  setViewMode('bracket');
+                let targetView = viewMode;
+
+                if (val === 'all') {
+                  targetView = 'list';
+                  setViewMode('list');
+                } else if (selectedTourney?.format === 'knockout') {
+                  if (viewMode === 'league') {
+                    targetView = 'bracket';
+                    setViewMode('bracket');
+                  }
+                } else if (selectedTourney?.format === 'league') {
+                  if (viewMode === 'bracket') {
+                    targetView = 'league';
+                    setViewMode('league');
+                  }
                 }
+
                 setSearchParams(prev => {
                   const n = new URLSearchParams(prev);
-                  if (val === 'all') n.delete('tournament');
-                  else n.set('tournament', val);
-                  if (selectedTourney?.format === 'league') n.set('view', 'league');
-                  else if (selectedTourney?.format === 'knockout') n.set('view', 'bracket');
+                  if (val === 'all') {
+                    n.delete('tournament');
+                    n.delete('view');
+                  } else {
+                    n.set('tournament', val);
+                    if (targetView !== 'list') n.set('view', targetView);
+                    else n.delete('view');
+                  }
                   return n;
                 });
               }}
@@ -621,7 +702,11 @@ export const Matches = () => {
                       {match.status === 'scheduled' && (
                         (match.homeTeamId && match.awayTeamId && match.homeTeam && match.awayTeam) ? (
                           <button
-                            onClick={() => navigate(`/organizer/matches/${match.id}/live`)}
+                            onClick={() => {
+                              const tId = match.tournamentId || match.tournament?.id || tournamentFilter;
+                              const tourneyParam = tId && tId !== 'all' ? `?tournament=${tId}` : '';
+                              navigate(`/organizer/matches/${match.id}/live${tourneyParam}`);
+                            }}
                             className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
                             title="Manage Live Match"
                           >
@@ -641,7 +726,11 @@ export const Matches = () => {
                       {/* Live matches → View Live */}
                       {match.status === 'live' && (
                         <button
-                          onClick={() => navigate(`/organizer/matches/${match.id}/live`)}
+                          onClick={() => {
+                            const tId = match.tournamentId || match.tournament?.id || tournamentFilter;
+                            const tourneyParam = tId && tId !== 'all' ? `?tournament=${tId}` : '';
+                            navigate(`/organizer/matches/${match.id}/live${tourneyParam}`);
+                          }}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                           title="View Live Match"
                         >
@@ -652,7 +741,11 @@ export const Matches = () => {
                       {/* Halftime matches → Resume Match */}
                       {match.status === 'halftime' && (
                         <button
-                          onClick={() => navigate(`/organizer/matches/${match.id}/live`)}
+                          onClick={() => {
+                            const tId = match.tournamentId || match.tournament?.id || tournamentFilter;
+                            const tourneyParam = tId && tId !== 'all' ? `?tournament=${tId}` : '';
+                            navigate(`/organizer/matches/${match.id}/live${tourneyParam}`);
+                          }}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
                           title="Resume Match"
                         >
@@ -663,7 +756,12 @@ export const Matches = () => {
                       {/* Completed / Fulltime matches → View Summary (read-only) */}
                       {(match.status === 'completed' || match.status === 'fulltime') && (
                         <button
-                          onClick={() => navigate(`/organizer/matches/${match.id}/live?readonly=true`)}
+                          onClick={() => {
+                            const tId = match.tournamentId || match.tournament?.id || tournamentFilter;
+                            const tourneyParam = tId && tId !== 'all' ? `?tournament=${tId}` : '';
+                            const readOnlyParam = tourneyParam ? '&readonly=true' : '?readonly=true';
+                            navigate(`/organizer/matches/${match.id}/live${tourneyParam}${readOnlyParam}`);
+                          }}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                           title="View Match Summary"
                         >

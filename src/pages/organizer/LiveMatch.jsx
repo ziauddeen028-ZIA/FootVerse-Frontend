@@ -636,6 +636,41 @@ export const LiveMatch = () => {
 
   const showToast = (message, type = 'success') => setToast({ message, type });
 
+  const handleBackToMatches = () => {
+    const targetTournament = searchParams.get('tournament') || match?.tournamentId || match?.tournament?.id;
+    if (targetTournament) {
+      navigate(`/organizer/matches?tournament=${targetTournament}`);
+    } else {
+      navigate('/organizer/matches');
+    }
+  };
+
+  // Sent-off players calculation: 1 direct red card OR 2 yellow cards in this match
+  const sentOffPlayerIds = useMemo(() => {
+    const cardCounts = {};
+    const sentOffSet = new Set();
+
+    events.forEach(e => {
+      const pId = e.playerId;
+      if (!pId) return;
+      if (!cardCounts[pId]) {
+        cardCounts[pId] = { yellow: 0, red: 0 };
+      }
+
+      if (e.eventType === 'red_card') {
+        cardCounts[pId].red += 1;
+        sentOffSet.add(pId);
+      } else if (e.eventType === 'yellow_card') {
+        cardCounts[pId].yellow += 1;
+        if (cardCounts[pId].yellow >= 2) {
+          sentOffSet.add(pId);
+        }
+      }
+    });
+
+    return sentOffSet;
+  }, [events]);
+
   // ── Auto-fill Minute from Timer ─────────────────────────────────────────────
 
   useEffect(() => {
@@ -977,6 +1012,14 @@ export const LiveMatch = () => {
         showToast('OUT and IN players cannot be the same player.', 'error');
         return;
       }
+      if (sentOffPlayerIds.has(playerOutId)) {
+        showToast('The selected OUT player was already sent off with a Red Card.', 'error');
+        return;
+      }
+      if (sentOffPlayerIds.has(playerInId)) {
+        showToast('The selected IN player was sent off and cannot enter the match.', 'error');
+        return;
+      }
 
       targetPlayerId = playerOutId;
       const subStr = `OUT: ${getPlayerLabel(playerOutId)} → IN: ${getPlayerLabel(playerInId)}`;
@@ -984,6 +1027,10 @@ export const LiveMatch = () => {
     } else {
       if (!selectedPlayerId) {
         showToast('Please select a player.', 'error');
+        return;
+      }
+      if (sentOffPlayerIds.has(selectedPlayerId)) {
+        showToast('This player was sent off with a Red Card and is unavailable.', 'error');
         return;
       }
     }
@@ -996,6 +1043,55 @@ export const LiveMatch = () => {
     if (isNaN(parsedMin) || parsedMin < 0 || parsedMin > 120) {
       showToast('Minute must be a valid number between 0 and 120.', 'error');
       return;
+    }
+
+    // 2nd Yellow Card logic: if player receives 2nd yellow, automatically log red card
+    if (eventType === 'yellow_card' && targetPlayerId) {
+      const existingYellows = events.filter(
+        e => e.playerId === targetPlayerId && e.eventType === 'yellow_card'
+      ).length;
+
+      if (existingYellows >= 1) {
+        setIsSubmittingEvent(true);
+        try {
+          await matchService.addEvent({
+            matchId,
+            teamId: selectedTeamId,
+            playerId: targetPlayerId,
+            minute: parsedMin,
+            eventType: 'yellow_card',
+            details: eventDetailsString || '2nd Yellow Card',
+          });
+
+          await matchService.addEvent({
+            matchId,
+            teamId: selectedTeamId,
+            playerId: targetPlayerId,
+            minute: parsedMin,
+            eventType: 'red_card',
+            details: 'Sent Off (2nd Yellow Card)',
+          });
+
+          showToast('2nd Yellow Card! Player sent off with Red Card 🟥', 'error');
+
+          setDetails('');
+          setSelectedPlayerId('');
+          setPlayerOutId('');
+          setPlayerInId('');
+          setIsMinuteCustomized(false);
+          const calcMin = Math.min(120, Math.max(0, Math.round(timerSeconds / 60)));
+          setMinute(String(calcMin));
+
+          fetchEvents();
+          return;
+        } catch (err) {
+          console.error('Error logging 2nd yellow card:', err);
+          showToast(err.response?.data?.error || 'Failed to log 2nd yellow card.', 'error');
+          return;
+        } finally {
+          setIsSubmittingEvent(false);
+        }
+      }
     }
 
     try {
@@ -1166,7 +1262,7 @@ export const LiveMatch = () => {
     return (
       <div className="space-y-6">
         <button
-          onClick={() => navigate('/organizer/matches')}
+          onClick={handleBackToMatches}
           className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -1231,7 +1327,7 @@ export const LiveMatch = () => {
 
       {/* Back Navigation */}
       <button
-        onClick={() => navigate('/organizer/matches')}
+        onClick={handleBackToMatches}
         className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -1419,7 +1515,7 @@ export const LiveMatch = () => {
               ✅ Match ended — final score recorded.
             </p>
             <button
-              onClick={() => navigate('/organizer/matches')}
+              onClick={handleBackToMatches}
               className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-sm rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -1736,9 +1832,10 @@ export const LiveMatch = () => {
                           const pId = m.player?.id || m.playerId;
                           const pName = m.player?.fullName || 'Unknown Player';
                           const jerseyStr = m.jerseyNumber ? `#${m.jerseyNumber} ` : '';
+                          const isSentOff = sentOffPlayerIds.has(pId);
                           return (
-                            <option key={`out-${m.id || pId}`} value={pId}>
-                              {jerseyStr}{pName}
+                            <option key={`out-${m.id || pId}`} value={pId} disabled={isSentOff}>
+                              {jerseyStr}{pName}{isSentOff ? ' (Red Card / Sent Off)' : ''}
                             </option>
                           );
                         })}
@@ -1761,9 +1858,10 @@ export const LiveMatch = () => {
                           const pId = m.player?.id || m.playerId;
                           const pName = m.player?.fullName || 'Unknown Player';
                           const jerseyStr = m.jerseyNumber ? `#${m.jerseyNumber} ` : '';
+                          const isSentOff = sentOffPlayerIds.has(pId);
                           return (
-                            <option key={`in-${m.id || pId}`} value={pId}>
-                              {jerseyStr}{pName}
+                            <option key={`in-${m.id || pId}`} value={pId} disabled={isSentOff}>
+                              {jerseyStr}{pName}{isSentOff ? ' (Red Card / Sent Off)' : ''}
                             </option>
                           );
                         })}
@@ -1787,9 +1885,10 @@ export const LiveMatch = () => {
                         const pId = m.player?.id || m.playerId;
                         const pName = m.player?.fullName || 'Unknown Player';
                         const jerseyStr = m.jerseyNumber ? `#${m.jerseyNumber} ` : '';
+                        const isSentOff = sentOffPlayerIds.has(pId);
                         return (
-                          <option key={m.id || pId} value={pId}>
-                            {jerseyStr}{pName}
+                          <option key={m.id || pId} value={pId} disabled={isSentOff}>
+                            {jerseyStr}{pName}{isSentOff ? ' (Red Card / Sent Off)' : ''}
                           </option>
                         );
                       })}

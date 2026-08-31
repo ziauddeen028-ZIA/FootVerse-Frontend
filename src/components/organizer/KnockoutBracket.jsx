@@ -354,7 +354,9 @@ export const KnockoutBracket = ({
   }, [knockoutMatches]);
 
   const handleOpenLive = (matchId, isFinished) => {
-    navigate(`/organizer/matches/${matchId}/live${isFinished ? '?readonly=true' : ''}`);
+    const tourneyParam = selectedTournamentId && selectedTournamentId !== 'all' ? `?tournament=${selectedTournamentId}` : '';
+    const readOnlyParam = isFinished ? (tourneyParam ? '&readonly=true' : '?readonly=true') : '';
+    navigate(`/organizer/matches/${matchId}/live${tourneyParam}${readOnlyParam}`);
   };
 
   // Find active tournament
