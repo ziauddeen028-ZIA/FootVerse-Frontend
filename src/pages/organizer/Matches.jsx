@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Filter, Calendar, MapPin, Edit2, Trash2, Trophy, Shield, Clock, Activity, Zap, Radio, FileText, LayoutGrid, GitBranch, Table } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, MapPin, Edit2, Trash2, Trophy, Shield, Clock, Activity, Zap, Radio, FileText, LayoutGrid, GitBranch, Table, BarChart2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -9,6 +9,7 @@ import { LoadingSkeleton } from '../../components/organizer/LoadingSkeleton';
 import { MatchFormModal } from '../../components/organizer/MatchFormModal';
 import { KnockoutBracket } from '../../components/organizer/KnockoutBracket';
 import { LeagueDashboard } from '../../components/organizer/LeagueDashboard';
+import { TournamentStats } from '../../components/organizer/TournamentStats';
 
 import { matchService } from '../../services/matchService';
 import { tournamentService } from '../../services/tournamentService';
@@ -109,7 +110,7 @@ export const Matches = () => {
   useEffect(() => {
     if (tournamentFilter === 'all') {
       if (viewMode !== 'list') setViewMode('list');
-    } else if (selectedTournamentObj) {
+    } else if (selectedTournamentObj && viewMode !== 'stats') {
       const format = selectedTournamentObj.format;
       if (format === 'knockout' && viewMode === 'league') {
         setViewMode('bracket');
@@ -424,6 +425,31 @@ export const Matches = () => {
               <Table className="w-3.5 h-3.5" />
               <span>League Table</span>
             </button>
+
+            <button
+              type="button"
+              disabled={tournamentFilter === 'all'}
+              onClick={() => {
+                if (tournamentFilter === 'all') return;
+                setViewMode('stats');
+                setSearchParams(prev => {
+                  const n = new URLSearchParams(prev);
+                  n.set('view', 'stats');
+                  return n;
+                });
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                tournamentFilter === 'all'
+                  ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
+                  : viewMode === 'stats'
+                  ? 'bg-amber-500 text-white shadow-xs shadow-amber-500/20'
+                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title={tournamentFilter === 'all' ? 'Select a specific tournament to view statistics' : 'Tournament Statistics'}
+            >
+              <BarChart2 className="w-3.5 h-3.5" />
+              <span>Statistics</span>
+            </button>
           </div>
 
           {/* Tournament Filter */}
@@ -509,8 +535,14 @@ export const Matches = () => {
         </div>
       )}
 
-      {/* Content Rendering: Bracket View vs League View vs List View */}
-      {viewMode === 'bracket' ? (
+      {/* Content Rendering: Bracket / League / Stats / List View */}
+      {viewMode === 'stats' ? (
+        <TournamentStats
+          tournamentId={tournamentFilter !== 'all' ? tournamentFilter : null}
+          tournaments={tournaments}
+          isOrganizer={true}
+        />
+      ) : viewMode === 'bracket' ? (
         <KnockoutBracket
           matches={matches}
           tournaments={tournaments}

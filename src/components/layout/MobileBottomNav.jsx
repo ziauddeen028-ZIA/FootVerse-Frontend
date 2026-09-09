@@ -7,7 +7,7 @@ export const MobileBottomNav = () => {
     { label: 'Home', path: '/', icon: Home },
     { label: 'Tournaments', path: '/tournaments-preview', icon: Trophy, badge: 'Phase 2' },
     { label: 'Live', path: '/matches-preview', icon: Activity, badge: 'Phase 2' },
-    { label: 'Stats', path: '/stats-preview', icon: BarChart2, badge: 'Phase 2' },
+    { label: 'Stats', path: '/stats', icon: BarChart2 },
     { label: 'Profile', path: '/profile', icon: User },
   ];
 

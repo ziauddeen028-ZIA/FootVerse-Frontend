@@ -1,10 +1,11 @@
 import React from 'react';
-import { User, Mail, Shield, Award, Calendar, ChevronLeft } from 'lucide-react';
+import { User, Mail, Shield, Award, Calendar, ChevronLeft, BarChart2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth, ROLE_LABELS } from '../context/AuthContext';
+import { MyStatsView } from '../components/stats/MyStatsView';
 
 export const ProfilePage = () => {
-  const { user, profile, activeRole, openAuthModal } = useAuth();
+  const { user, profile, activeRole } = useAuth();
 
   if (!user && activeRole === 'guest') {
     return (
@@ -27,11 +28,22 @@ export const ProfilePage = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <Link to="/" className="inline-flex items-center text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-        <ChevronLeft className="w-4 h-4 mr-1" /> Back to Dashboard
-      </Link>
+    <div className="max-w-5xl mx-auto space-y-8 pb-12">
+      <div className="flex items-center justify-between">
+        <Link to="/" className="inline-flex items-center text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+          <ChevronLeft className="w-4 h-4 mr-1" /> Back to Dashboard
+        </Link>
 
+        <Link
+          to="/stats?tab=my-stats"
+          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 transition"
+        >
+          <BarChart2 className="w-3.5 h-3.5" />
+          <span>Full Stats Hub</span>
+        </Link>
+      </div>
+
+      {/* Profile Overview Card */}
       <div className="glass-card rounded-3xl p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 border-b border-slate-100 dark:border-slate-800 pb-6 mb-6">
           <div className="w-20 h-20 rounded-full primary-gradient flex items-center justify-center text-white text-3xl font-extrabold shadow-lg shadow-blue-500/30">
@@ -74,6 +86,14 @@ export const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Personal Player Performance & Tournament History */}
+      {user?.id && (
+        <div className="pt-2">
+          <MyStatsView />
+        </div>
+      )}
     </div>
   );
 };
+

@@ -31,7 +31,7 @@ export const Sidebar = () => {
     { label: 'Matches', path: '/matches-preview', icon: Swords },
     { label: 'Teams', path: '/teams-preview', icon: Users },
     { label: 'Players', path: '/players-preview', icon: UserCheck },
-    { label: 'Statistics', path: '/stats-preview', icon: BarChart3 },
+    { label: 'Statistics', path: '/stats', icon: BarChart3 },
     { 
       label: 'Live Matches', 
       path: '/matches-preview', 

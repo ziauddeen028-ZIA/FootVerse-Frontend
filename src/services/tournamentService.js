@@ -15,5 +15,14 @@ export const tournamentService = {
     api.post(`/tournaments/${tournamentId}/hybrid/generate`, { qualifyingTeamsPerGroup }),
   generateLeagueFixtures: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/league/generate`, data),
   getStandings: (tournamentId) => api.get(`/tournaments/${tournamentId}/standings`),
+
+  // Phase 9 Statistics Endpoints
+  getTopScorer: (tournamentId) => api.get(`/stats/tournament/${tournamentId}/top-scorer`),
+  getBestKeeper: (tournamentId) => api.get(`/stats/tournament/${tournamentId}/best-keeper`),
+  getBestPlayer: (tournamentId) => api.get(`/stats/tournament/${tournamentId}/best-player`),
+  setBestPlayer: (tournamentId, playerId) => api.put(`/stats/tournament/${tournamentId}/best-player`, { playerId }),
+  getStatsOverview: (tournamentId) => api.get(`/stats/tournament/${tournamentId}/overview`),
+  getTournamentPlayers: (tournamentId) => api.get(`/stats/tournament/${tournamentId}/players`),
 };
+
 

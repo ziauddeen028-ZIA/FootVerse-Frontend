@@ -19,6 +19,7 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { UnauthorizedPage } from './pages/auth/UnauthorizedPage';
 import { ModulePreviewPage } from './pages/ModulePreviewPage';
+import { StatsHub } from './pages/StatsHub';
 
 // Organizer Pages
 import { Dashboard as OrganizerDashboard } from './pages/organizer/Dashboard';
@@ -112,16 +113,9 @@ function AppContent() {
             />
           }
         />
-        <Route
-          path="/stats-preview"
-          element={
-            <ModulePreviewPage
-              title="Player & Team Statistics"
-              moduleName="Golden Boot Leaderboards & Career Cards"
-              phaseText="Phase 4"
-            />
-          }
-        />
+        <Route path="/stats" element={<StatsHub />} />
+        <Route path="/stats-preview" element={<StatsHub />} />
+
 
         {/* Protected User & Interactive Features */}
         <Route
