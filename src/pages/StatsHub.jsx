@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { BarChart3, User, Shield, Search, Sparkles, Trophy } from 'lucide-react';
 import { MyStatsView } from '../components/stats/MyStatsView';
 import { PlayerSearchView } from '../components/stats/PlayerSearchView';
@@ -7,16 +7,17 @@ import { TeamStatsView } from '../components/stats/TeamStatsView';
 import { useAuth } from '../context/AuthContext';
 
 export const StatsHub = () => {
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   
   const tabParam = searchParams.get('tab');
   const idParam = searchParams.get('id');
 
-  // Default tab: if user has tabParam, use it; otherwise default to 'my-stats' (or 'search' if guest)
+  // Default tab: if user has tabParam, use it; otherwise resolve based on route pathname or auth state
   const resolveInitialTab = () => {
-    if (tabParam === 'team') return 'team';
-    if (tabParam === 'search' || tabParam === 'players') return 'search';
+    if (tabParam === 'team' || location.pathname === '/teams' || location.pathname === '/teams-preview') return 'team';
+    if (tabParam === 'search' || tabParam === 'players' || location.pathname === '/players' || location.pathname === '/players-preview') return 'search';
     if (tabParam === 'my-stats' || tabParam === 'player') return 'my-stats';
     return user ? 'my-stats' : 'search';
   };
@@ -28,8 +29,14 @@ export const StatsHub = () => {
       if (tabParam === 'team') setActiveTab('team');
       else if (tabParam === 'search' || tabParam === 'players') setActiveTab('search');
       else if (tabParam === 'my-stats' || tabParam === 'player') setActiveTab('my-stats');
+    } else if (location.pathname === '/teams' || location.pathname === '/teams-preview') {
+      setActiveTab('team');
+    } else if (location.pathname === '/players' || location.pathname === '/players-preview') {
+      setActiveTab('search');
+    } else if (location.pathname === '/stats' || location.pathname === '/stats-preview') {
+      setActiveTab(user ? 'my-stats' : 'search');
     }
-  }, [tabParam]);
+  }, [location.pathname, tabParam, user]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);

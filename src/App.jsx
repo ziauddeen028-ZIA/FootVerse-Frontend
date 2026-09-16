@@ -12,6 +12,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AuthLoadingScreen } from './components/auth/AuthLoadingScreen';
 
 // Public Pages
+import { HomePage } from './pages/HomePage';
 import { DashboardShell } from './pages/DashboardShell';
 import { ProfilePage } from './pages/ProfilePage';
 import { LoginPage } from './pages/auth/LoginPage';
@@ -63,8 +64,8 @@ function AppContent() {
       ──────────────────────────────────────────────────────────────────── */}
       <Route element={<PublicLayout />}>
         {/* Public Ecosystem Routes (Guests & Users can browse freely) */}
-        <Route path="/" element={<DashboardShell />} />
-        <Route path="/dashboard" element={<DashboardShell />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/dashboard" element={<HomePage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -72,47 +73,15 @@ function AppContent() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-        {/* Public Ecosystem Previews */}
-        <Route
-          path="/tournaments-preview"
-          element={
-            <ModulePreviewPage
-              title="Tournaments & Cups"
-              moduleName="Full Tournament Hub, Brackets & Registration"
-              phaseText="Phase 3"
-            />
-          }
-        />
-        <Route
-          path="/matches-preview"
-          element={
-            <ModulePreviewPage
-              title="Live Match Center"
-              moduleName="Real-time Scorecards & Timeline Events"
-              phaseText="Phase 4"
-            />
-          }
-        />
-        <Route
-          path="/teams-preview"
-          element={
-            <ModulePreviewPage
-              title="Teams Directory"
-              moduleName="Roster Management & Club Profiles"
-              phaseText="Phase 3"
-            />
-          }
-        />
-        <Route
-          path="/players-preview"
-          element={
-            <ModulePreviewPage
-              title="Player Scouting Hub"
-              moduleName="Player Cards & Transfer Market"
-              phaseText="Phase 4"
-            />
-          }
-        />
+        {/* Public Ecosystem Pages & Functional Routes */}
+        <Route path="/tournaments" element={<HomePage />} />
+        <Route path="/tournaments-preview" element={<HomePage />} />
+        <Route path="/matches" element={<HomePage />} />
+        <Route path="/matches-preview" element={<HomePage />} />
+        <Route path="/teams" element={<StatsHub />} />
+        <Route path="/teams-preview" element={<StatsHub />} />
+        <Route path="/players" element={<StatsHub />} />
+        <Route path="/players-preview" element={<StatsHub />} />
         <Route path="/stats" element={<StatsHub />} />
         <Route path="/stats-preview" element={<StatsHub />} />
 
@@ -127,12 +96,36 @@ function AppContent() {
           }
         />
         <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <ModulePreviewPage
+                title="Notifications Center"
+                moduleName="Alerts, Team Invites & Match Reminders"
+                phaseText="Phase 3"
+              />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/notifications-preview"
           element={
             <ProtectedRoute>
               <ModulePreviewPage
                 title="Notifications Center"
                 moduleName="Alerts, Team Invites & Match Reminders"
+                phaseText="Phase 3"
+              />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <ModulePreviewPage
+                title="Platform Settings"
+                moduleName="Account Preferences & Security"
                 phaseText="Phase 3"
               />
             </ProtectedRoute>
@@ -212,7 +205,7 @@ function AppContent() {
         />
 
         {/* Fallback */}
-        <Route path="*" element={<DashboardShell />} />
+        <Route path="*" element={<HomePage />} />
       </Route>
     </Routes>
   );

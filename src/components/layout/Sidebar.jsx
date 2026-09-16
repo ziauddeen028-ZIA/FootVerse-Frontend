@@ -26,20 +26,62 @@ export const Sidebar = () => {
   };
 
   const navItems = [
-    { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { label: 'Tournaments', path: '/tournaments-preview', icon: Trophy },
-    { label: 'Matches', path: '/matches-preview', icon: Swords },
-    { label: 'Teams', path: '/teams-preview', icon: Users },
-    { label: 'Players', path: '/players-preview', icon: UserCheck },
-    { label: 'Statistics', path: '/stats', icon: BarChart3 },
+    { 
+      label: 'Dashboard', 
+      path: '/', 
+      icon: LayoutDashboard,
+      match: (pathname) => pathname === '/' || pathname === '/dashboard'
+    },
+    { 
+      label: 'Tournaments', 
+      path: '/tournaments', 
+      icon: Trophy,
+      match: (pathname) => pathname.startsWith('/tournaments')
+    },
+    { 
+      label: 'Matches', 
+      path: '/matches', 
+      icon: Swords,
+      match: (pathname, search) => (pathname === '/matches' || pathname.startsWith('/matches/')) && !search.includes('live=true')
+    },
+    { 
+      label: 'Teams', 
+      path: '/teams', 
+      icon: Users,
+      match: (pathname, search) => pathname.startsWith('/teams') || (pathname.startsWith('/stats') && search.includes('tab=team'))
+    },
+    { 
+      label: 'Players', 
+      path: '/players', 
+      icon: UserCheck,
+      match: (pathname, search) => pathname.startsWith('/players') || (pathname.startsWith('/stats') && (search.includes('tab=search') || search.includes('tab=players') || search.includes('tab=player')))
+    },
+    { 
+      label: 'Statistics', 
+      path: '/stats', 
+      icon: BarChart3,
+      match: (pathname, search) => (pathname === '/stats' || pathname.startsWith('/stats/')) && !search.includes('tab=team') && !search.includes('tab=search') && !search.includes('tab=players') && !search.includes('tab=player')
+    },
     { 
       label: 'Live Matches', 
-      path: '/matches-preview', 
+      path: '/matches?live=true', 
       icon: Radio, 
-      isLive: true 
+      isLive: true,
+      match: (pathname, search) => (pathname.startsWith('/matches') && search.includes('live=true')) || pathname === '/live'
     },
-    { label: 'Notifications', path: '/notifications-preview', icon: Bell, badge: '3' },
-    { label: 'Settings', path: '/settings-preview', icon: Settings },
+    { 
+      label: 'Notifications', 
+      path: '/notifications', 
+      icon: Bell, 
+      badge: '3',
+      match: (pathname) => pathname.startsWith('/notifications')
+    },
+    { 
+      label: 'Settings', 
+      path: '/settings', 
+      icon: Settings,
+      match: (pathname) => pathname.startsWith('/settings')
+    },
   ];
 
   return (
@@ -72,26 +114,28 @@ export const Sidebar = () => {
 
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.path;
+          const isActive = item.match 
+            ? item.match(location.pathname, location.search) 
+            : location.pathname === item.path;
 
           return (
             <NavLink
-              key={item.label + item.path}
+              key={item.label}
               to={item.path}
-              className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium transition-all group ${
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium transition-all group select-none cursor-pointer ${
                 isActive
                   ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 pointer-events-none">
                 <Icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${
                   isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
                 }`} />
                 <span>{item.label}</span>
               </div>
 
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-1.5 pointer-events-none">
                 {item.isLive && (
                   <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
