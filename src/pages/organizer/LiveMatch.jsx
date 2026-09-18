@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Play,
@@ -95,7 +95,7 @@ const StatusBadge = ({ status }) => {
 
 // ─── Team Badge ───────────────────────────────────────────────────────────────
 
-const TeamBadge = ({ team, side }) => {
+const TeamBadge = ({ team, side, isPublicView }) => {
   const colors =
     side === 'home'
       ? 'bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400'
@@ -103,7 +103,7 @@ const TeamBadge = ({ team, side }) => {
 
   const isTBD = !team || (!team.name && !team.shortName);
 
-  return (
+  const content = (
     <div className="flex flex-col items-center gap-3">
       <div
         className={`w-20 h-20 rounded-2xl border-2 ${colors} flex items-center justify-center font-black text-lg overflow-hidden ${
@@ -119,12 +119,22 @@ const TeamBadge = ({ team, side }) => {
         )}
       </div>
       <span className={`text-base font-bold text-center leading-tight max-w-[120px] ${
-        isTBD ? 'text-slate-400 dark:text-slate-500 italic' : 'text-slate-900 dark:text-white'
+        isTBD ? 'text-slate-400 dark:text-slate-500 italic' : 'text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition'
       }`}>
         {team?.name || 'TBD'}
       </span>
     </div>
   );
+
+  if (isPublicView && team?.id) {
+    return (
+      <Link to={`/teams?tab=team&id=${team.id}`} className="hover:opacity-85 transition group flex flex-col items-center">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 };
 
 // ─── Score Display ────────────────────────────────────────────────────────────
@@ -540,10 +550,13 @@ const TieResolutionModal = ({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export const LiveMatch = () => {
+export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
   const { matchId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+
+  const isPublic = Boolean(propIsPublic || location.pathname.startsWith('/matches/'));
 
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -637,6 +650,19 @@ export const LiveMatch = () => {
   const showToast = (message, type = 'success') => setToast({ message, type });
 
   const handleBackToMatches = () => {
+    if (isPublic) {
+      if (window.history.state?.idx > 0) {
+        navigate(-1);
+      } else {
+        const targetTournament = match?.tournamentId || match?.tournament?.id;
+        if (targetTournament) {
+          navigate(`/tournaments/${targetTournament}`);
+        } else {
+          navigate('/matches');
+        }
+      }
+      return;
+    }
     const targetTournament = searchParams.get('tournament') || match?.tournamentId || match?.tournament?.id;
     if (targetTournament) {
       navigate(`/organizer/matches?tournament=${targetTournament}`);
@@ -1194,7 +1220,7 @@ export const LiveMatch = () => {
 
   const sortedEvents = [...events].sort((a, b) => a.minute - b.minute);
 
-  const isReadOnly = searchParams.get('readonly') === 'true';
+  const isReadOnly = isPublic || searchParams.get('readonly') === 'true';
 
   // Match Summary Calculations
   const goalEvents = events.filter((e) => e.eventType === 'goal').sort((a, b) => a.minute - b.minute);
@@ -1287,43 +1313,49 @@ export const LiveMatch = () => {
       />
 
       {/* Tied Knockout Match Resolution Modal */}
-      <TieResolutionModal
-        isOpen={showTieModal}
-        onClose={() => setShowTieModal(false)}
-        match={match}
-        homeScore={homeScore}
-        awayScore={awayScore}
-        onResolveTie={handleResolveTie}
-        onStartExtraTime={handleStartExtraTime}
-        isLoading={isResolvingTie}
-      />
+      {!isReadOnly && (
+        <TieResolutionModal
+          isOpen={showTieModal}
+          onClose={() => setShowTieModal(false)}
+          match={match}
+          homeScore={homeScore}
+          awayScore={awayScore}
+          onResolveTie={handleResolveTie}
+          onStartExtraTime={handleStartExtraTime}
+          isLoading={isResolvingTie}
+        />
+      )}
 
       {/* End Match Confirm */}
-      <ConfirmDialog
-        isOpen={showEndConfirm}
-        title="End Match?"
-        message={`This will set the final score as ${homeScore} – ${awayScore} and mark the match as Full Time. This action cannot be undone.`}
-        confirmLabel="End Match"
-        isDestructive={true}
-        isLoading={isSaving}
-        onConfirm={handleEndMatch}
-        onCancel={() => setShowEndConfirm(false)}
-      />
+      {!isReadOnly && (
+        <ConfirmDialog
+          isOpen={showEndConfirm}
+          title="End Match?"
+          message={`This will set the final score as ${homeScore} – ${awayScore} and mark the match as Full Time. This action cannot be undone.`}
+          confirmLabel="End Match"
+          isDestructive={true}
+          isLoading={isSaving}
+          onConfirm={handleEndMatch}
+          onCancel={() => setShowEndConfirm(false)}
+        />
+      )}
 
       {/* Delete Event Confirm */}
-      <ConfirmDialog
-        isOpen={!!eventToDelete}
-        title="Delete Match Event?"
-        message={`Are you sure you want to delete this ${eventToDelete?.eventType?.replace('_', ' ')} event at ${eventToDelete?.minute}'? ${eventToDelete?.eventType === 'goal'
-            ? 'Deleting a goal event will automatically decrement the team score.'
-            : ''
-          }`}
-        confirmLabel="Delete Event"
-        isDestructive={true}
-        isLoading={isDeletingEvent}
-        onConfirm={handleDeleteEventConfirm}
-        onCancel={() => setEventToDelete(null)}
-      />
+      {!isReadOnly && (
+        <ConfirmDialog
+          isOpen={!!eventToDelete}
+          title="Delete Match Event?"
+          message={`Are you sure you want to delete this ${eventToDelete?.eventType?.replace('_', ' ')} event at ${eventToDelete?.minute}'? ${eventToDelete?.eventType === 'goal'
+              ? 'Deleting a goal event will automatically decrement the team score.'
+              : ''
+            }`}
+          confirmLabel="Delete Event"
+          isDestructive={true}
+          isLoading={isDeletingEvent}
+          onConfirm={handleDeleteEventConfirm}
+          onCancel={() => setEventToDelete(null)}
+        />
+      )}
 
       {/* Back Navigation */}
       <button
@@ -1331,18 +1363,21 @@ export const LiveMatch = () => {
         className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Matches
+        {isPublic ? 'Back' : 'Back to Matches'}
       </button>
 
       {/* Meta: Tournament + Venue */}
       <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
         {match.tournament?.name && (
-          <div className="flex items-center gap-1.5">
+          <Link
+            to={isPublic ? `/tournaments/${match.tournamentId || match.tournament.id}` : `/organizer/matches?tournament=${match.tournamentId || match.tournament.id}`}
+            className="flex items-center gap-1.5 hover:underline"
+          >
             <Trophy className="w-4 h-4 text-blue-500" />
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               {match.tournament.name}
             </span>
-          </div>
+          </Link>
         )}
         {match.venue && (
           <div className="flex items-center gap-1.5">
@@ -1384,7 +1419,7 @@ export const LiveMatch = () => {
           <div className="grid grid-cols-7 items-center gap-4">
             {/* Home Team */}
             <div className="col-span-3 flex flex-col items-center gap-4">
-              <TeamBadge team={match.homeTeam} side="home" />
+              <TeamBadge team={match.homeTeam} side="home" isPublicView={isPublic} />
               <ScoreDisplay
                 score={homeScore}
                 teamId={match.homeTeamId}
@@ -1417,7 +1452,7 @@ export const LiveMatch = () => {
 
             {/* Away Team */}
             <div className="col-span-3 flex flex-col items-center gap-4">
-              <TeamBadge team={match.awayTeam} side="away" />
+              <TeamBadge team={match.awayTeam} side="away" isPublicView={isPublic} />
               <ScoreDisplay
                 score={awayScore}
                 teamId={match.awayTeamId}
@@ -1519,7 +1554,7 @@ export const LiveMatch = () => {
               className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-sm rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Matches
+              {isPublic ? 'Back' : 'Back to Matches'}
             </button>
           </div>
         )}
@@ -1665,11 +1700,24 @@ export const LiveMatch = () => {
                       const isHome = g.teamId === match.homeTeamId;
                       const teamName = g.team?.shortName || g.team?.name || (isHome ? match.homeTeam?.name : match.awayTeam?.name) || 'Team';
                       const pName = g.player?.fullName || 'Player';
+                      const pId = g.playerId || g.player?.id;
                       return (
                         <div key={g.id} className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                           <span className="font-mono text-slate-500">{g.minute}'</span>
-                          <span>{pName}</span>
-                          <span className="text-slate-400 font-normal">({teamName})</span>
+                          {pId && isPublic ? (
+                            <Link to={`/players?id=${pId}`} className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                              {pName}
+                            </Link>
+                          ) : (
+                            <span>{pName}</span>
+                          )}
+                          {g.teamId && isPublic ? (
+                            <Link to={`/teams?tab=team&id=${g.teamId}`} className="text-slate-400 font-normal hover:underline">
+                              ({teamName})
+                            </Link>
+                          ) : (
+                            <span className="text-slate-400 font-normal">({teamName})</span>
+                          )}
                         </div>
                       );
                     })}
@@ -1690,12 +1738,25 @@ export const LiveMatch = () => {
                       const isHome = c.teamId === match.homeTeamId;
                       const teamName = c.team?.shortName || c.team?.name || (isHome ? match.homeTeam?.name : match.awayTeam?.name) || 'Team';
                       const pName = c.player?.fullName || 'Player';
+                      const pId = c.playerId || c.player?.id;
                       return (
                         <div key={c.id} className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                           <span className="w-2.5 h-3.5 bg-amber-400 rounded-[2px] border border-amber-500 shadow-sm inline-block" />
                           <span className="font-mono text-slate-500">{c.minute}'</span>
-                          <span>{pName}</span>
-                          <span className="text-slate-400 font-normal">({teamName})</span>
+                          {pId && isPublic ? (
+                            <Link to={`/players?id=${pId}`} className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                              {pName}
+                            </Link>
+                          ) : (
+                            <span>{pName}</span>
+                          )}
+                          {c.teamId && isPublic ? (
+                            <Link to={`/teams?tab=team&id=${c.teamId}`} className="text-slate-400 font-normal hover:underline">
+                              ({teamName})
+                            </Link>
+                          ) : (
+                            <span className="text-slate-400 font-normal">({teamName})</span>
+                          )}
                         </div>
                       );
                     })}
@@ -1703,12 +1764,25 @@ export const LiveMatch = () => {
                       const isHome = c.teamId === match.homeTeamId;
                       const teamName = c.team?.shortName || c.team?.name || (isHome ? match.homeTeam?.name : match.awayTeam?.name) || 'Team';
                       const pName = c.player?.fullName || 'Player';
+                      const pId = c.playerId || c.player?.id;
                       return (
                         <div key={c.id} className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                           <span className="w-2.5 h-3.5 bg-red-600 rounded-[2px] border border-red-700 shadow-sm inline-block" />
                           <span className="font-mono text-slate-500">{c.minute}'</span>
-                          <span>{pName}</span>
-                          <span className="text-slate-400 font-normal">({teamName})</span>
+                          {pId && isPublic ? (
+                            <Link to={`/players?id=${pId}`} className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                              {pName}
+                            </Link>
+                          ) : (
+                            <span>{pName}</span>
+                          )}
+                          {c.teamId && isPublic ? (
+                            <Link to={`/teams?tab=team&id=${c.teamId}`} className="text-slate-400 font-normal hover:underline">
+                              ({teamName})
+                            </Link>
+                          ) : (
+                            <span className="text-slate-400 font-normal">({teamName})</span>
+                          )}
                         </div>
                       );
                     })}
@@ -1732,7 +1806,13 @@ export const LiveMatch = () => {
                         <div key={s.id} className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                           <span className="font-mono text-slate-500">{s.minute}'</span>
                           <span className="truncate">{s.details || 'Substitution'}</span>
-                          <span className="text-slate-400 font-normal shrink-0">({teamName})</span>
+                          {s.teamId && isPublic ? (
+                            <Link to={`/teams?tab=team&id=${s.teamId}`} className="text-slate-400 font-normal shrink-0 hover:underline">
+                              ({teamName})
+                            </Link>
+                          ) : (
+                            <span className="text-slate-400 font-normal shrink-0">({teamName})</span>
+                          )}
                         </div>
                       );
                     })}
@@ -2007,20 +2087,17 @@ export const LiveMatch = () => {
                             {evt.details}
                           </span>
                           <span className="text-slate-400 font-normal">•</span>
-                          <span
-                            className={`text-xs font-semibold px-2 py-0.5 rounded-md ${isHome
-                                ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
-                              }`}
-                          >
-                            {teamName} ({isHome ? 'Home' : 'Away'})
-                          </span>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
-                            <span>{playerName}</span>
-                            <span className="text-slate-400 font-normal">•</span>
+                          {evt.teamId && isPublic ? (
+                            <Link
+                              to={`/teams?tab=team&id=${evt.teamId}`}
+                              className={`text-xs font-semibold px-2 py-0.5 rounded-md hover:underline ${isHome
+                                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                  : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                }`}
+                            >
+                              {teamName} ({isHome ? 'Home' : 'Away'})
+                            </Link>
+                          ) : (
                             <span
                               className={`text-xs font-semibold px-2 py-0.5 rounded-md ${isHome
                                   ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
@@ -2029,6 +2106,39 @@ export const LiveMatch = () => {
                             >
                               {teamName} ({isHome ? 'Home' : 'Away'})
                             </span>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                            {evt.playerId && isPublic ? (
+                              <Link to={`/players?id=${evt.playerId}`} className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                                {playerName}
+                              </Link>
+                            ) : (
+                              <span>{playerName}</span>
+                            )}
+                            <span className="text-slate-400 font-normal">•</span>
+                            {evt.teamId && isPublic ? (
+                              <Link
+                                to={`/teams?tab=team&id=${evt.teamId}`}
+                                className={`text-xs font-semibold px-2 py-0.5 rounded-md hover:underline ${isHome
+                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                    : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                  }`}
+                              >
+                                {teamName} ({isHome ? 'Home' : 'Away'})
+                              </Link>
+                            ) : (
+                              <span
+                                className={`text-xs font-semibold px-2 py-0.5 rounded-md ${isHome
+                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                    : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                  }`}
+                              >
+                                {teamName} ({isHome ? 'Home' : 'Away'})
+                              </span>
+                            )}
                           </div>
 
                           {/* Details if available */}

@@ -118,8 +118,9 @@ export const StatsHub = () => {
       )}
 
       {activeTab === 'team' && (
-        <TeamStatsView initialTeamId={tabParam === 'team' ? idParam : null} />
+        <TeamStatsView initialTeamId={idParam || null} />
       )}
+
     </div>
   );
 };

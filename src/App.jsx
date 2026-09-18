@@ -23,6 +23,8 @@ import { UnauthorizedPage } from './pages/auth/UnauthorizedPage';
 import { ModulePreviewPage } from './pages/ModulePreviewPage';
 import { StatsHub } from './pages/StatsHub';
 import { TournamentHub } from './pages/TournamentHub';
+import { PublicMatchDetail } from './pages/PublicMatchDetail';
+import { PublicTeamDetail } from './pages/PublicTeamDetail';
 
 // Organizer Pages
 import { Dashboard as OrganizerDashboard } from './pages/organizer/Dashboard';
@@ -80,8 +82,10 @@ function AppContent() {
         <Route path="/tournaments/:tournamentId" element={<TournamentHub />} />
         <Route path="/tournaments-preview" element={<HomePage />} />
         <Route path="/matches" element={<HomePage />} />
+        <Route path="/matches/:matchId" element={<PublicMatchDetail />} />
         <Route path="/matches-preview" element={<HomePage />} />
         <Route path="/teams" element={<StatsHub />} />
+        <Route path="/teams/:teamId" element={<PublicTeamDetail />} />
         <Route path="/teams-preview" element={<StatsHub />} />
         <Route path="/players" element={<StatsHub />} />
         <Route path="/players-preview" element={<StatsHub />} />

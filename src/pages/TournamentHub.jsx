@@ -25,6 +25,8 @@ import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { matchService } from '../services/matchService';
 import { KnockoutBracket } from '../components/organizer/KnockoutBracket';
+import { LeagueStandings } from '../components/organizer/LeagueStandings';
+import { GroupStageStandings } from '../components/organizer/GroupStageStandings';
 
 export const TournamentHub = () => {
   const { tournamentId } = useParams();
@@ -35,6 +37,11 @@ export const TournamentHub = () => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Standings state (league / group_stage / hybrid)
+  const [standings, setStandings] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [standingsLoading, setStandingsLoading] = useState(false);
 
   // Selected Team & Squad state
   const [selectedTeam, setSelectedTeam] = useState(null);
@@ -236,6 +243,30 @@ export const TournamentHub = () => {
             setTournament(foundTournament);
             setTeams(fetchedTeams);
             setMatches(fetchedMatches);
+
+            // 6. Fetch standings for league / group / hybrid formats
+            const fmt = foundTournament.format?.toLowerCase();
+            const needsStandings = ['league', 'round_robin', 'group_stage', 'group_knockout', 'hybrid'].includes(fmt);
+            if (needsStandings) {
+              setStandingsLoading(true);
+              try {
+                const standingsRes = await tournamentService.getStandings(foundTournament.id);
+                if (isMounted) {
+                  // League format returns { standings: [...] }
+                  if (standingsRes?.standings) {
+                    setStandings(standingsRes.standings);
+                  }
+                  // Group stage returns { groups: [...] }
+                  if (standingsRes?.groups) {
+                    setGroups(standingsRes.groups);
+                  }
+                }
+              } catch (err) {
+                console.warn('Could not fetch standings:', err);
+              } finally {
+                if (isMounted) setStandingsLoading(false);
+              }
+            }
           } else {
             setError('Tournament not found or has been removed.');
           }
@@ -523,14 +554,110 @@ export const TournamentHub = () => {
 
       </section>
 
-      {/* ─── KNOCKOUT BRACKET SECTION (READ-ONLY) ─────────────────────────── */}
-      <KnockoutBracket
-        matches={matches}
-        tournaments={tournament ? [tournament] : []}
-        selectedTournamentId={tournament?.id}
-        readOnly={true}
-        onMatchClick={(match) => navigate('/matches')}
-      />
+      {/* ─── COMPETITION VIEW — FORMAT-AWARE ──────────────────────────────── */}
+      {(() => {
+        const fmt = tournament.format?.toLowerCase();
+
+        // ── KNOCKOUT ────────────────────────────────────────────────────────
+        if (fmt === 'knockout') {
+          return (
+            <KnockoutBracket
+              matches={matches}
+              tournaments={tournament ? [tournament] : []}
+              selectedTournamentId={tournament?.id}
+              readOnly={true}
+              onMatchClick={(match) => navigate(`/matches/${match.id}`)}
+            />
+          );
+        }
+
+        // ── LEAGUE / ROUND-ROBIN ─────────────────────────────────────────────
+        if (fmt === 'league' || fmt === 'round_robin') {
+          return (
+            <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-4">
+              <div className="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <Trophy className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <h2 className="text-xl font-black font-heading text-slate-900 dark:text-white">
+                  League Standings
+                </h2>
+              </div>
+              <LeagueStandings
+                standings={standings}
+                tournamentName={tournament.name}
+                isLoading={standingsLoading}
+              />
+            </section>
+          );
+        }
+
+        // ── GROUP STAGE ──────────────────────────────────────────────────────
+        if (fmt === 'group_stage') {
+          return (
+            <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-4">
+              <div className="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <h2 className="text-xl font-black font-heading text-slate-900 dark:text-white">
+                  Group Standings
+                </h2>
+              </div>
+              <GroupStageStandings
+                groups={groups}
+                isLoading={standingsLoading}
+                groupStageComplete={false}
+                hasKnockoutBracket={false}
+              />
+            </section>
+          );
+        }
+
+        // ── HYBRID (GROUP + KNOCKOUT) ─────────────────────────────────────────
+        if (fmt === 'hybrid' || fmt === 'group_knockout') {
+          const hasKnockoutMatches = matches.some(
+            m => m.round?.toLowerCase().includes('knockout') ||
+                 m.round?.toLowerCase().includes('semi') ||
+                 m.round?.toLowerCase().includes('final') ||
+                 m.stage?.toLowerCase() === 'knockout'
+          );
+          return (
+            <>
+              <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-4">
+                <div className="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <h2 className="text-xl font-black font-heading text-slate-900 dark:text-white">
+                    Group Stage Standings
+                  </h2>
+                </div>
+                <GroupStageStandings
+                  groups={groups}
+                  isLoading={standingsLoading}
+                  groupStageComplete={hasKnockoutMatches}
+                  hasKnockoutBracket={hasKnockoutMatches}
+                />
+              </section>
+              {hasKnockoutMatches && (
+                <KnockoutBracket
+                  matches={matches}
+                  tournaments={tournament ? [tournament] : []}
+                  selectedTournamentId={tournament?.id}
+                  readOnly={true}
+                  onMatchClick={(match) => navigate(`/matches/${match.id}`)}
+                />
+              )}
+            </>
+          );
+        }
+
+        // ── FALLBACK — show bracket for any other format ──────────────────────
+        return (
+          <KnockoutBracket
+            matches={matches}
+            tournaments={tournament ? [tournament] : []}
+            selectedTournamentId={tournament?.id}
+            readOnly={true}
+            onMatchClick={(match) => navigate(`/matches/${match.id}`)}
+          />
+        );
+      })()}
 
       {/* ─── PARTICIPATING TEAMS & PLAYERS SECTION ───────────────────────── */}
       <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-6">
@@ -616,18 +743,28 @@ export const TournamentHub = () => {
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                      {isSelected ? 'Roster active below' : 'Click to view squad'}
-                    </span>
-                    <span className={`inline-flex items-center space-x-1 font-bold text-[11px] px-2 py-0.5 rounded-lg transition ${
-                      isSelected
-                        ? 'bg-blue-600 text-white'
-                        : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 group-hover:bg-blue-600 group-hover:text-white'
-                    }`}>
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs gap-2">
+                    <span
+                      onClick={(e) => { e.stopPropagation(); handleSelectTeam(team); }}
+                      className={`inline-flex items-center space-x-1 font-bold text-[11px] px-2 py-0.5 rounded-lg transition cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-600 text-white'
+                          : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 group-hover:bg-blue-600 group-hover:text-white'
+                      }`}
+                    >
                       {isSelected ? <Check className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                       <span>{isSelected ? 'Viewing Squad' : 'View Squad'}</span>
                     </span>
+                    {team.id && !team.id.startsWith('demo') && (
+                      <Link
+                        to={`/teams/${team.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center space-x-1 font-semibold text-[11px] px-2 py-0.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
+                      >
+                        <span>Team Profile</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               );

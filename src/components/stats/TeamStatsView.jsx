@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Shield, 
   Search, 
@@ -18,6 +19,7 @@ import { useAuth } from '../../context/AuthContext';
 
 export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTeamMessage = null }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [teams, setTeams] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTeamId, setSelectedTeamId] = useState(initialTeamId);
@@ -100,7 +102,10 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
               return (
                 <button
                   key={t.id}
-                  onClick={() => setSelectedTeamId(t.id)}
+                  onClick={() => {
+                    setSelectedTeamId(t.id);
+                    navigate(`/teams/${t.id}`);
+                  }}
                   className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                     isSelected
                       ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-[#111726]'

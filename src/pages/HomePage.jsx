@@ -552,7 +552,7 @@ export const HomePage = () => {
                 return (
                   <Link
                     key={match.id}
-                    to="/matches"
+                    to={`/matches/${match.id}`}
                     className={`p-5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer group saas-card-hover ${
                       isLive
                         ? 'bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/30 shadow-md ring-1 ring-emerald-500/20'

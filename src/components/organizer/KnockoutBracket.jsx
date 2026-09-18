@@ -378,7 +378,7 @@ export const KnockoutBracket = ({
       if (onMatchClick) {
         onMatchClick(match);
       } else {
-        navigate('/matches');
+        navigate(`/matches/${matchId}`);
       }
       return;
     }

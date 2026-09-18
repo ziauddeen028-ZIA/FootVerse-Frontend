@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { Plus, Search, Filter, Edit2, Trash2, MapPin, Building, Trophy, Shield, AlertCircle } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -276,9 +276,10 @@ export const Teams = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredTeams.map(team => (
-            <div
+            <Link
               key={team.id}
-              className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col"
+              to={`/teams/${team.id}`}
+              className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-md hover:border-blue-400/60 dark:hover:border-blue-500/40 transition-all group flex flex-col"
             >
               <div className="p-6 flex-1">
                 {/* Header Row: Tournament Badge & Actions */}
@@ -288,7 +289,7 @@ export const Teams = () => {
                     {team.tournament?.name || 'Unassigned'}
                   </span>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.preventDefault()}>
                     <button
                       onClick={() => handleOpenEdit(team)}
                       className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
@@ -368,7 +369,7 @@ export const Teams = () => {
                   />
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
