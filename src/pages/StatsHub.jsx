@@ -17,8 +17,8 @@ export const StatsHub = () => {
   // Default tab: if user has tabParam, use it; otherwise resolve based on route pathname or auth state
   const resolveInitialTab = () => {
     if (tabParam === 'team' || location.pathname === '/teams' || location.pathname === '/teams-preview') return 'team';
-    if (tabParam === 'search' || tabParam === 'players' || location.pathname === '/players' || location.pathname === '/players-preview') return 'search';
-    if (tabParam === 'my-stats' || tabParam === 'player') return 'my-stats';
+    if (tabParam === 'search' || tabParam === 'players' || tabParam === 'player' || idParam || location.pathname === '/players' || location.pathname === '/players-preview') return 'search';
+    if (tabParam === 'my-stats') return 'my-stats';
     return user ? 'my-stats' : 'search';
   };
 
@@ -27,8 +27,10 @@ export const StatsHub = () => {
   useEffect(() => {
     if (tabParam) {
       if (tabParam === 'team') setActiveTab('team');
-      else if (tabParam === 'search' || tabParam === 'players') setActiveTab('search');
-      else if (tabParam === 'my-stats' || tabParam === 'player') setActiveTab('my-stats');
+      else if (tabParam === 'search' || tabParam === 'players' || tabParam === 'player') setActiveTab('search');
+      else if (tabParam === 'my-stats') setActiveTab('my-stats');
+    } else if (idParam) {
+      setActiveTab('search');
     } else if (location.pathname === '/teams' || location.pathname === '/teams-preview') {
       setActiveTab('team');
     } else if (location.pathname === '/players' || location.pathname === '/players-preview') {
@@ -36,7 +38,7 @@ export const StatsHub = () => {
     } else if (location.pathname === '/stats' || location.pathname === '/stats-preview') {
       setActiveTab(user ? 'my-stats' : 'search');
     }
-  }, [location.pathname, tabParam, user]);
+  }, [location.pathname, tabParam, idParam, user]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -112,7 +114,7 @@ export const StatsHub = () => {
       )}
 
       {activeTab === 'search' && (
-        <PlayerSearchView initialPlayerId={tabParam === 'player' ? idParam : null} />
+        <PlayerSearchView initialPlayerId={idParam || null} />
       )}
 
       {activeTab === 'team' && (

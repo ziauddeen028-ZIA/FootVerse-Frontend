@@ -103,7 +103,7 @@ const TeamRow = ({ team, score, penalties, tieBreakMethod, isWinner, isLoser, is
 };
 
 // ─── Bracket Match Card ───────────────────────────────────────────────────────
-const BracketMatchCard = ({ match, onOpenLive, isFinal = false }) => {
+const BracketMatchCard = ({ match, onOpenLive, isFinal = false, readOnly = false, onMatchClick }) => {
   const isLive = match.status === 'live';
   const isHalftime = match.status === 'halftime';
   const isFinished = match.status === 'fulltime' || match.status === 'completed';
@@ -126,9 +126,21 @@ const BracketMatchCard = ({ match, onOpenLive, isFinal = false }) => {
   const isHomeLoser = isFinished && isAwayWinner;
   const isAwayLoser = isFinished && isHomeWinner;
 
+  const handleCardAction = () => {
+    if (readOnly) {
+      if (onMatchClick) onMatchClick(match);
+      else onOpenLive(match.id, isFinished, match);
+    } else {
+      onOpenLive(match.id, isFinished, match);
+    }
+  };
+
   return (
     <div
+      onClick={readOnly && hasBothTeams ? handleCardAction : undefined}
       className={`group relative w-[220px] sm:w-[250px] rounded-xl transition-all duration-200 border bg-slate-900/95 ${
+        readOnly && hasBothTeams ? 'cursor-pointer hover:border-emerald-500/50 hover:scale-[1.01]' : ''
+      } ${
         isFinal
           ? 'border-amber-500/60 bg-gradient-to-b from-amber-500/10 via-slate-900 to-slate-900 shadow-xl shadow-amber-500/10 ring-1 ring-amber-500/30'
           : isLive
@@ -192,18 +204,24 @@ const BracketMatchCard = ({ match, onOpenLive, isFinal = false }) => {
 
         {hasBothTeams && (
           <button
-            onClick={() => onOpenLive(match.id, isFinished)}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCardAction();
+            }}
             className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded transition-all ${
-              isLive
+              readOnly
+                ? 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
+                : isLive
                 ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
                 : isFinished
                 ? 'text-blue-400 hover:bg-blue-500/10'
                 : 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
             }`}
-            title={isFinished ? 'View Match Summary' : isLive ? 'Manage Live Match' : 'Start Match'}
+            title={readOnly ? 'View Public Match Details' : isFinished ? 'View Match Summary' : isLive ? 'Manage Live Match' : 'Start Match'}
           >
             {isLive ? <Radio className="w-3 h-3 animate-pulse" /> : <Zap className="w-3 h-3" />}
-            <span>{isFinished ? 'View' : isLive ? 'Live' : 'Start'}</span>
+            <span>{readOnly ? 'View Match' : isFinished ? 'View' : isLive ? 'Live' : 'Start'}</span>
           </button>
         )}
       </div>
@@ -270,6 +288,8 @@ export const KnockoutBracket = ({
   tournaments = [],
   selectedTournamentId,
   onSelectTournament,
+  readOnly = false,
+  onMatchClick,
 }) => {
   const navigate = useNavigate();
   const [selectedRoundFilter, setSelectedRoundFilter] = useState('all');
@@ -353,7 +373,15 @@ export const KnockoutBracket = ({
     };
   }, [knockoutMatches]);
 
-  const handleOpenLive = (matchId, isFinished) => {
+  const handleOpenLive = (matchId, isFinished, match) => {
+    if (readOnly) {
+      if (onMatchClick) {
+        onMatchClick(match);
+      } else {
+        navigate('/matches');
+      }
+      return;
+    }
     const tourneyParam = selectedTournamentId && selectedTournamentId !== 'all' ? `?tournament=${selectedTournamentId}` : '';
     const readOnlyParam = isFinished ? (tourneyParam ? '&readonly=true' : '?readonly=true') : '';
     navigate(`/organizer/matches/${matchId}/live${tourneyParam}${readOnlyParam}`);
@@ -368,6 +396,7 @@ export const KnockoutBracket = ({
   }, [tournaments, selectedTournamentId]);
 
   if (knockoutMatches.length === 0) {
+    if (readOnly) return null;
     return (
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
         <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
@@ -514,6 +543,8 @@ export const KnockoutBracket = ({
                         match={m}
                         onOpenLive={handleOpenLive}
                         isFinal={isFinalRound}
+                        readOnly={readOnly}
+                        onMatchClick={onMatchClick}
                       />
                     ))}
                   </div>

@@ -728,7 +728,7 @@ export const HomePage = () => {
             return (
               <Link
                 key={t.id}
-                to="/tournaments"
+                to={`/tournaments/${t.id}`}
                 className="saas-card saas-card-hover p-6 rounded-3xl border flex flex-col justify-between space-y-4 cursor-pointer group"
               >
                 <div>

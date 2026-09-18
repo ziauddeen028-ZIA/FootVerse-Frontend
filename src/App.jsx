@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 // Layouts
 import { PublicLayout } from './components/layout/PublicLayout';
 import { OrganizerLayout } from './components/layout/OrganizerLayout';
+import { ScrollToTop } from './components/common/ScrollToTop';
 
 // Auth guards
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -21,6 +22,7 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { UnauthorizedPage } from './pages/auth/UnauthorizedPage';
 import { ModulePreviewPage } from './pages/ModulePreviewPage';
 import { StatsHub } from './pages/StatsHub';
+import { TournamentHub } from './pages/TournamentHub';
 
 // Organizer Pages
 import { Dashboard as OrganizerDashboard } from './pages/organizer/Dashboard';
@@ -75,6 +77,7 @@ function AppContent() {
 
         {/* Public Ecosystem Pages & Functional Routes */}
         <Route path="/tournaments" element={<HomePage />} />
+        <Route path="/tournaments/:tournamentId" element={<TournamentHub />} />
         <Route path="/tournaments-preview" element={<HomePage />} />
         <Route path="/matches" element={<HomePage />} />
         <Route path="/matches-preview" element={<HomePage />} />
@@ -216,6 +219,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
+          <ScrollToTop />
           <AppContent />
         </Router>
       </AuthProvider>

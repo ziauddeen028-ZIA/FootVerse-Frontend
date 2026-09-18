@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Search, User, Trophy, Shield, ChevronRight, CheckCircle2,
   Activity, Flame, ArrowLeft, Globe, Lock
@@ -210,12 +210,18 @@ const PublicPlayerPanel = ({ playerId, onBack }) => {
 };
 
 // ─── Main PlayerSearchView ─────────────────────────────────────────────────────
-export const PlayerSearchView = () => {
+export const PlayerSearchView = ({ initialPlayerId = null }) => {
   const [query, setQuery] = useState("");
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState(initialPlayerId);
   const debounceRef = useRef(null);
+
+  useEffect(() => {
+    if (initialPlayerId) {
+      setSelectedPlayerId(initialPlayerId);
+    }
+  }, [initialPlayerId]);
 
   // Initial load
   useEffect(() => {
