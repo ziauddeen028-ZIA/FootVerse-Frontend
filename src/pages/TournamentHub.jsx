@@ -18,19 +18,26 @@ import {
   Award,
   X,
   Shirt,
-  Check
+  Check,
+  UserPlus,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import { tournamentService } from '../services/tournamentService';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { matchService } from '../services/matchService';
+import { tournamentJoinRequestService } from '../services/tournamentJoinRequestService';
+import { useAuth } from '../context/AuthContext';
 import { KnockoutBracket } from '../components/organizer/KnockoutBracket';
 import { LeagueStandings } from '../components/organizer/LeagueStandings';
 import { GroupStageStandings } from '../components/organizer/GroupStageStandings';
+import { Toast } from '../components/common/Toast';
 
 export const TournamentHub = () => {
   const { tournamentId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [tournament, setTournament] = useState(null);
   const [teams, setTeams] = useState([]);
@@ -48,6 +55,14 @@ export const TournamentHub = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [memberError, setMemberError] = useState(null);
+
+  // Manager Tournament Join Request state
+  const [managedTeams, setManagedTeams] = useState([]);
+  const [selectedUserTeamId, setSelectedUserTeamId] = useState('');
+  const [joinRequestStatus, setJoinRequestStatus] = useState('none');
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+  const [toast, setToast] = useState({ message: '', type: 'success' });
 
   // Ref for auto-scrolling to roster section
   const rosterRef = useRef(null);
@@ -88,31 +103,24 @@ export const TournamentHub = () => {
       name: 'All-Stars Invitational',
       format: 'group_stage',
       status: 'registration_open',
-      location: 'Central Stadium',
-      startDate: '2026-10-10',
+      location: 'Downtown Arena',
+      startDate: '2026-10-05',
       endDate: '2026-10-25',
       maxTeams: 8,
       registeredTeamsCount: 6,
       entryFee: 100,
-      description: 'Group stage round-robin leading into high-stakes knockout semi-finals and championship final.'
+      description: 'Hybrid tournament featuring group stage qualifiers followed by an intense single-elimination knockout final.'
     }
   ];
 
   const demoTeams = [
-    { id: 'dt1', name: 'Strikers FC', shortName: 'STK', city: 'Metropolis', primaryColor: '#3B82F6', tournamentId: 'demo-t1' },
-    { id: 'dt2', name: 'Titans SC', shortName: 'TTN', city: 'North District', primaryColor: '#6366F1', tournamentId: 'demo-t1' },
-    { id: 'dt3', name: 'Galacticos FC', shortName: 'GLC', city: 'Skyline City', primaryColor: '#EC4899', tournamentId: 'demo-t1' },
-    { id: 'dt4', name: 'Gunners FC', shortName: 'GUN', city: 'Metro East', primaryColor: '#EF4444', tournamentId: 'demo-t1' },
-    { id: 'dt5', name: 'Apex Predators', shortName: 'APX', city: 'South Bay', primaryColor: '#10B981', tournamentId: 'demo-t2' },
-    { id: 'dt6', name: 'Thunderbolts SC', shortName: 'THN', city: 'West Valley', primaryColor: '#F59E0B', tournamentId: 'demo-t2' }
+    { id: 'dt1', name: 'Strikers FC', shortName: 'STK', city: 'Metropolis', primaryColor: '#1E50FF', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 7, draws: 1, losses: 0, goalsFor: 22, goalsAgainst: 6, isCaptain: true },
+    { id: 'dt2', name: 'Titans FC', shortName: 'TTN', city: 'Metro East', primaryColor: '#6366F1', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 6, draws: 1, losses: 1, goalsFor: 19, goalsAgainst: 8 },
+    { id: 'dt3', name: 'Galacticos', shortName: 'GLX', city: 'Westside', primaryColor: '#EC4899', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 5, draws: 2, losses: 1, goalsFor: 17, goalsAgainst: 10 },
+    { id: 'dt4', name: 'Apex Predators', shortName: 'APX', city: 'Highland', primaryColor: '#10B981', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 4, draws: 2, losses: 2, goalsFor: 14, goalsAgainst: 12 },
+    { id: 'dt5', name: 'Thunder FC', shortName: 'THN', city: 'North Bay', primaryColor: '#F59E0B', secondaryColor: '#000000', matchesPlayed: 8, wins: 3, draws: 1, losses: 4, goalsFor: 11, goalsAgainst: 15 },
+    { id: 'dt6', name: 'Vipers SC', shortName: 'VPR', city: 'Southside', primaryColor: '#EF4444', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 2, draws: 2, losses: 4, goalsFor: 9, goalsAgainst: 14 }
   ];
-
-  const scrollToRoster = useCallback(() => {
-    // Small delay to let the roster DOM render before scrolling
-    setTimeout(() => {
-      rosterRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  }, []);
 
   const handleSelectTeam = async (team) => {
     if (selectedTeam?.id === team.id) {
@@ -124,7 +132,6 @@ export const TournamentHub = () => {
     setSelectedTeam(team);
     setLoadingMembers(true);
     setMemberError(null);
-    scrollToRoster();
 
     try {
       const res = await playerService.getByTeam(team.id);
@@ -134,38 +141,19 @@ export const TournamentHub = () => {
       setMemberError('Failed to load registered players for this team.');
     } finally {
       setLoadingMembers(false);
-      scrollToRoster();
     }
+
+    setTimeout(() => {
+      rosterRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
-  const handleCloseSquad = () => {
+  const handleDeselectTeam = () => {
     setSelectedTeam(null);
     setTeamMembers([]);
-    setMemberError(null);
   };
 
-  const getPositionBadgeStyle = (position) => {
-    switch (position?.toLowerCase()) {
-      case 'forward':
-      case 'striker':
-      case 'winger':
-        return 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
-      case 'midfielder':
-      case 'playmaker':
-      case 'central midfielder':
-        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
-      case 'defender':
-      case 'centre-back':
-      case 'fullback':
-        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
-      case 'goalkeeper':
-      case 'keeper':
-        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
-      default:
-        return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
-    }
-  };
-
+  // 1. Load tournament details
   useEffect(() => {
     let isMounted = true;
 
@@ -174,92 +162,53 @@ export const TournamentHub = () => {
         setLoading(true);
         setError(null);
 
-        let foundTournament = null;
-        let fetchedTeams = [];
-
-        // 1. Try fetching all tournaments and find by ID or slug
-        try {
-          const tournamentsRes = await tournamentService.getAll();
-          const allTournaments = tournamentsRes?.tournaments || [];
-          foundTournament = allTournaments.find(
-            t => t.id === tournamentId || t.slug === tournamentId
-          );
-        } catch (err) {
-          console.warn('Could not fetch tournament via getAll, trying fallback/slug...', err);
-        }
-
-        // 2. If not found in list, attempt direct slug/ID endpoint
-        if (!foundTournament) {
-          try {
-            const singleRes = await tournamentService.getBySlug(tournamentId);
-            if (singleRes?.tournament) {
-              foundTournament = singleRes.tournament;
-            }
-          } catch (err) {
-            console.warn('Could not fetch tournament via getBySlug:', err);
+        // Check demo fallback first
+        const demo = demoTournaments.find(t => t.id === tournamentId || t.slug === tournamentId);
+        if (demo) {
+          if (isMounted) {
+            setTournament(demo);
+            setTeams(demoTeams);
           }
-        }
+        } else {
+          // Fetch from API by slug or ID
+          const res = await tournamentService.getBySlug(tournamentId);
+          const foundTournament = res?.tournament;
 
-        // 3. Fallback to demo items if matching demo ID or not in DB
-        if (!foundTournament) {
-          foundTournament = demoTournaments.find(
-            t => t.id === tournamentId || t.slug === tournamentId
-          );
-        }
-
-        // 4. Fetch teams and filter for this tournament
-        try {
-          const teamsRes = await teamService.getAll();
-          const allTeams = teamsRes?.teams || [];
-          fetchedTeams = allTeams.filter(
-            t => t.tournamentId === tournamentId || 
-                 t.tournament?.id === tournamentId || 
-                 (foundTournament && (t.tournamentId === foundTournament.id || t.tournament?.id === foundTournament.id))
-          );
-        } catch (err) {
-          console.warn('Could not fetch teams list:', err);
-        }
-
-        // If no backend teams found and demo tournament matched, provide demo teams
-        if (fetchedTeams.length === 0 && foundTournament) {
-          fetchedTeams = demoTeams.filter(
-            t => t.tournamentId === foundTournament.id || t.tournamentId === tournamentId
-          );
-        }
-
-        // 5. Fetch matches for this tournament
-        let fetchedMatches = [];
-        if (foundTournament) {
-          try {
-            const matchesRes = await matchService.getByTournament(foundTournament.id);
-            fetchedMatches = matchesRes?.matches || [];
-          } catch (err) {
-            console.warn('Could not fetch tournament matches:', err);
-          }
-        }
-
-        if (isMounted) {
-          if (foundTournament) {
+          if (foundTournament && isMounted) {
             setTournament(foundTournament);
-            setTeams(fetchedTeams);
-            setMatches(fetchedMatches);
 
-            // 6. Fetch standings for league / group / hybrid formats
+            // Fetch teams and filter for this tournament
+            try {
+              const teamsRes = await teamService.getAll();
+              const allTeams = teamsRes?.teams || [];
+              const fetchedTeams = allTeams.filter(
+                t => t.tournamentId === foundTournament.id || t.tournament?.id === foundTournament.id
+              );
+              if (isMounted) setTeams(fetchedTeams);
+            } catch (err) {
+              console.warn('Could not fetch teams list:', err);
+            }
+
+            // Fetch matches for this tournament
+            try {
+              const matchesRes = await matchService.getAll();
+              const allMatches = matchesRes?.matches || [];
+              const fetchedMatches = allMatches.filter(m => m.tournamentId === foundTournament.id);
+              if (isMounted) setMatches(fetchedMatches);
+            } catch (err) {
+              console.warn('Could not fetch matches list:', err);
+            }
+
+            // Fetch Standings depending on tournament format
             const fmt = foundTournament.format?.toLowerCase();
-            const needsStandings = ['league', 'round_robin', 'group_stage', 'group_knockout', 'hybrid'].includes(fmt);
+            const needsStandings = fmt === 'league' || fmt === 'round_robin' || fmt === 'group_stage' || fmt === 'group_knockout' || fmt === 'hybrid';
             if (needsStandings) {
               setStandingsLoading(true);
               try {
                 const standingsRes = await tournamentService.getStandings(foundTournament.id);
                 if (isMounted) {
-                  // League format returns { standings: [...] }
-                  if (standingsRes?.standings) {
-                    setStandings(standingsRes.standings);
-                  }
-                  // Group stage returns { groups: [...] }
-                  if (standingsRes?.groups) {
-                    setGroups(standingsRes.groups);
-                  }
+                  if (standingsRes?.standings) setStandings(standingsRes.standings);
+                  if (standingsRes?.groups) setGroups(standingsRes.groups);
                 }
               } catch (err) {
                 console.warn('Could not fetch standings:', err);
@@ -268,7 +217,7 @@ export const TournamentHub = () => {
               }
             }
           } else {
-            setError('Tournament not found or has been removed.');
+            if (isMounted) setError('Tournament not found or has been removed.');
           }
         }
       } catch (err) {
@@ -285,6 +234,71 @@ export const TournamentHub = () => {
       isMounted = false;
     };
   }, [tournamentId]);
+
+  // 2. Load manager's teams for tournament join request
+  useEffect(() => {
+    if (!user || !tournament?.id) return;
+
+    const fetchManagedTeams = async () => {
+      try {
+        const teamsRes = await teamService.getAll();
+        const allTeams = teamsRes?.teams || [];
+        // User's managed teams
+        const userManaged = allTeams.filter(t => t.managerId === user.id || t.manager?.id === user.id);
+        const teamsToUse = userManaged.length > 0 ? userManaged : allTeams.filter(t => !t.tournamentId);
+
+        setManagedTeams(teamsToUse);
+        if (teamsToUse.length > 0) {
+          setSelectedUserTeamId(teamsToUse[0].id);
+        }
+      } catch (err) {
+        console.warn('Could not fetch managed teams:', err);
+      }
+    };
+
+    fetchManagedTeams();
+  }, [user, tournament?.id]);
+
+  // 3. Fetch status when selectedUserTeamId & tournament.id change
+  useEffect(() => {
+    if (!user || !tournament?.id || !selectedUserTeamId) return;
+
+    const fetchStatus = async () => {
+      try {
+        const res = await tournamentJoinRequestService.getStatus(tournament.id, selectedUserTeamId);
+        setJoinRequestStatus(res.status || 'none');
+        setIsRegistered(Boolean(res.isRegistered));
+      } catch (err) {
+        console.warn('Could not fetch tournament request status:', err);
+      }
+    };
+
+    fetchStatus();
+  }, [user, tournament?.id, selectedUserTeamId]);
+
+  // Manager action: Request to Join Tournament
+  const handleRequestToJoinTournament = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (!selectedUserTeamId) {
+      setToast({ message: 'Please select a team to request to join.', type: 'error' });
+      return;
+    }
+
+    setIsSubmittingRequest(true);
+    try {
+      const res = await tournamentJoinRequestService.createRequest(tournament.id, selectedUserTeamId);
+      setJoinRequestStatus('pending');
+      setToast({ message: res.message || 'Tournament join request submitted to organizer!', type: 'success' });
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to submit tournament join request.', type: 'error' });
+    } finally {
+      setIsSubmittingRequest(false);
+    }
+  };
 
   const getFormatLabel = (format) => {
     switch (format?.toLowerCase()) {
@@ -490,6 +504,90 @@ export const TournamentHub = () => {
         </div>
       </section>
 
+      {/* ─── MANAGER TOURNAMENT JOIN REQUEST CARD ──────────────────────────── */}
+      {user && managedTeams.length > 0 && (
+        <section className="saas-card p-6 rounded-2xl bg-white dark:bg-[#111726] border border-blue-500/30 dark:border-blue-500/20 shadow-md space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                <Trophy className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                  Team Manager Tournament Registration
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Request to enter your managed team into this tournament.
+                </p>
+              </div>
+            </div>
+
+            {/* Team Selector */}
+            <div className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <Shield className="w-4 h-4 text-blue-500 ml-1" />
+              <select
+                value={selectedUserTeamId}
+                onChange={(e) => setSelectedUserTeamId(e.target.value)}
+                className="bg-transparent text-slate-900 dark:text-white text-xs font-bold py-1 pr-2 focus:outline-none cursor-pointer"
+              >
+                {managedTeams.map(t => (
+                  <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Selected Team:{' '}
+              <strong className="text-slate-900 dark:text-white">
+                {managedTeams.find(t => t.id === selectedUserTeamId)?.name || 'None'}
+              </strong>
+            </div>
+
+            <div>
+              {isRegistered ? (
+                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Team Registered</span>
+                </div>
+              ) : joinRequestStatus === 'pending' ? (
+                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold">
+                  <Clock className="w-4 h-4" />
+                  <span>Request Pending</span>
+                </div>
+              ) : joinRequestStatus === 'approved' ? (
+                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Request Approved & Registered</span>
+                </div>
+              ) : joinRequestStatus === 'rejected' ? (
+                <button
+                  onClick={handleRequestToJoinTournament}
+                  disabled={isSubmittingRequest}
+                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/30 text-xs font-bold transition disabled:opacity-50"
+                  title="Previous request was rejected. Click to re-apply."
+                >
+                  <XCircle className="w-4 h-4" />
+                  <span>Request Rejected (Re-apply)</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleRequestToJoinTournament}
+                  disabled={isSubmittingRequest}
+                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition disabled:opacity-50"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>{isSubmittingRequest ? 'Submitting...' : 'Request to Join Tournament'}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ─── TOURNAMENT CAPACITY & DETAILS SUMMARY ─────────────────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
@@ -558,377 +656,225 @@ export const TournamentHub = () => {
       {(() => {
         const fmt = tournament.format?.toLowerCase();
 
-        // ── KNOCKOUT ────────────────────────────────────────────────────────
         if (fmt === 'knockout') {
           return (
-            <KnockoutBracket
-              matches={matches}
-              tournaments={tournament ? [tournament] : []}
-              selectedTournamentId={tournament?.id}
-              readOnly={true}
-              onMatchClick={(match) => navigate(`/matches/${match.id}`)}
-            />
+            <section className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Trophy className="w-5 h-5 text-amber-500" />
+                <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
+                  Knockout Fixture Bracket
+                </h2>
+              </div>
+              <KnockoutBracket tournamentId={tournament.id} />
+            </section>
           );
         }
 
-        // ── LEAGUE / ROUND-ROBIN ─────────────────────────────────────────────
         if (fmt === 'league' || fmt === 'round_robin') {
           return (
-            <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-4">
-              <div className="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <Trophy className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <h2 className="text-xl font-black font-heading text-slate-900 dark:text-white">
-                  League Standings
+            <section className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Trophy className="w-5 h-5 text-blue-500" />
+                <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
+                  Official League Standings
                 </h2>
               </div>
-              <LeagueStandings
-                standings={standings}
-                tournamentName={tournament.name}
-                isLoading={standingsLoading}
-              />
+              {standingsLoading ? (
+                <div className="saas-card p-8 text-center text-slate-400 rounded-2xl">Loading standings...</div>
+              ) : (
+                <LeagueStandings standings={standings} />
+              )}
             </section>
           );
         }
 
-        // ── GROUP STAGE ──────────────────────────────────────────────────────
-        if (fmt === 'group_stage') {
+        if (fmt === 'group_stage' || fmt === 'group_knockout' || fmt === 'hybrid') {
           return (
-            <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-4">
-              <div className="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                <h2 className="text-xl font-black font-heading text-slate-900 dark:text-white">
-                  Group Standings
-                </h2>
-              </div>
-              <GroupStageStandings
-                groups={groups}
-                isLoading={standingsLoading}
-                groupStageComplete={false}
-                hasKnockoutBracket={false}
-              />
-            </section>
-          );
-        }
-
-        // ── HYBRID (GROUP + KNOCKOUT) ─────────────────────────────────────────
-        if (fmt === 'hybrid' || fmt === 'group_knockout') {
-          const hasKnockoutMatches = matches.some(
-            m => m.round?.toLowerCase().includes('knockout') ||
-                 m.round?.toLowerCase().includes('semi') ||
-                 m.round?.toLowerCase().includes('final') ||
-                 m.stage?.toLowerCase() === 'knockout'
-          );
-          return (
-            <>
-              <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-4">
-                <div className="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <h2 className="text-xl font-black font-heading text-slate-900 dark:text-white">
-                    Group Stage Standings
+            <section className="space-y-8">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Trophy className="w-5 h-5 text-purple-500" />
+                  <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
+                    Group Stage Tables
                   </h2>
                 </div>
-                <GroupStageStandings
-                  groups={groups}
-                  isLoading={standingsLoading}
-                  groupStageComplete={hasKnockoutMatches}
-                  hasKnockoutBracket={hasKnockoutMatches}
-                />
-              </section>
-              {hasKnockoutMatches && (
-                <KnockoutBracket
-                  matches={matches}
-                  tournaments={tournament ? [tournament] : []}
-                  selectedTournamentId={tournament?.id}
-                  readOnly={true}
-                  onMatchClick={(match) => navigate(`/matches/${match.id}`)}
-                />
-              )}
-            </>
+                {standingsLoading ? (
+                  <div className="saas-card p-8 text-center text-slate-400 rounded-2xl">Loading group standings...</div>
+                ) : (
+                  <GroupStageStandings groups={groups} />
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Trophy className="w-5 h-5 text-amber-500" />
+                  <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
+                    Playoff Knockout Tree
+                  </h2>
+                </div>
+                <KnockoutBracket tournamentId={tournament.id} />
+              </div>
+            </section>
           );
         }
 
-        // ── FALLBACK — show bracket for any other format ──────────────────────
+        // Fallback default format: Knockout Bracket
         return (
-          <KnockoutBracket
-            matches={matches}
-            tournaments={tournament ? [tournament] : []}
-            selectedTournamentId={tournament?.id}
-            readOnly={true}
-            onMatchClick={(match) => navigate(`/matches/${match.id}`)}
-          />
+          <section className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Trophy className="w-5 h-5 text-amber-500" />
+              <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
+                Tournament Fixtures & Bracket Tree
+              </h2>
+            </div>
+            <KnockoutBracket tournamentId={tournament.id} />
+          </section>
         );
       })()}
 
-      {/* ─── PARTICIPATING TEAMS & PLAYERS SECTION ───────────────────────── */}
+      {/* ─── PARTICIPATING TEAMS ROSTER GRID ──────────────────────────────── */}
       <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-6">
-        
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white">
-                Participating Teams & Squads ({teams.length})
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Clubs competing in {tournament.name}. Click any team to inspect its registered player roster.
-            </p>
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="flex items-center space-x-2">
+            <Users className="w-5 h-5 text-blue-500" />
+            <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
+              Participating Squads ({teams.length})
+            </h2>
           </div>
-
-          {selectedTeam && (
-            <button
-              onClick={handleCloseSquad}
-              className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold transition self-start sm:self-auto"
-            >
-              <X className="w-3.5 h-3.5" />
-              <span>Close Roster</span>
-            </button>
-          )}
+          <span className="text-xs text-slate-400">Click any club card to inspect player roster</span>
         </div>
 
         {teams.length === 0 ? (
-          <div className="text-center py-12 space-y-3 bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
-            <Shield className="w-10 h-10 text-slate-400 mx-auto" />
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No Teams Registered Yet</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
-              Registration is currently open. Once team managers register their squads, they will appear here.
-            </p>
+          <div className="p-8 text-center text-slate-400 rounded-2xl bg-slate-50 dark:bg-slate-800/40">
+            No teams registered yet for this tournament.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {teams.map((team, idx) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {teams.map((team) => {
               const isSelected = selectedTeam?.id === team.id;
-              const teamInitials = team.shortName || team.name?.substring(0, 3).toUpperCase() || 'FC';
-              const teamColor = team.primaryColor || '#3B82F6';
-
               return (
                 <div
-                  key={team.id || idx}
+                  key={team.id}
                   onClick={() => handleSelectTeam(team)}
-                  className={`p-5 rounded-2xl border transition-all cursor-pointer group flex flex-col justify-between space-y-3 ${
+                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                     isSelected
-                      ? 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-500/60 shadow-lg ring-2 ring-blue-500/30'
-                      : 'bg-white dark:bg-[#111728] border-slate-200/80 dark:border-slate-800/80 hover:border-blue-400/60 dark:hover:border-blue-500/40 hover:shadow-md'
+                      ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 ring-2 ring-blue-500/40 shadow-md'
+                      : 'bg-white dark:bg-[#111726] border-slate-200/80 dark:border-slate-800 hover:border-blue-400'
                   }`}
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3.5 min-w-0">
                     <div
-                      className="w-12 h-12 rounded-2xl text-white font-extrabold text-sm flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition-transform"
-                      style={{ backgroundColor: teamColor }}
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0"
+                      style={{ backgroundColor: team.primaryColor || '#1E50FF' }}
                     >
                       {team.logoUrl ? (
                         <img src={team.logoUrl} alt={team.name} className="w-full h-full object-cover rounded-2xl" />
                       ) : (
-                        <span>{teamInitials}</span>
+                        <span>{team.shortName || team.name?.substring(0, 3)?.toUpperCase()}</span>
                       )}
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
-                        {team.name}
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                        {team.city || 'Club Member'}
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{team.name}</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        {team.city || 'Registered Club'}
                       </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-[10px] font-bold">
-                          {team.shortName || teamInitials}
+                    </div>
+                  </div>
+
+                  <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? 'rotate-90 text-blue-500' : 'text-slate-400'}`} />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ─── SELECTED TEAM ROSTER SECTION ─────────────────────────────────── */}
+      {selectedTeam && (
+        <section ref={rosterRef} className="saas-card p-6 sm:p-8 rounded-3xl space-y-6 animate-in fade-in">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div className="flex items-center space-x-3">
+              <div
+                className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-xs shadow-md"
+                style={{ backgroundColor: selectedTeam.primaryColor || '#1E50FF' }}
+              >
+                {selectedTeam.shortName || selectedTeam.name?.substring(0, 3)?.toUpperCase()}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedTeam.name} Roster</h3>
+                <p className="text-xs text-slate-400">Registered squad members for this tournament</p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleDeselectTeam}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              title="Close Roster"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {loadingMembers ? (
+            <div className="p-8 text-center text-slate-400">Loading squad roster...</div>
+          ) : memberError ? (
+            <div className="p-4 text-xs text-red-500 bg-red-50 dark:bg-red-950/40 rounded-xl">{memberError}</div>
+          ) : teamMembers.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 rounded-2xl bg-slate-50 dark:bg-slate-800/40">
+              No players registered for this team yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {teamMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between"
+                >
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs flex items-center justify-center">
+                      {member.player?.fullName?.charAt(0)?.toUpperCase() || 'P'}
+                    </div>
+                    <div className="min-w-0">
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {member.player?.fullName || 'Player'}
+                      </h5>
+                      <div className="flex items-center space-x-2 mt-0.5">
+                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">
+                          {member.position || 'Midfielder'}
                         </span>
-                        {team.squadCount !== undefined && (
-                          <span className="text-[10px] text-slate-400">
-                            {team.squadCount} Players
+                        {member.jerseyNumber && (
+                          <span className="text-[10px] font-mono text-slate-400">
+                            #{member.jerseyNumber}
                           </span>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs gap-2">
-                    <span
-                      onClick={(e) => { e.stopPropagation(); handleSelectTeam(team); }}
-                      className={`inline-flex items-center space-x-1 font-bold text-[11px] px-2 py-0.5 rounded-lg transition cursor-pointer ${
-                        isSelected
-                          ? 'bg-blue-600 text-white'
-                          : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 group-hover:bg-blue-600 group-hover:text-white'
-                      }`}
-                    >
-                      {isSelected ? <Check className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                      <span>{isSelected ? 'Viewing Squad' : 'View Squad'}</span>
-                    </span>
-                    {team.id && !team.id.startsWith('demo') && (
-                      <Link
-                        to={`/teams/${team.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center space-x-1 font-semibold text-[11px] px-2 py-0.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
-                      >
-                        <span>Team Profile</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </Link>
-                    )}
-                  </div>
+                  <Link
+                    to={`/players?id=${member.player?.id || ''}`}
+                    className="text-slate-400 hover:text-blue-500 transition"
+                    title="View Player Profile"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                 </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ─── SELECTED TEAM SQUAD ROSTER PANEL ──────────────────────────────── */}
-        {selectedTeam && (
-          <div ref={rosterRef} className="mt-8 p-6 sm:p-8 rounded-3xl bg-slate-50/80 dark:bg-[#0D121F] border border-blue-500/30 shadow-xl space-y-6 animate-in fade-in duration-300 scroll-mt-4">
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
-              <div className="flex items-center space-x-4">
-                <div
-                  className="w-14 h-14 rounded-2xl text-white font-black text-base flex items-center justify-center flex-shrink-0 shadow-lg"
-                  style={{ backgroundColor: selectedTeam.primaryColor || '#3B82F6' }}
-                >
-                  {selectedTeam.logoUrl ? (
-                    <img src={selectedTeam.logoUrl} alt={selectedTeam.name} className="w-full h-full object-cover rounded-2xl" />
-                  ) : (
-                    <span>{selectedTeam.shortName || selectedTeam.name?.substring(0, 3).toUpperCase()}</span>
-                  )}
-                </div>
-
-                <div>
-                  <div className="inline-flex items-center space-x-2">
-                    <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold border border-blue-500/20 uppercase">
-                      Official Team Roster
-                    </span>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white mt-0.5">
-                    {selectedTeam.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {selectedTeam.city ? `Club Location: ${selectedTeam.city}` : 'FootVerse Registered Club'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
-                  <Users className="w-3.5 h-3.5 text-blue-500" />
-                  <span>{teamMembers.length} Registered Player(s)</span>
-                </div>
-
-                <button
-                  onClick={handleCloseSquad}
-                  className="p-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
-                  title="Close Squad Roster"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+              ))}
             </div>
+          )}
+        </section>
+      )}
 
-            {/* Squad Members Content */}
-            {loadingMembers ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse py-4">
-                {[1, 2, 3, 4].map(n => (
-                  <div key={n} className="h-24 bg-slate-200 dark:bg-slate-800/60 rounded-2xl" />
-                ))}
-              </div>
-            ) : memberError ? (
-              <div className="p-6 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-center space-y-3">
-                <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
-                <p className="text-sm font-semibold text-red-600 dark:text-red-400">{memberError}</p>
-                <button
-                  onClick={() => handleSelectTeam(selectedTeam)}
-                  className="px-4 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : teamMembers.length === 0 ? (
-              <div className="text-center py-10 space-y-3 bg-white/60 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
-                <Shirt className="w-8 h-8 text-slate-400 mx-auto" />
-                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Players Registered in this Squad</h4>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  The team manager has not listed players for {selectedTeam.name} yet.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {teamMembers.map((member, idx) => {
-                  const targetPlayerId = member.playerId || member.player?.id || member.id;
-                  const playerName = member.player?.fullName || member.fullName || 'Squad Player';
-                  const jersey = member.jerseyNumber ?? member.jersey ?? '-';
-                  const position = member.position || member.player?.preferredPosition || 'Player';
-                  const isCaptain = Boolean(member.isCaptain);
-                  const avatarUrl = member.player?.avatarUrl || member.avatarUrl;
-
-                  return (
-                    <div
-                      key={member.id || idx}
-                      onClick={() => navigate(`/players?tab=player&id=${targetPlayerId}`)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          navigate(`/players?tab=player&id=${targetPlayerId}`);
-                        }
-                      }}
-                      className="p-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between space-x-3.5 shadow-xs hover:border-blue-500/60 dark:hover:border-blue-400/60 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer group/player focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      title={`View ${playerName}'s Public Profile & Stats`}
-                    >
-                      <div className="flex items-center space-x-3.5 min-w-0 flex-1">
-                        {/* Jersey Number Circle / Avatar */}
-                        <div className="relative flex-shrink-0">
-                          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 text-white font-black text-sm flex items-center justify-center border border-slate-700/80 shadow-inner group-hover/player:border-blue-500/50 transition-colors">
-                            {avatarUrl ? (
-                              <img src={avatarUrl} alt={playerName} className="w-full h-full object-cover rounded-2xl" />
-                            ) : (
-                              <span className="font-mono text-xs">#{jersey}</span>
-                            )}
-                          </div>
-                          {isCaptain && (
-                            <span
-                              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center shadow-md border-2 border-white dark:border-[#131B2E]"
-                              title="Team Captain"
-                            >
-                              C
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Player Info */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center space-x-1.5">
-                            <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover/player:text-blue-600 dark:group-hover/player:text-blue-400 transition-colors">
-                              {playerName}
-                            </h5>
-                          </div>
-
-                          <div className="flex items-center space-x-1.5 mt-1">
-                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${getPositionBadgeStyle(position)}`}>
-                              {position}
-                            </span>
-                            {jersey !== '-' && avatarUrl && (
-                              <span className="text-[10px] font-bold text-slate-400 font-mono">
-                                #{jersey}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* View Profile Action / Chevron */}
-                      <div className="flex-shrink-0 pl-1">
-                        <span className="w-7 h-7 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-center text-slate-400 group-hover/player:text-blue-600 dark:group-hover/player:text-blue-400 group-hover/player:bg-blue-50 dark:group-hover/player:bg-blue-950/60 group-hover/player:border-blue-500/40 transition-all">
-                          <ChevronRight className="w-3.5 h-3.5 group-hover/player:translate-x-0.5 transition-transform" />
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-          </div>
-        )}
-
-      </section>
+      {/* Toast Notification Component */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ message: '', type: 'success' })}
+      />
 
     </div>
   );
 };
+
+export default TournamentHub;

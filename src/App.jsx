@@ -27,6 +27,7 @@ import { TournamentHub } from './pages/TournamentHub';
 import { PublicMatchDetail } from './pages/PublicMatchDetail';
 import { PublicTeamDetail } from './pages/PublicTeamDetail';
 import { NotificationsPage } from './pages/NotificationsPage';
+import { TeamDashboard } from './pages/TeamDashboard';
 
 // Organizer Pages
 import { Dashboard as OrganizerDashboard } from './pages/organizer/Dashboard';
@@ -164,11 +165,7 @@ function AppContent() {
           path="/teams/join"
           element={
             <ProtectedRoute>
-              <ModulePreviewPage
-                title="Team Registration"
-                moduleName="Register Squad / Join Team"
-                phaseText="Interactive"
-              />
+              <TeamDashboard />
             </ProtectedRoute>
           }
         />
@@ -188,11 +185,7 @@ function AppContent() {
           path="/teams-manage"
           element={
             <ProtectedRoute>
-              <ModulePreviewPage
-                title="Team Management"
-                moduleName="Manage Roster & Club Profile"
-                phaseText="Interactive"
-              />
+              <TeamDashboard />
             </ProtectedRoute>
           }
         />

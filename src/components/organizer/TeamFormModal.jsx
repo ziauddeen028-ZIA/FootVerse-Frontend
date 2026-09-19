@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Shield, Palette, MapPin, Building, Trophy, AlertCircle } from 'lucide-react';
+import { useAuth, ROLES } from '../../context/AuthContext';
 
 export const TeamFormModal = ({
   isOpen,
@@ -9,8 +10,13 @@ export const TeamFormModal = ({
   tournaments = [],
   existingTeams = [],
   isLoading = false,
-  defaultTournamentId = ''
+  defaultTournamentId = '',
+  requireTournament
 }) => {
+  const { activeRole } = useAuth();
+  const isManager = activeRole === ROLES.TEAM_MANAGER || activeRole === 'coach';
+  const isTournamentRequired = requireTournament !== undefined ? requireTournament : !isManager;
+
   const [formData, setFormData] = useState({
     tournamentId: '',
     name: '',
@@ -58,7 +64,7 @@ export const TeamFormModal = ({
         });
       } else {
         setFormData({
-          tournamentId: defaultTournamentId || tournaments[0]?.id || '',
+          tournamentId: defaultTournamentId || (isTournamentRequired ? (tournaments[0]?.id || '') : ''),
           name: '',
           shortName: '',
           city: '',
@@ -70,16 +76,16 @@ export const TeamFormModal = ({
       }
       setErrors({});
     }
-  }, [isOpen, initialData, tournaments, defaultTournamentId]);
+  }, [isOpen, initialData, tournaments, defaultTournamentId, isTournamentRequired]);
 
   if (!isOpen) return null;
 
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.tournamentId) {
+    if (isTournamentRequired && !formData.tournamentId) {
       newErrors.tournamentId = 'Please select a tournament for the team.';
-    } else if (!initialData && isSelectedTournamentFull) {
+    } else if (formData.tournamentId && !initialData && isSelectedTournamentFull) {
       newErrors.tournamentId = `Tournament is full (${teamCountForSelected}/${maxTeamsForSelected} teams). No more teams can be registered.`;
     }
 
@@ -116,6 +122,7 @@ export const TeamFormModal = ({
     if (validate()) {
       onSubmit({
         ...formData,
+        tournamentId: formData.tournamentId || null,
         name: formData.name.trim(),
         shortName: formData.shortName.trim().toUpperCase(),
         city: formData.city.trim() || null,
@@ -170,7 +177,7 @@ export const TeamFormModal = ({
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
               <Trophy className="w-3.5 h-3.5 text-blue-500" />
-              Tournament <span className="text-red-500">*</span>
+              Tournament {isTournamentRequired ? <span className="text-red-500">*</span> : <span className="text-slate-400 font-normal lowercase">(optional)</span>}
             </label>
             <select
               name="tournamentId"
@@ -183,9 +190,13 @@ export const TeamFormModal = ({
                 isTournamentLocked ? 'opacity-75 cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''
               }`}
             >
-              <option value="" disabled>
-                Select a Tournament
-              </option>
+              {!isTournamentRequired ? (
+                <option value="">No Tournament (Standalone Team)</option>
+              ) : (
+                <option value="" disabled>
+                  Select a Tournament
+                </option>
+              )}
               {tournaments.map(t => {
                 const count = getTeamCount(t);
                 const max = t.maxTeams || 16;

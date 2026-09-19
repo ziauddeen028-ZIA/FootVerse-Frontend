@@ -11,7 +11,8 @@ import {
   Bell, 
   Settings, 
   LogOut, 
-  User
+  User,
+  Shield
 } from 'lucide-react';
 import { useAuth, ROLE_LABELS } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -50,8 +51,14 @@ export const Sidebar = () => {
       label: 'Teams', 
       path: '/teams', 
       icon: Users,
-      match: (pathname, search) => pathname.startsWith('/teams') || (pathname.startsWith('/stats') && search.includes('tab=team'))
+      match: (pathname, search) => (pathname === '/teams' || pathname.startsWith('/teams/')) && !pathname.startsWith('/teams-manage') && !search.includes('tab=team')
     },
+    ...(user ? [{
+      label: 'My Teams & Create', 
+      path: '/teams-manage', 
+      icon: Shield,
+      match: (pathname) => pathname === '/teams-manage' || pathname === '/teams/join'
+    }] : []),
     { 
       label: 'Players', 
       path: '/players', 

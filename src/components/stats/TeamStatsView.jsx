@@ -12,10 +12,17 @@ import {
   ArrowUpRight, 
   Activity, 
   Flame,
-  UserCheck
+  UserCheck,
+  UserPlus,
+  Clock,
+  XCircle,
+  Check,
+  X
 } from 'lucide-react';
 import statsService from '../../services/statsService';
+import teamJoinRequestService from '../../services/teamJoinRequestService';
 import { useAuth } from '../../context/AuthContext';
+import { Toast } from '../common/Toast';
 
 export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTeamMessage = null }) => {
   const { user } = useAuth();
@@ -27,6 +34,12 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
   const [loading, setLoading] = useState(hideSelector ? false : true);
   const [statsLoading, setStatsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Join request state
+  const [joinRequestStatus, setJoinRequestStatus] = useState('none');
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+  const [managerRequests, setManagerRequests] = useState([]);
+  const [toast, setToast] = useState({ message: '', type: 'success' });
 
   // Load teams list (skipped in hideSelector mode)
   useEffect(() => {
@@ -74,6 +87,84 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
     fetchStats();
   }, [selectedTeamId, user]);
 
+  // Fetch join request status & manager join requests for selected team
+  useEffect(() => {
+    if (!selectedTeamId || !user) {
+      setJoinRequestStatus('none');
+      setManagerRequests([]);
+      return;
+    }
+
+    const fetchRequestData = async () => {
+      try {
+        // Fetch current player status
+        const statusRes = await teamJoinRequestService.getStatus(selectedTeamId);
+        setJoinRequestStatus(statusRes.status || 'none');
+
+        // Fetch manager requests if managing this team
+        const managerRes = await teamJoinRequestService.getManagerRequests(selectedTeamId);
+        setManagerRequests(managerRes.joinRequests || []);
+      } catch (err) {
+        console.warn('Failed to load join request status:', err);
+      }
+    };
+
+    fetchRequestData();
+  }, [selectedTeamId, user]);
+
+  // Player action: Create Join Request
+  const handleJoinTeam = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    setIsSubmittingRequest(true);
+    try {
+      const res = await teamJoinRequestService.createRequest(selectedTeamId);
+      setJoinRequestStatus('pending');
+      setToast({ message: res.message || 'Join request submitted to team manager!', type: 'success' });
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to submit join request.', type: 'error' });
+    } finally {
+      setIsSubmittingRequest(false);
+    }
+  };
+
+  // Manager action: Approve Request
+  const handleApproveRequest = async (requestId) => {
+    try {
+      await teamJoinRequestService.approveRequest(requestId);
+      setToast({ message: 'Team Request Approved', type: 'success' });
+
+      // Refresh manager requests
+      const managerRes = await teamJoinRequestService.getManagerRequests(selectedTeamId);
+      setManagerRequests(managerRes.joinRequests || []);
+
+      // Refresh squad data
+      if (selectedTeamId) {
+        const res = await statsService.getTeamStats(selectedTeamId);
+        setTeamData(res);
+      }
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to approve request.', type: 'error' });
+    }
+  };
+
+  // Manager action: Reject Request
+  const handleRejectRequest = async (requestId) => {
+    try {
+      await teamJoinRequestService.rejectRequest(requestId);
+      setToast({ message: 'Team Request Rejected', type: 'warning' });
+
+      // Refresh manager requests
+      const managerRes = await teamJoinRequestService.getManagerRequests(selectedTeamId);
+      setManagerRequests(managerRes.joinRequests || []);
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to reject request.', type: 'error' });
+    }
+  };
+
   const filteredTeams = teams.filter(t =>
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.shortName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -85,15 +176,27 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
       {/* ─── 1. TEAM SELECTOR & SEARCH (hidden in My Team mode) ──── */}
       {!hideSelector && (
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search team by club name, abbreviation or city..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-            />
+          <div className="relative flex-1 flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search team by club name, abbreviation or city..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+              />
+            </div>
+
+            {user && (
+              <Link
+                to="/teams-manage"
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center space-x-2 shrink-0 whitespace-nowrap"
+              >
+                <Shield className="w-4 h-4" />
+                <span>Manage / Create Team</span>
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full">
@@ -167,8 +270,9 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                 </div>
               </div>
 
-              {/* Privacy Authorization Badge */}
-              <div className="flex items-center">
+              {/* Header Action & Status Controls */}
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                {/* Authorization Badge */}
                 {teamData.isAuthorizedMember ? (
                   <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">
                     <Unlock className="w-3.5 h-3.5" />
@@ -180,9 +284,122 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                     <span>Public Overview Mode</span>
                   </div>
                 )}
+
+                {/* Player Join Team / Request Status Button */}
+                {!teamData.isAuthorizedMember && (
+                  <div>
+                    {joinRequestStatus === 'none' && (
+                      <button
+                        onClick={handleJoinTeam}
+                        disabled={isSubmittingRequest}
+                        className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition disabled:opacity-50"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span>{isSubmittingRequest ? 'Submitting...' : 'Join Team'}</span>
+                      </button>
+                    )}
+                    {joinRequestStatus === 'pending' && (
+                      <div className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold">
+                        <Clock className="w-4 h-4" />
+                        <span>Request Pending</span>
+                      </div>
+                    )}
+                    {joinRequestStatus === 'approved' && (
+                      <div className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Request Approved</span>
+                      </div>
+                    )}
+                    {joinRequestStatus === 'rejected' && (
+                      <button
+                        onClick={handleJoinTeam}
+                        disabled={isSubmittingRequest}
+                        className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-rose-500/20 border border-rose-500/30 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition disabled:opacity-50"
+                        title="Your previous request was rejected. Click to apply again."
+                      >
+                        <XCircle className="w-4 h-4" />
+                        <span>Request Rejected (Re-apply)</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
+          {/* ─── MANAGER JOIN REQUESTS SECTION ──────────────────────── */}
+          {managerRequests.length > 0 && (
+            <div className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#111726] border border-blue-500/30 dark:border-blue-500/20 shadow-lg space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center space-x-2">
+                  <UserPlus className="w-5 h-5 text-blue-500" />
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                    Team Join Requests
+                  </h3>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold">
+                    {managerRequests.filter(r => r.status === 'pending').length} Pending
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {managerRequests.map((reqItem) => (
+                  <div
+                    key={reqItem.id}
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-center space-x-3 min-w-0">
+                      <div className="w-11 h-11 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 font-bold text-sm flex items-center justify-center overflow-hidden border border-blue-500/20 flex-shrink-0">
+                        {reqItem.player?.avatarUrl ? (
+                          <img src={reqItem.player.avatarUrl} alt={reqItem.player.fullName} className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{reqItem.player?.fullName?.charAt(0)?.toUpperCase() || 'P'}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          {reqItem.player?.fullName || 'Anonymous Player'}
+                        </h5>
+                        <div className="flex items-center space-x-2 mt-0.5">
+                          <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold">
+                            {reqItem.player?.preferredPosition || 'Player'}
+                          </span>
+                          {reqItem.status === 'pending' ? (
+                            <span className="text-[10px] text-amber-500 font-bold">Pending</span>
+                          ) : (
+                            <span className={`text-[10px] font-bold ${reqItem.status === 'approved' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                              {reqItem.status.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {reqItem.status === 'pending' && (
+                      <div className="flex items-center space-x-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleApproveRequest(reqItem.id)}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm transition flex items-center space-x-1"
+                          title="Approve player and add to roster"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Approve</span>
+                        </button>
+                        <button
+                          onClick={() => handleRejectRequest(reqItem.id)}
+                          className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-sm transition flex items-center space-x-1"
+                          title="Reject request"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>Reject</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ─── 3. OVERALL TEAM PERFORMANCE (PUBLIC) ──────────────── */}
           <div>
@@ -503,6 +720,13 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
           <p>Please select a team to view their statistics.</p>
         </div>
       )}
+
+      {/* Toast Notification Component */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ message: '', type: 'success' })}
+      />
     </div>
   );
 };
