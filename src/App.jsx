@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 // Layouts
 import { PublicLayout } from './components/layout/PublicLayout';
@@ -25,6 +26,7 @@ import { StatsHub } from './pages/StatsHub';
 import { TournamentHub } from './pages/TournamentHub';
 import { PublicMatchDetail } from './pages/PublicMatchDetail';
 import { PublicTeamDetail } from './pages/PublicTeamDetail';
+import { NotificationsPage } from './pages/NotificationsPage';
 
 // Organizer Pages
 import { Dashboard as OrganizerDashboard } from './pages/organizer/Dashboard';
@@ -106,11 +108,7 @@ function AppContent() {
           path="/notifications"
           element={
             <ProtectedRoute>
-              <ModulePreviewPage
-                title="Notifications Center"
-                moduleName="Alerts, Team Invites & Match Reminders"
-                phaseText="Phase 3"
-              />
+              <NotificationsPage />
             </ProtectedRoute>
           }
         />
@@ -222,10 +220,12 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <ScrollToTop />
-          <AppContent />
-        </Router>
+        <NotificationProvider>
+          <Router>
+            <ScrollToTop />
+            <AppContent />
+          </Router>
+        </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
   );

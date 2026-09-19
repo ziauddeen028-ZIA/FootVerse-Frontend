@@ -14,9 +14,11 @@ import {
   User
 } from 'lucide-react';
 import { useAuth, ROLE_LABELS } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
 
 export const Sidebar = () => {
   const { user, profile, activeRole, logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -73,7 +75,7 @@ export const Sidebar = () => {
       label: 'Notifications', 
       path: '/notifications', 
       icon: Bell, 
-      badge: '3',
+      badge: unreadCount > 0 ? (unreadCount > 9 ? '9+' : String(unreadCount)) : null,
       match: (pathname) => pathname.startsWith('/notifications')
     },
     { 
