@@ -1,9 +1,13 @@
 import api from './api';
 
 export const tournamentJoinRequestService = {
-  // Team Manager submits request for a team to join a tournament
+  // Team Manager submits request for a team to join a tournament (approval required)
   createRequest: (tournamentId, teamId) =>
     api.post('/tournament-join-requests', { tournamentId, teamId }),
+
+  // Captain/Manager joins instantly using the organizer's invite code (no approval)
+  joinByCode: (code, teamId) =>
+    api.post('/tournament-join-requests/join-by-code', { code, teamId }),
 
   // Get request status for a specific tournament and team
   getStatus: (tournamentId, teamId) =>
@@ -23,3 +27,4 @@ export const tournamentJoinRequestService = {
 };
 
 export default tournamentJoinRequestService;
+

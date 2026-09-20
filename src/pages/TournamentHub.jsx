@@ -21,7 +21,9 @@ import {
   Check,
   UserPlus,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Key,
+  Hash
 } from 'lucide-react';
 import { tournamentService } from '../services/tournamentService';
 import { teamService } from '../services/teamService';
@@ -63,6 +65,11 @@ export const TournamentHub = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success' });
+
+  // Code-join state (Captain/Manager joining via invite code)
+  const [codeInput, setCodeInput] = useState('');
+  const [codeTeamId, setCodeTeamId] = useState('');
+  const [isJoiningByCode, setIsJoiningByCode] = useState(false);
 
   // Ref for auto-scrolling to roster section
   const rosterRef = useRef(null);
@@ -276,7 +283,7 @@ export const TournamentHub = () => {
     fetchStatus();
   }, [user, tournament?.id, selectedUserTeamId]);
 
-  // Manager action: Request to Join Tournament
+  // Manager action: Request to Join Tournament (approval flow)
   const handleRequestToJoinTournament = async () => {
     if (!user) {
       navigate('/login');
@@ -297,6 +304,32 @@ export const TournamentHub = () => {
       setToast({ message: err.message || 'Failed to submit tournament join request.', type: 'error' });
     } finally {
       setIsSubmittingRequest(false);
+    }
+  };
+
+  // Captain/Manager action: Join immediately using invite code
+  const handleJoinByCode = async () => {
+    if (!user) { navigate('/login'); return; }
+    if (!codeInput.trim()) {
+      setToast({ message: 'Please enter the tournament invite code.', type: 'error' });
+      return;
+    }
+    if (!codeTeamId) {
+      setToast({ message: 'Please select a team.', type: 'error' });
+      return;
+    }
+    setIsJoiningByCode(true);
+    try {
+      const res = await tournamentJoinRequestService.joinByCode(codeInput.trim(), codeTeamId);
+      setToast({ message: res.message || 'Team registered successfully!', type: 'success' });
+      // Refresh status so the join-request card reflects registration
+      setJoinRequestStatus('code_join');
+      setIsRegistered(true);
+      setCodeInput('');
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to join tournament.', type: 'error' });
+    } finally {
+      setIsJoiningByCode(false);
     }
   };
 
@@ -504,7 +537,7 @@ export const TournamentHub = () => {
         </div>
       </section>
 
-      {/* ─── MANAGER TOURNAMENT JOIN REQUEST CARD ──────────────────────────── */}
+      {/* ─── MANAGER TOURNAMENT JOIN REQUEST CARD (approval flow) ─────────── */}
       {user && managedTeams.length > 0 && (
         <section className="saas-card p-6 rounded-2xl bg-white dark:bg-[#111726] border border-blue-500/30 dark:border-blue-500/20 shadow-md space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -561,7 +594,7 @@ export const TournamentHub = () => {
               ) : joinRequestStatus === 'approved' ? (
                 <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Request Approved & Registered</span>
+                  <span>Request Approved &amp; Registered</span>
                 </div>
               ) : joinRequestStatus === 'rejected' ? (
                 <button
@@ -585,6 +618,76 @@ export const TournamentHub = () => {
               )}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* ─── JOIN WITH INVITE CODE CARD (Captain / Manager instant join) ──── */}
+      {user && managedTeams.length > 0 && !isRegistered && (
+        <section className="saas-card p-6 rounded-2xl bg-white dark:bg-[#111726] border border-violet-500/30 dark:border-violet-500/20 shadow-md space-y-4">
+          {/* Header */}
+          <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div className="w-10 h-10 rounded-2xl bg-violet-600/10 flex items-center justify-center">
+              <Key className="w-5 h-5 text-violet-500" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                Join with Tournament Code
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Have an invite code from the organizer? Enter it below to register instantly — no approval needed.
+              </p>
+            </div>
+          </div>
+
+          {/* Inputs row */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Code input */}
+            <div className="flex-1 flex items-center space-x-2 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
+              <Hash className="w-4 h-4 text-violet-500 shrink-0" />
+              <input
+                id="tournament-code-input"
+                type="text"
+                maxLength={12}
+                placeholder="Enter code (e.g. A1B2C3D4)"
+                value={codeInput}
+                onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                className="bg-transparent w-full text-slate-900 dark:text-white text-sm font-bold tracking-widest placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none"
+                onKeyDown={(e) => e.key === 'Enter' && handleJoinByCode()}
+              />
+            </div>
+
+            {/* Team selector */}
+            <div className="flex items-center space-x-2 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
+              <Shield className="w-4 h-4 text-violet-500 shrink-0" />
+              <select
+                value={codeTeamId}
+                onChange={(e) => setCodeTeamId(e.target.value)}
+                className="bg-transparent text-slate-900 dark:text-white text-xs font-bold focus:outline-none cursor-pointer"
+              >
+                <option value="" disabled className="bg-white dark:bg-slate-900">Select team</option>
+                {managedTeams.map(t => (
+                  <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Join button */}
+            <button
+              id="join-by-code-btn"
+              onClick={handleJoinByCode}
+              disabled={isJoiningByCode || !codeInput.trim() || !codeTeamId}
+              className="inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-violet-600/30 transition shrink-0"
+            >
+              <Key className="w-4 h-4" />
+              <span>{isJoiningByCode ? 'Joining...' : 'Join Now'}</span>
+            </button>
+          </div>
+
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            Only team managers and captains can use this feature. Regular players must join via the team request flow.
+          </p>
         </section>
       )}
 

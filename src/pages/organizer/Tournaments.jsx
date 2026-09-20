@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Filter, Edit2, Trash2, Calendar, MapPin, Eye, Users, GitBranch, Table, Sparkles, Trophy, Check, X, Shield } from 'lucide-react';
+import { Plus, Search, Filter, Edit2, Trash2, Calendar, MapPin, Eye, Users, GitBranch, Table, Sparkles, Trophy, Check, X, Shield, Copy, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -44,6 +44,27 @@ export const Tournaments = () => {
 
   // Toast state
   const [toast, setToast] = useState({ message: '', type: 'success' });
+
+  // Copy code state: stores ID of tournament whose code was just copied
+  const [copiedCodeId, setCopiedCodeId] = useState(null);
+
+  const handleCopyCode = (tournament) => {
+    if (!tournament.tournamentCode) return;
+    navigator.clipboard.writeText(tournament.tournamentCode).then(() => {
+      setCopiedCodeId(tournament.id);
+      setTimeout(() => setCopiedCodeId(null), 2000);
+    }).catch(() => {
+      // fallback for older browsers
+      const el = document.createElement('textarea');
+      el.value = tournament.tournamentCode;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopiedCodeId(tournament.id);
+      setTimeout(() => setCopiedCodeId(null), 2000);
+    });
+  };
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -460,6 +481,28 @@ export const Tournaments = () => {
                       Teams: <strong className="text-slate-900 dark:text-white">{tournament.registeredTeamsCount || 0}</strong> / {tournament.maxTeams || 16}
                     </span>
                   </div>
+                  {/* Tournament Code — visible only if API returned it (organizer/admin) */}
+                  {tournament.tournamentCode && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <Key className="w-4 h-4 text-violet-500 shrink-0" />
+                      <span className="font-bold tracking-widest text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/60 px-2 py-0.5 rounded-lg text-xs">
+                        {tournament.tournamentCode}
+                      </span>
+                      <button
+                        id={`copy-code-${tournament.id}`}
+                        onClick={() => handleCopyCode(tournament)}
+                        title="Copy invite code"
+                        className="ml-1 p-1 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-950/40 transition"
+                      >
+                        {copiedCodeId === tournament.id
+                          ? <Check className="w-3.5 h-3.5 text-emerald-500" />
+                          : <Copy className="w-3.5 h-3.5" />}
+                      </button>
+                      {copiedCodeId === tournament.id && (
+                        <span className="text-[10px] text-emerald-500 font-bold">Copied!</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
