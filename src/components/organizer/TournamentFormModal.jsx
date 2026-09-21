@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trophy, Users, GitMerge, Zap, Settings, CheckCircle2, Info } from 'lucide-react';
+import { X, Trophy, Users, GitMerge, Zap, Settings, CheckCircle2, Info, RefreshCw, Shield } from 'lucide-react';
+import { extractTournamentConfig, buildTournamentDescriptionWithConfig, SUB_MODES } from '../../utils/substitutionUtils';
 
 export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = null, isLoading = false }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,9 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
     entryFee: 0,
     format: 'knockout',
     status: 'draft',
+    // Field & Substitution rules
+    fieldSize: 11,
+    substitutionMode: SUB_MODES.NORMAL,
     // Dynamic format configuration fields
     numberOfGroups: 4,
     teamsPerGroup: 4,
@@ -27,17 +31,20 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
+        const config = extractTournamentConfig(initialData);
         setFormData({
           name: initialData.name || '',
           slug: initialData.slug || '',
           location: initialData.location || '',
           startDate: initialData.startDate ? initialData.startDate.split('T')[0] : '',
           endDate: initialData.endDate ? initialData.endDate.split('T')[0] : '',
-          description: initialData.description || '',
+          description: config.cleanDescription || initialData.description || '',
           maxTeams: initialData.maxTeams || 16,
           entryFee: initialData.entryFee || 0,
           format: initialData.format || 'knockout',
           status: initialData.status || 'draft',
+          fieldSize: config.fieldSize || initialData.fieldSize || 11,
+          substitutionMode: config.substitutionMode || initialData.substitutionMode || SUB_MODES.NORMAL,
           numberOfGroups: initialData.numberOfGroups || 4,
           teamsPerGroup: initialData.teamsPerGroup || 4,
           qualifyingTeamsPerGroup: initialData.qualifyingTeamsPerGroup || 2,
@@ -57,6 +64,8 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
           entryFee: 0,
           format: 'knockout',
           status: 'draft',
+          fieldSize: 11,
+          substitutionMode: SUB_MODES.NORMAL,
           numberOfGroups: 4,
           teamsPerGroup: 4,
           qualifyingTeamsPerGroup: 2,
@@ -118,6 +127,10 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
       }
     }
 
+    if (!formData.fieldSize || Number(formData.fieldSize) < 1) {
+      newErrors.fieldSize = 'Field size must be at least 1 player per team.';
+    }
+
     // Auto-generate slug if missing
     if (!formData.slug.trim() && formData.name.trim()) {
       formData.slug = formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -141,17 +154,26 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
         computedMaxTeams = Number(formData.numberOfGroups) * Number(formData.teamsPerGroup);
       }
 
+      const cleanDesc = formData.description ? formData.description.trim() : '';
+      const finalDesc = buildTournamentDescriptionWithConfig(
+        cleanDesc,
+        formData.fieldSize,
+        formData.substitutionMode
+      );
+
       const payload = {
         name: formData.name.trim(),
         slug: formData.slug.trim(),
         location: formData.location.trim(),
         startDate: formData.startDate ? formData.startDate : null,
         endDate: formData.endDate ? formData.endDate : null,
-        description: formData.description ? formData.description.trim() : '',
+        description: finalDesc,
         format: formData.format,
         status: formData.status,
         maxTeams: computedMaxTeams,
         entryFee: Number(formData.entryFee) || 0,
+        fieldSize: Number(formData.fieldSize) || 11,
+        substitutionMode: formData.substitutionMode || SUB_MODES.NORMAL,
         // Format specific settings
         numberOfGroups: (formData.format === 'group_stage' || formData.format === 'hybrid') ? Number(formData.numberOfGroups) : undefined,
         teamsPerGroup: (formData.format === 'group_stage' || formData.format === 'hybrid') ? Number(formData.teamsPerGroup) : undefined,
@@ -640,6 +662,84 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* ─── FIELD SIZE & SUBSTITUTION RULES ─────────────────────────── */}
+            <div className="p-4 rounded-2xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-200/70 dark:border-blue-900/40 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-blue-200/50 dark:border-blue-900/40">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                    Pitch & Substitution Rules
+                  </h4>
+                </div>
+                <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                  Dynamic Squad & Match Rules
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Field Size (Starting players on pitch) */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                    <span>Field Size (Players On Pitch per team) *</span>
+                    <span className="text-[11px] font-normal text-slate-400">e.g. 5, 7, 8, 11</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="fieldSize"
+                    min="1"
+                    max="30"
+                    value={formData.fieldSize}
+                    onChange={handleChange}
+                    className={`w-full px-3.5 py-2 rounded-xl border ${
+                      errors.fieldSize ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
+                    } bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  />
+                  {errors.fieldSize && <p className="text-xs text-red-500">{errors.fieldSize}</p>}
+                  
+                  {/* Quick presets */}
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Presets:</span>
+                    {[5, 7, 8, 11].map(num => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, fieldSize: num }))}
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold transition ${
+                          Number(formData.fieldSize) === num
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {num}v{num}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Substitution Mode */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Substitution Mode *
+                  </label>
+                  <select
+                    name="substitutionMode"
+                    value={formData.substitutionMode}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value={SUB_MODES.NORMAL}>Normal (Standard Football: Subbed-out cannot return)</option>
+                    <option value={SUB_MODES.ROLLING}>Rolling (Futsal / Rolling: Subbed-out can re-enter)</option>
+                  </select>
+
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug pt-0.5">
+                    {formData.substitutionMode === SUB_MODES.ROLLING
+                      ? '🔄 Rolling mode: Substituted-out players can re-enter later. Players off the field remain available.'
+                      : '⏹️ Normal mode: Once a player is substituted off, they cannot return to the pitch.'}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Entry Fee & Status */}

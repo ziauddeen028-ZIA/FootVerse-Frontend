@@ -28,6 +28,13 @@ import { EmptyState } from '../../components/common/EmptyState';
 
 import { matchService } from '../../services/matchService';
 import { playerService } from '../../services/playerService';
+import {
+  calculateTeamSubstitutionState,
+  formatSubstitutionDetails,
+  cleanSubstitutionDetails,
+  extractTournamentConfig,
+  SUB_MODES,
+} from '../../utils/substitutionUtils';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -985,9 +992,42 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
 
   // ── Event Logger Logic ──────────────────────────────────────────────────────
 
+  // ── Tournament Substitution Configuration ──────────────────────────────
+  const tournamentConfig = useMemo(() => {
+    return extractTournamentConfig(match?.tournament || match);
+  }, [match]);
+
+  const configuredFieldSize = tournamentConfig.fieldSize || 11;
+  const substitutionMode = tournamentConfig.substitutionMode || SUB_MODES.NORMAL;
+
   // Selected team's roster
   const activeRoster =
     selectedTeamId === match?.homeTeamId ? homeMembers : awayMembers;
+
+  // Dynamic substitution states for both teams
+  const homeSubState = useMemo(() => {
+    return calculateTeamSubstitutionState({
+      roster: homeMembers,
+      events,
+      teamId: match?.homeTeamId,
+      fieldSize: configuredFieldSize,
+      substitutionMode,
+      sentOffPlayerIds,
+    });
+  }, [homeMembers, events, match?.homeTeamId, configuredFieldSize, substitutionMode, sentOffPlayerIds]);
+
+  const awaySubState = useMemo(() => {
+    return calculateTeamSubstitutionState({
+      roster: awayMembers,
+      events,
+      teamId: match?.awayTeamId,
+      fieldSize: configuredFieldSize,
+      substitutionMode,
+      sentOffPlayerIds,
+    });
+  }, [awayMembers, events, match?.awayTeamId, configuredFieldSize, substitutionMode, sentOffPlayerIds]);
+
+  const activeSubState = selectedTeamId === match?.homeTeamId ? homeSubState : awaySubState;
 
   const handleTeamChange = (e) => {
     const newTeamId = e.target.value;
@@ -1047,9 +1087,28 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
         return;
       }
 
+      // Check on-field / off-field rules
+      if (!activeSubState.onFieldPlayerIds.has(playerOutId)) {
+        showToast('The selected OUT player is not currently on the field.', 'error');
+        return;
+      }
+      if (activeSubState.onFieldPlayerIds.has(playerInId)) {
+        showToast('The selected IN player is already currently on the field.', 'error');
+        return;
+      }
+      if (substitutionMode === SUB_MODES.NORMAL && activeSubState.permanentlySubbedOutIds.has(playerInId)) {
+        showToast('Normal substitution mode: Substituted-out players cannot re-enter.', 'error');
+        return;
+      }
+
       targetPlayerId = playerOutId;
-      const subStr = `OUT: ${getPlayerLabel(playerOutId)} → IN: ${getPlayerLabel(playerInId)}`;
-      eventDetailsString = details.trim() ? `${subStr} (${details.trim()})` : subStr;
+      eventDetailsString = formatSubstitutionDetails({
+        outPlayerLabel: getPlayerLabel(playerOutId),
+        inPlayerLabel: getPlayerLabel(playerInId),
+        playerOutId,
+        playerInId,
+        userNotes: details.trim(),
+      });
     } else {
       if (!selectedPlayerId) {
         showToast('Please select a player.', 'error');
@@ -1805,7 +1864,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                       return (
                         <div key={s.id} className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                           <span className="font-mono text-slate-500">{s.minute}'</span>
-                          <span className="truncate">{s.details || 'Substitution'}</span>
+                          <span className="truncate">{cleanSubstitutionDetails(s.details) || 'Substitution'}</span>
                           {s.teamId && isPublic ? (
                             <Link to={`/teams?tab=team&id=${s.teamId}`} className="text-slate-400 font-normal shrink-0 hover:underline">
                               ({teamName})
@@ -1849,6 +1908,36 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
             )}
 
             <form onSubmit={handleAddEvent} className="space-y-4">
+              {eventType === 'substitution' && (
+                <div className={`p-3 rounded-xl border flex flex-wrap items-center justify-between gap-2 text-xs transition-all ${
+                  substitutionMode === SUB_MODES.ROLLING
+                    ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300'
+                    : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                }`}>
+                  <div className="flex items-center gap-2 font-semibold">
+                    {substitutionMode === SUB_MODES.ROLLING ? (
+                      <RefreshCw className="w-4 h-4 text-blue-500 shrink-0" />
+                    ) : (
+                      <Shield className="w-4 h-4 text-slate-400 shrink-0" />
+                    )}
+                    <span>
+                      <strong>{substitutionMode === SUB_MODES.ROLLING ? 'Rolling Substitutions' : 'Normal Substitutions'}:</strong>{' '}
+                      {substitutionMode === SUB_MODES.ROLLING
+                        ? 'Substituted-out players can re-enter later. Players off the pitch remain available.'
+                        : 'Substituted-out players cannot return to the match.'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] font-bold shrink-0">
+                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                      Pitch: {activeSubState.fieldSize}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                      Squad: {activeSubState.squadSize}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div className={`grid grid-cols-1 sm:grid-cols-2 ${eventType === 'substitution' ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-4`}>
                 {/* Event Type */}
                 <div>
@@ -1896,10 +1985,11 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                 {/* Player / Substitution Players */}
                 {eventType === 'substitution' ? (
                   <>
-                    {/* OUT Player */}
+                    {/* OUT Player (On Pitch) */}
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">
-                        OUT Player <span className="text-red-500">*</span>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center justify-between">
+                        <span>OUT Player (On Field) <span className="text-red-500">*</span></span>
+                        <span className="text-[10px] text-blue-500 font-bold">{activeSubState.eligibleOutMembers.length} on pitch</span>
                       </label>
                       <select
                         value={playerOutId}
@@ -1908,24 +1998,28 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                         className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="">Select OUT player...</option>
-                        {activeRoster.map((m) => {
-                          const pId = m.player?.id || m.playerId;
-                          const pName = m.player?.fullName || 'Unknown Player';
-                          const jerseyStr = m.jerseyNumber ? `#${m.jerseyNumber} ` : '';
-                          const isSentOff = sentOffPlayerIds.has(pId);
-                          return (
-                            <option key={`out-${m.id || pId}`} value={pId} disabled={isSentOff}>
-                              {jerseyStr}{pName}{isSentOff ? ' (Red Card / Sent Off)' : ''}
-                            </option>
-                          );
-                        })}
+                        {activeSubState.eligibleOutMembers.length === 0 ? (
+                          <option value="" disabled>No players currently on field</option>
+                        ) : (
+                          activeSubState.eligibleOutMembers.map((m) => {
+                            const pId = m.player?.id || m.playerId;
+                            const pName = m.player?.fullName || 'Unknown Player';
+                            const jerseyStr = m.jerseyNumber ? `#${m.jerseyNumber} ` : '';
+                            return (
+                              <option key={`out-${m.id || pId}`} value={pId}>
+                                {jerseyStr}{pName}
+                              </option>
+                            );
+                          })
+                        )}
                       </select>
                     </div>
 
-                    {/* IN Player */}
+                    {/* IN Player (Bench / Off Pitch) */}
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">
-                        IN Player <span className="text-red-500">*</span>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center justify-between">
+                        <span>IN Player (Available) <span className="text-red-500">*</span></span>
+                        <span className="text-[10px] text-emerald-500 font-bold">{activeSubState.eligibleInMembers.length} available</span>
                       </label>
                       <select
                         value={playerInId}
@@ -1934,17 +2028,25 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                         className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="">Select IN player...</option>
-                        {activeRoster.map((m) => {
-                          const pId = m.player?.id || m.playerId;
-                          const pName = m.player?.fullName || 'Unknown Player';
-                          const jerseyStr = m.jerseyNumber ? `#${m.jerseyNumber} ` : '';
-                          const isSentOff = sentOffPlayerIds.has(pId);
-                          return (
-                            <option key={`in-${m.id || pId}`} value={pId} disabled={isSentOff}>
-                              {jerseyStr}{pName}{isSentOff ? ' (Red Card / Sent Off)' : ''}
-                            </option>
-                          );
-                        })}
+                        {activeSubState.eligibleInMembers.length === 0 ? (
+                          <option value="" disabled>
+                            {substitutionMode === SUB_MODES.ROLLING
+                              ? 'No off-field players available'
+                              : 'No eligible substitutes remaining'}
+                          </option>
+                        ) : (
+                          activeSubState.eligibleInMembers.map((m) => {
+                            const pId = m.player?.id || m.playerId;
+                            const pName = m.player?.fullName || 'Unknown Player';
+                            const jerseyStr = m.jerseyNumber ? `#${m.jerseyNumber} ` : '';
+                            const wasSubbedOut = activeSubState.subHistory.some(s => s.outPlayerId === pId);
+                            return (
+                              <option key={`in-${m.id || pId}`} value={pId}>
+                                {jerseyStr}{pName}{substitutionMode === SUB_MODES.ROLLING && wasSubbedOut ? ' 🔄 (Re-entering)' : ''}
+                              </option>
+                            );
+                          })
+                        )}
                       </select>
                     </div>
                   </>
@@ -2084,7 +2186,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                       {evt.eventType === 'substitution' ? (
                         <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
                           <span className="font-semibold text-slate-900 dark:text-slate-100">
-                            {evt.details}
+                            {cleanSubstitutionDetails(evt.details) || 'Substitution'}
                           </span>
                           <span className="text-slate-400 font-normal">•</span>
                           {evt.teamId && isPublic ? (
