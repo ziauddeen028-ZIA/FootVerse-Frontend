@@ -23,12 +23,19 @@ import {
   TrendingUp, 
   ArrowRight,
   UserCheck,
-  Swords
+  Swords,
+  Key,
+  Hash,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth, ROLES, ROLE_LABELS } from '../context/AuthContext';
 import { tournamentService } from '../services/tournamentService';
 import { matchService } from '../services/matchService';
 import { statsService } from '../services/statsService';
+import { teamService } from '../services/teamService';
+import { playerService } from '../services/playerService';
+import { JoinTournamentCodeModal } from '../components/tournament/JoinTournamentCodeModal';
+import { Toast } from '../components/common/Toast';
 
 export const HomePage = () => {
   const { activeRole, user } = useAuth();
@@ -38,6 +45,7 @@ export const HomePage = () => {
 
   const isLiveParam = searchParams.get('live') === 'true' || location.search.includes('live=true');
   const [tournaments, setTournaments] = useState([]);
+  const [myTournaments, setMyTournaments] = useState([]);
   const [matches, setMatches] = useState([]);
   const [players, setPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -45,46 +53,89 @@ export const HomePage = () => {
 
   const [matchFilter, setMatchFilter] = useState(isLiveParam ? 'live' : 'all'); // 'all', 'live', 'upcoming', 'completed'
   const [tournamentFilter, setTournamentFilter] = useState('all'); // 'all', 'knockout', 'league', 'group_stage'
+  const [tournamentScope, setTournamentScope] = useState(
+    searchParams.get('tab') === 'my' || location.pathname === '/my-tournaments' ? 'my' : 'all'
+  );
+  const [isTournamentCodeModalOpen, setIsTournamentCodeModalOpen] = useState(false);
+  const [toast, setToast] = useState({ message: '', type: 'success' });
+
+  const fetchPublicData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [tournamentsRes, matchesRes, playersRes, teamsRes, userTeamsRes, userMembershipsRes] = await Promise.allSettled([
+        tournamentService.getAll(),
+        matchService.getAll(),
+        statsService.getPlayersList(),
+        statsService.getTeamsList(),
+        user ? teamService.getAll() : Promise.resolve({ teams: [] }),
+        user ? playerService.getByPlayer(user.id) : Promise.resolve({ teamMembers: [] })
+      ]);
+
+      let fetchedTournaments = [];
+      if (tournamentsRes.status === 'fulfilled' && tournamentsRes.value?.tournaments) {
+        fetchedTournaments = tournamentsRes.value.tournaments;
+        setTournaments(fetchedTournaments);
+      }
+      if (matchesRes.status === 'fulfilled' && matchesRes.value?.matches) {
+        setMatches(matchesRes.value.matches);
+      }
+      if (playersRes.status === 'fulfilled' && playersRes.value?.players) {
+        setPlayers(playersRes.value.players);
+      }
+      if (teamsRes.status === 'fulfilled' && teamsRes.value?.teams) {
+        setTeams(teamsRes.value.teams);
+      }
+
+      // Compute user's enrolled tournaments
+      if (user) {
+        const allUserTeams = userTeamsRes.status === 'fulfilled' ? userTeamsRes.value?.teams || [] : [];
+        const playerMemberships = userMembershipsRes.status === 'fulfilled' ? userMembershipsRes.value?.teamMembers || [] : [];
+
+        const myAffiliatedTeams = allUserTeams.filter(t =>
+          t.managerId === user.id ||
+          t.manager?.id === user.id ||
+          t.members?.some(m => (m.playerId === user.id || m.player?.id === user.id) && m.isCaptain) ||
+          playerMemberships.some(pm => pm.team?.id === t.id || pm.teamId === t.id)
+        );
+
+        const myTeamTournMap = new Map();
+        myAffiliatedTeams.forEach(t => {
+          const tId = t.tournamentId || t.tournament?.id;
+          if (tId) {
+            myTeamTournMap.set(tId, t);
+          }
+        });
+
+        const userTourns = fetchedTournaments.filter(t =>
+          t.organizerId === user.id || myTeamTournMap.has(t.id)
+        ).map(t => ({
+          ...t,
+          myTeam: myTeamTournMap.get(t.id) || null,
+          isOrganizer: t.organizerId === user.id
+        }));
+
+        setMyTournaments(userTourns);
+      } else {
+        setMyTournaments([]);
+      }
+    } catch (err) {
+      console.error('Error fetching public home page data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchPublicData = async () => {
-      try {
-        setLoading(true);
-        const [tournamentsRes, matchesRes, playersRes, teamsRes] = await Promise.allSettled([
-          tournamentService.getAll(),
-          matchService.getAll(),
-          statsService.getPlayersList(),
-          statsService.getTeamsList()
-        ]);
-
-        if (isMounted) {
-          if (tournamentsRes.status === 'fulfilled' && tournamentsRes.value?.tournaments) {
-            setTournaments(tournamentsRes.value.tournaments);
-          }
-          if (matchesRes.status === 'fulfilled' && matchesRes.value?.matches) {
-            setMatches(matchesRes.value.matches);
-          }
-          if (playersRes.status === 'fulfilled' && playersRes.value?.players) {
-            setPlayers(playersRes.value.players);
-          }
-          if (teamsRes.status === 'fulfilled' && teamsRes.value?.teams) {
-            setTeams(teamsRes.value.teams);
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching public home page data:', err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
     fetchPublicData();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  }, [fetchPublicData]);
+
+  const handleTournamentCodeSuccess = async (tournamentId, tournamentName) => {
+    setToast({ message: `Successfully registered for "${tournamentName}"!`, type: 'success' });
+    await fetchPublicData();
+    if (tournamentId) {
+      navigate(`/tournaments/${tournamentId}`);
+    }
+  };
 
   // Handle route-specific filters and scrolling
   useEffect(() => {
@@ -676,139 +727,322 @@ export const HomePage = () => {
             <div className="flex items-center space-x-2">
               <Trophy className="w-5 h-5 text-amber-500" />
               <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white">
-                Featured Tournaments & Cups
+                {tournamentScope === 'my' ? 'My Tournaments' : 'Featured Tournaments & Cups'}
               </h2>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Explore open registration leagues, knockout cups, and tournament leaderboards.
+              {tournamentScope === 'my'
+                ? 'Tournaments your squad is registered in, active fixture brackets, and match schedules.'
+                : 'Explore open registration leagues, knockout cups, and tournament leaderboards.'}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {/* Format Filter Tabs */}
-            <div className="flex items-center bg-slate-100 dark:bg-[#111726] p-1 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto">
-              {[
-                { id: 'all', label: 'All' },
-                { id: 'knockout', label: 'Knockout' },
-                { id: 'league', label: 'League' },
-                { id: 'group_stage', label: 'Group + KO' }
-              ].map(tab => (
+            {/* Scope Toggle: All Tournaments vs My Tournaments */}
+            {user && (
+              <div className="flex items-center bg-slate-100 dark:bg-[#111726] p-1 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <button
-                  key={tab.id}
-                  onClick={() => setTournamentFilter(tab.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                    tournamentFilter === tab.id
+                  id="tab-all-tournaments"
+                  onClick={() => setTournamentScope('all')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                    tournamentScope === 'all'
                       ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  {tab.label}
+                  All Tournaments
                 </button>
-              ))}
-            </div>
+                <button
+                  id="tab-my-tournaments"
+                  onClick={() => setTournamentScope('my')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center space-x-1.5 ${
+                    tournamentScope === 'my'
+                      ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>My Tournaments</span>
+                  {myTournaments.length > 0 && (
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                      tournamentScope === 'my' ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    }`}>
+                      {myTournaments.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Format Filter Tabs (All Tournaments scope only) */}
+            {tournamentScope === 'all' && (
+              <div className="flex items-center bg-slate-100 dark:bg-[#111726] p-1 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto">
+                {[
+                  { id: 'all', label: 'All' },
+                  { id: 'knockout', label: 'Knockout' },
+                  { id: 'league', label: 'League' },
+                  { id: 'group_stage', label: 'Group + KO' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setTournamentFilter(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                      tournamentFilter === tab.id
+                        ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Join with Tournament Code Button */}
+            {user && (
+              <button
+                id="open-tournament-code-btn"
+                onClick={() => setIsTournamentCodeModalOpen(true)}
+                className="px-3.5 py-1.5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs rounded-xl shadow-md shadow-violet-600/20 transition flex items-center space-x-1.5 whitespace-nowrap"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>Join with Code</span>
+              </button>
+            )}
 
             {/* View All Tournaments Link */}
-            <Link
-              to="/tournaments"
-              className="px-3.5 py-1.5 bg-blue-50 dark:bg-blue-950/70 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl border border-blue-200/80 dark:border-blue-800/80 transition flex items-center space-x-1 whitespace-nowrap"
-            >
-              <span>View All Tournaments</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
+            {tournamentScope === 'all' && (
+              <Link
+                to="/tournaments"
+                className="px-3.5 py-1.5 bg-blue-50 dark:bg-blue-950/70 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl border border-blue-200/80 dark:border-blue-800/80 transition flex items-center space-x-1 whitespace-nowrap"
+              >
+                <span>View All</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
           </div>
         </div>
 
-        {/* Tournaments Grid (6 items) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTournaments.map(t => {
-            const registered = t.registeredTeamsCount || t.registeredTeams || 0;
-            const max = t.maxTeams || 16;
-            const progressPercent = Math.min(Math.round((registered / max) * 100), 100);
-
-            return (
-              <Link
-                key={t.id}
-                to={`/tournaments/${t.id}`}
-                className="saas-card saas-card-hover p-6 rounded-3xl border flex flex-col justify-between space-y-4 cursor-pointer group"
-              >
-                <div>
-                  {/* Top Badges */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${formatBadgeStyle(t.format)}`}>
-                      {getFormatLabel(t.format)}
-                    </span>
-
-                    <span className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                      Open Registration
-                    </span>
-                  </div>
-
-                  <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
-                    {t.name}
+        {/* ─── SCOPE 1: MY TOURNAMENTS ────────────────────────────────────── */}
+        {tournamentScope === 'my' && (
+          <div>
+            {myTournaments.length === 0 ? (
+              <div className="p-10 sm:p-12 rounded-3xl bg-gradient-to-br from-violet-50/50 to-indigo-50/30 dark:from-violet-950/20 dark:to-indigo-950/10 border border-violet-200/60 dark:border-violet-900/40 text-center space-y-5">
+                <div className="w-16 h-16 rounded-3xl bg-violet-600/10 dark:bg-violet-500/10 flex items-center justify-center mx-auto">
+                  <Trophy className="w-8 h-8 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    You have not joined any tournaments yet
                   </h3>
-
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                    {t.description || 'Join top regional squads in this high-intensity football competition.'}
+                  <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed">
+                    Have an invite code from the organizer? Enter it to enroll your squad immediately, or explore upcoming open tournaments.
                   </p>
+                </div>
+                <div className="flex items-center justify-center flex-wrap gap-3 pt-2">
+                  <button
+                    id="my-tournaments-join-code-btn"
+                    onClick={() => setIsTournamentCodeModalOpen(true)}
+                    className="px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-xs shadow-md shadow-violet-600/25 transition inline-flex items-center space-x-2"
+                  >
+                    <Key className="w-4 h-4" />
+                    <span>Join with Tournament Code</span>
+                  </button>
+                  <button
+                    onClick={() => setTournamentScope('all')}
+                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold rounded-xl text-xs shadow-md transition inline-flex items-center space-x-2"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    <span>Browse Open Tournaments</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {myTournaments.map(t => {
+                  const registered = t.registeredTeamsCount || t.registeredTeams || 0;
+                  const max = t.maxTeams || 16;
+                  const progressPercent = Math.min(Math.round((registered / max) * 100), 100);
 
-                  <div className="space-y-2.5 pt-4 text-xs">
-                    <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                      <span className="flex items-center space-x-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="truncate max-w-[150px]">{t.location || 'Metropolis'}</span>
-                      </span>
-                      <span className="flex items-center space-x-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{t.startDate ? new Date(t.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming'}</span>
-                      </span>
-                    </div>
+                  return (
+                    <Link
+                      key={t.id}
+                      to={`/tournaments/${t.id}`}
+                      className="saas-card saas-card-hover p-6 rounded-3xl border border-blue-200/80 dark:border-blue-900/50 bg-white dark:bg-[#111726] flex flex-col justify-between space-y-4 cursor-pointer group shadow-sm"
+                    >
+                      <div>
+                        {/* Top Badges */}
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${formatBadgeStyle(t.format)}`}>
+                            {getFormatLabel(t.format)}
+                          </span>
 
-                    {/* Progress Bar for Registration */}
-                    <div className="space-y-1 pt-1">
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-slate-500 dark:text-slate-400">Registered Teams</span>
-                        <span className="font-bold text-blue-600 dark:text-blue-400">
-                          {registered} / {max}
+                          {t.myTeam ? (
+                            <span className="px-2.5 py-1 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-bold flex items-center space-x-1">
+                              <Shield className="w-3 h-3" />
+                              <span>{t.myTeam.name}</span>
+                            </span>
+                          ) : t.isOrganizer ? (
+                            <span className="px-2.5 py-1 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 text-[10px] font-bold">
+                              Organizer
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                              Enrolled
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                          {t.name}
+                        </h3>
+
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                          {t.description || 'View tournament brackets, registered squads, and match schedules.'}
+                        </p>
+
+                        <div className="space-y-2.5 pt-4 text-xs">
+                          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                            <span className="flex items-center space-x-1.5">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="truncate max-w-[150px]">{t.location || 'Metropolis'}</span>
+                            </span>
+                            <span className="flex items-center space-x-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{t.startDate ? new Date(t.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming'}</span>
+                            </span>
+                          </div>
+
+                          <div className="space-y-1 pt-1">
+                            <div className="flex justify-between text-[11px]">
+                              <span className="text-slate-500 dark:text-slate-400">Squads Enrolled</span>
+                              <span className="font-bold text-blue-600 dark:text-blue-400">
+                                {registered} / {max}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                              <div 
+                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Registered</span>
+                        </span>
+
+                        <span className="px-4 py-2 bg-blue-600 group-hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
+                          <span>View Details</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </span>
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div 
-                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
-                          style={{ width: `${progressPercent}%` }}
-                        />
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── SCOPE 2: ALL TOURNAMENTS ───────────────────────────────────── */}
+        {tournamentScope === 'all' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTournaments.map(t => {
+              const registered = t.registeredTeamsCount || t.registeredTeams || 0;
+              const max = t.maxTeams || 16;
+              const progressPercent = Math.min(Math.round((registered / max) * 100), 100);
+
+              return (
+                <Link
+                  key={t.id}
+                  to={`/tournaments/${t.id}`}
+                  className="saas-card saas-card-hover p-6 rounded-3xl border flex flex-col justify-between space-y-4 cursor-pointer group"
+                >
+                  <div>
+                    {/* Top Badges */}
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${formatBadgeStyle(t.format)}`}>
+                        {getFormatLabel(t.format)}
+                      </span>
+
+                      <span className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                        Open Registration
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                      {t.name}
+                    </h3>
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                      {t.description || 'Join top regional squads in this high-intensity football competition.'}
+                    </p>
+
+                    <div className="space-y-2.5 pt-4 text-xs">
+                      <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center space-x-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                          <span className="truncate max-w-[150px]">{t.location || 'Metropolis'}</span>
+                        </span>
+                        <span className="flex items-center space-x-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{t.startDate ? new Date(t.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming'}</span>
+                        </span>
+                      </div>
+
+                      {/* Progress Bar for Registration */}
+                      <div className="space-y-1 pt-1">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-slate-500 dark:text-slate-400">Registered Teams</span>
+                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                            {registered} / {max}
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                          <div 
+                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-semibold">Entry Fee</span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">
-                      {t.entryFee ? `$${t.entryFee}` : 'Free Entry'}
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-semibold">Entry Fee</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        {t.entryFee ? `$${t.entryFee}` : 'Free Entry'}
+                      </span>
+                    </div>
+
+                    <span className="px-4 py-2 bg-blue-600 group-hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
+                      <span>View Hub</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
 
-                  <span className="px-4 py-2 bg-blue-600 group-hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
-                    <span>View Hub</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="pt-2 flex justify-center">
-          <Link
-            to="/tournaments"
-            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition flex items-center space-x-2"
-          >
-            <span>Browse All Platform Tournaments & Full Brackets</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
+        {tournamentScope === 'all' && (
+          <div className="pt-2 flex justify-center">
+            <Link
+              to="/tournaments"
+              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition flex items-center space-x-2"
+            >
+              <span>Browse All Platform Tournaments & Full Brackets</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
 
       </section>
 
@@ -910,6 +1144,19 @@ export const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Modals & Toast Feedback */}
+      <JoinTournamentCodeModal
+        isOpen={isTournamentCodeModalOpen}
+        onClose={() => setIsTournamentCodeModalOpen(false)}
+        onSuccess={handleTournamentCodeSuccess}
+      />
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ message: '', type: 'success' })}
+      />
 
     </div>
   );

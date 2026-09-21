@@ -7,6 +7,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { Toast } from '../../components/common/Toast';
 import { LoadingSkeleton } from '../../components/organizer/LoadingSkeleton';
 import { TournamentFormModal } from '../../components/organizer/TournamentFormModal';
+import { GenerateBracketModal } from '../../components/organizer/GenerateBracketModal';
 
 import { tournamentService } from '../../services/tournamentService';
 import { tournamentJoinRequestService } from '../../services/tournamentJoinRequestService';
@@ -208,11 +209,11 @@ export const Tournaments = () => {
     }
   };
 
-  const handleGenerateBracketConfirm = async () => {
+  const handleGenerateBracketConfirm = async (options = {}) => {
     if (!selectedTournamentForBracket) return;
     setIsGeneratingBracket(true);
     try {
-      const res = await tournamentService.generateKnockout(selectedTournamentForBracket.id);
+      const res = await tournamentService.generateKnockout(selectedTournamentForBracket.id, options);
       showToast(res.message || 'Knockout bracket generated successfully!');
       setIsBracketConfirmOpen(false);
       setSelectedTournamentForBracket(null);
@@ -552,16 +553,14 @@ export const Tournaments = () => {
         isLoading={isSubmitting}
       />
 
-      <ConfirmDialog 
+      <GenerateBracketModal
         isOpen={isBracketConfirmOpen}
-        title="Generate Knockout Bracket"
-        message={`Are you sure you want to generate the knockout tournament bracket for "${selectedTournamentForBracket?.name}"? This will seed all registered teams and generate the full tournament fixtures tree.`}
-        confirmLabel="Generate Bracket"
-        onConfirm={handleGenerateBracketConfirm}
-        onCancel={() => {
+        onClose={() => {
           setIsBracketConfirmOpen(false);
           setSelectedTournamentForBracket(null);
         }}
+        tournament={selectedTournamentForBracket}
+        onGenerate={handleGenerateBracketConfirm}
         isLoading={isGeneratingBracket}
       />
 

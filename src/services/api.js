@@ -26,15 +26,22 @@ export async function fetchApi(endpoint, options = {}) {
 
   try {
     const response = await fetch(url, config);
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'API request failed');
+      throw new Error(data.message || data.error || `Request failed with status ${response.status}`);
     }
 
     return data;
   } catch (error) {
-    console.error(`[API Error] ${endpoint}:`, error);
+    if (error.name !== 'TypeError') {
+      console.error(`[API Error] ${endpoint}:`, error.message || error);
+    }
     throw error;
   }
 }

@@ -200,7 +200,9 @@ export const TournamentHub = () => {
             try {
               const matchesRes = await matchService.getAll();
               const allMatches = matchesRes?.matches || [];
-              const fetchedMatches = allMatches.filter(m => m.tournamentId === foundTournament.id);
+              const fetchedMatches = allMatches.filter(
+                m => m.tournamentId === foundTournament.id || m.tournament?.id === foundTournament.id
+              );
               if (isMounted) setMatches(fetchedMatches);
             } catch (err) {
               console.warn('Could not fetch matches list:', err);
@@ -322,10 +324,23 @@ export const TournamentHub = () => {
     try {
       const res = await tournamentJoinRequestService.joinByCode(codeInput.trim(), codeTeamId);
       setToast({ message: res.message || 'Team registered successfully!', type: 'success' });
-      // Refresh status so the join-request card reflects registration
+
+      // Mark as registered immediately
       setJoinRequestStatus('code_join');
       setIsRegistered(true);
       setCodeInput('');
+
+      // Refresh teams list so the newly registered team shows in the Registered Teams section
+      try {
+        const teamsRes = await teamService.getAll();
+        const allTeams = teamsRes?.teams || [];
+        const updatedTeams = allTeams.filter(
+          t => t.tournamentId === tournament.id || t.tournament?.id === tournament.id
+        );
+        setTeams(updatedTeams);
+      } catch (err) {
+        console.warn('Could not refresh teams list after code join:', err);
+      }
     } catch (err) {
       setToast({ message: err.message || 'Failed to join tournament.', type: 'error' });
     } finally {
@@ -768,7 +783,13 @@ export const TournamentHub = () => {
                   Knockout Fixture Bracket
                 </h2>
               </div>
-              <KnockoutBracket tournamentId={tournament.id} />
+              <KnockoutBracket
+                matches={matches}
+                tournamentId={tournament.id}
+                selectedTournamentId={tournament.id}
+                tournaments={tournament ? [tournament] : []}
+                readOnly={true}
+              />
             </section>
           );
         }
@@ -815,7 +836,13 @@ export const TournamentHub = () => {
                     Playoff Knockout Tree
                   </h2>
                 </div>
-                <KnockoutBracket tournamentId={tournament.id} />
+                <KnockoutBracket
+                  matches={matches}
+                  tournamentId={tournament.id}
+                  selectedTournamentId={tournament.id}
+                  tournaments={tournament ? [tournament] : []}
+                  readOnly={true}
+                />
               </div>
             </section>
           );
@@ -830,7 +857,13 @@ export const TournamentHub = () => {
                 Tournament Fixtures & Bracket Tree
               </h2>
             </div>
-            <KnockoutBracket tournamentId={tournament.id} />
+            <KnockoutBracket
+              matches={matches}
+              tournamentId={tournament.id}
+              selectedTournamentId={tournament.id}
+              tournaments={tournament ? [tournament] : []}
+              readOnly={true}
+            />
           </section>
         );
       })()}

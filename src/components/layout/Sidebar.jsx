@@ -39,8 +39,14 @@ export const Sidebar = () => {
       label: 'Tournaments', 
       path: '/tournaments', 
       icon: Trophy,
-      match: (pathname) => pathname.startsWith('/tournaments')
+      match: (pathname, search) => (pathname.startsWith('/tournaments') && !search?.includes('tab=my')) || pathname === '/tournaments-preview'
     },
+    ...(user ? [{
+      label: 'My Tournaments', 
+      path: '/tournaments?tab=my', 
+      icon: Trophy,
+      match: (pathname, search) => (pathname === '/tournaments' || pathname === '/my-tournaments') && search?.includes('tab=my')
+    }] : []),
     { 
       label: 'Matches', 
       path: '/matches', 
@@ -54,7 +60,7 @@ export const Sidebar = () => {
       match: (pathname, search) => (pathname === '/teams' || pathname.startsWith('/teams/')) && !pathname.startsWith('/teams-manage') && !search.includes('tab=team')
     },
     ...(user ? [{
-      label: 'My Teams & Create', 
+      label: 'My Teams', 
       path: '/teams-manage', 
       icon: Shield,
       match: (pathname) => pathname === '/teams-manage' || pathname === '/teams/join'

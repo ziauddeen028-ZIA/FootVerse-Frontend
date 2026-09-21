@@ -8,11 +8,13 @@ export const tournamentService = {
   delete: (id) => api.delete(`/tournaments/${id}`),
   
   // Bracket, League & Standings endpoints
+  generateKnockout: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/knockout/generate`, data),
   generateKnockoutBracket: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/knockout/generate`, data),
   generateHybridBracket: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/hybrid/generate`, data),
   // Group Stage → Knockout: works for group_stage and group_knockout formats via the hybrid/generate endpoint
   generateGroupKnockout: (tournamentId, qualifyingTeamsPerGroup = 2) =>
     api.post(`/tournaments/${tournamentId}/hybrid/generate`, { qualifyingTeamsPerGroup }),
+  generateLeague: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/league/generate`, data),
   generateLeagueFixtures: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/league/generate`, data),
   getStandings: (tournamentId) => api.get(`/tournaments/${tournamentId}/standings`),
 

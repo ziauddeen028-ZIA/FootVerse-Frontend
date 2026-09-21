@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Trophy, Zap, Radio, Clock, Shield, Sparkles, ChevronRight, Award, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { tournamentService } from '../../services/tournamentService';
+import { matchService } from '../../services/matchService';
 
 // ─── Standard Round Ordering ──────────────────────────────────────────────────
 const ROUND_ORDER_WEIGHTS = {
@@ -284,23 +286,64 @@ const StemConnector = ({ active = false }) => {
 
 // ─── Main Knockout Bracket Component ──────────────────────────────────────────
 export const KnockoutBracket = ({
-  matches = [],
+  matches: propMatches,
   tournaments = [],
   selectedTournamentId,
+  tournamentId,
   onSelectTournament,
   readOnly = false,
   onMatchClick,
 }) => {
   const navigate = useNavigate();
   const [selectedRoundFilter, setSelectedRoundFilter] = useState('all');
+  const [fetchedMatches, setFetchedMatches] = useState([]);
+  const [fetchedTournaments, setFetchedTournaments] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const effectiveTournamentId = selectedTournamentId || tournamentId;
+
+  // Auto-fetch matches if not provided by parent
+  useEffect(() => {
+    if (propMatches && propMatches.length > 0) return;
+
+    let isMounted = true;
+    const loadMatches = async () => {
+      try {
+        setLoading(true);
+        const [mRes, tRes] = await Promise.allSettled([
+          matchService.getAll(),
+          tournaments.length === 0 ? tournamentService.getAll() : Promise.resolve({ tournaments })
+        ]);
+
+        if (isMounted) {
+          if (mRes.status === 'fulfilled' && mRes.value?.matches) {
+            setFetchedMatches(mRes.value.matches);
+          }
+          if (tRes.status === 'fulfilled' && tRes.value?.tournaments) {
+            setFetchedTournaments(tRes.value.tournaments);
+          }
+        }
+      } catch (err) {
+        console.warn('KnockoutBracket match fetch error:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadMatches();
+    return () => { isMounted = false; };
+  }, [propMatches, effectiveTournamentId]);
+
+  const matches = (propMatches && propMatches.length > 0) ? propMatches : fetchedMatches;
+  const allTournaments = tournaments.length > 0 ? tournaments : fetchedTournaments;
 
   // Filter knockout matches for selected tournament
   const knockoutMatches = useMemo(() => {
     if (!matches || matches.length === 0) return [];
 
     let list = matches;
-    if (selectedTournamentId && selectedTournamentId !== 'all') {
-      list = list.filter((m) => m.tournamentId === selectedTournamentId || m.tournament?.id === selectedTournamentId);
+    if (effectiveTournamentId && effectiveTournamentId !== 'all') {
+      list = list.filter((m) => m.tournamentId === effectiveTournamentId || m.tournament?.id === effectiveTournamentId);
     }
 
     return list.filter((m) => {
@@ -314,7 +357,7 @@ export const KnockoutBracket = ({
         r.includes('knockout')
       );
     });
-  }, [matches, selectedTournamentId]);
+  }, [matches, effectiveTournamentId]);
 
   // Group matches by round in Left-to-Right progression order
   const { allRounds, finalMatch, thirdPlaceMatch, championTeam } = useMemo(() => {
@@ -382,21 +425,31 @@ export const KnockoutBracket = ({
       }
       return;
     }
-    const tourneyParam = selectedTournamentId && selectedTournamentId !== 'all' ? `?tournament=${selectedTournamentId}` : '';
+    const tourneyParam = effectiveTournamentId && effectiveTournamentId !== 'all' ? `?tournament=${effectiveTournamentId}` : '';
     const readOnlyParam = isFinished ? (tourneyParam ? '&readonly=true' : '?readonly=true') : '';
     navigate(`/organizer/matches/${matchId}/live${tourneyParam}${readOnlyParam}`);
   };
 
   // Find active tournament
   const currentTournament = useMemo(() => {
-    if (!selectedTournamentId || selectedTournamentId === 'all') {
-      return tournaments.find((t) => t.format === 'knockout' || t.format === 'hybrid') || tournaments[0];
+    if (!effectiveTournamentId || effectiveTournamentId === 'all') {
+      return allTournaments.find((t) => t.format === 'knockout' || t.format === 'hybrid') || allTournaments[0];
     }
-    return tournaments.find((t) => t.id === selectedTournamentId);
-  }, [tournaments, selectedTournamentId]);
+    return allTournaments.find((t) => t.id === effectiveTournamentId);
+  }, [allTournaments, effectiveTournamentId]);
+
+  if (loading && knockoutMatches.length === 0) {
+    return (
+      <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-12 text-center shadow-sm animate-pulse">
+        <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center mx-auto mb-4">
+          <Trophy className="w-6 h-6 animate-spin" />
+        </div>
+        <p className="text-sm font-semibold text-slate-400">Loading knockout bracket...</p>
+      </div>
+    );
+  }
 
   if (knockoutMatches.length === 0) {
-    if (readOnly) return null;
     return (
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
         <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
@@ -410,7 +463,7 @@ export const KnockoutBracket = ({
             ? `The tournament "${currentTournament.name}" does not have a generated knockout bracket yet.`
             : 'Select a tournament with a knockout or hybrid format to view its bracket.'}
         </p>
-        {currentTournament && (
+        {!readOnly && currentTournament && (
           <button
             onClick={() => navigate('/organizer/tournaments')}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-sm"

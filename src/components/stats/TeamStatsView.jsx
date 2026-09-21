@@ -41,6 +41,13 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
   const [managerRequests, setManagerRequests] = useState([]);
   const [toast, setToast] = useState({ message: '', type: 'success' });
 
+  // Sync initialTeamId prop if updated externally
+  useEffect(() => {
+    if (initialTeamId) {
+      setSelectedTeamId(initialTeamId);
+    }
+  }, [initialTeamId]);
+
   // Load teams list (skipped in hideSelector mode)
   useEffect(() => {
     if (hideSelector) return;
@@ -494,12 +501,13 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
               ) : (
                 <div className="space-y-2.5">
                   {teamData.tournamentHistory.map((t) => (
-                    <div
+                    <Link
                       key={t.id}
-                      className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 space-y-2"
+                      to={`/tournaments/${t.id}`}
+                      className="block p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 space-y-2 hover:border-blue-500/50 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition cursor-pointer group"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition truncate">
                           {t.name}
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold uppercase">
@@ -513,7 +521,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                           {t.goalsFor}:{t.goalsAgainst}
                         </span>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

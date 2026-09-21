@@ -82,6 +82,7 @@ function AppContent() {
 
         {/* Public Ecosystem Pages & Functional Routes */}
         <Route path="/tournaments" element={<HomePage />} />
+        <Route path="/my-tournaments" element={<HomePage />} />
         <Route path="/tournaments/:tournamentId" element={<TournamentHub />} />
         <Route path="/tournaments-preview" element={<HomePage />} />
         <Route path="/matches" element={<HomePage />} />

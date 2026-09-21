@@ -16,6 +16,9 @@ export const teamJoinRequestService = {
 
   // Manager rejects a join request
   rejectRequest: (requestId) => api.post(`/team-join-requests/${requestId}/reject`),
+
+  // Player joins a team instantly using an 8-char team code
+  joinByCode: (teamCode) => api.post('/team-join-requests/join-by-code', { teamCode }),
 };
 
 export default teamJoinRequestService;
