@@ -25,6 +25,7 @@ import {
   Key,
   Hash
 } from 'lucide-react';
+import { CustomSelect } from '../components/common/CustomSelect';
 import { tournamentService } from '../services/tournamentService';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
@@ -35,6 +36,7 @@ import { KnockoutBracket } from '../components/organizer/KnockoutBracket';
 import { LeagueStandings } from '../components/organizer/LeagueStandings';
 import { GroupStageStandings } from '../components/organizer/GroupStageStandings';
 import { Toast } from '../components/common/Toast';
+import { cleanTournamentDescription } from '../utils/substitutionUtils';
 
 export const TournamentHub = () => {
   const { tournamentId } = useParams();
@@ -503,7 +505,7 @@ export const TournamentHub = () => {
             </h1>
 
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans">
-              {tournament.description || 'Welcome to the tournament hub. View participating team rosters, tournament structure, and fixture schedules.'}
+              {cleanTournamentDescription(tournament.description) || 'Welcome to the tournament hub. View participating team rosters, tournament structure, and fixture schedules.'}
             </p>
           </div>
 
@@ -571,19 +573,14 @@ export const TournamentHub = () => {
             </div>
 
             {/* Team Selector */}
-            <div className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-              <Shield className="w-4 h-4 text-blue-500 ml-1" />
-              <select
+            <div className="w-full sm:w-60">
+              <CustomSelect
                 value={selectedUserTeamId}
-                onChange={(e) => setSelectedUserTeamId(e.target.value)}
-                className="bg-transparent text-slate-900 dark:text-white text-xs font-bold py-1 pr-2 focus:outline-none cursor-pointer"
-              >
-                {managedTeams.map(t => (
-                  <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                    {t.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedUserTeamId}
+                options={managedTeams.map(t => ({ value: t.id, label: t.name }))}
+                icon={Shield}
+                placeholder="Select team"
+              />
             </div>
           </div>
 
@@ -672,20 +669,14 @@ export const TournamentHub = () => {
             </div>
 
             {/* Team selector */}
-            <div className="flex items-center space-x-2 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
-              <Shield className="w-4 h-4 text-violet-500 shrink-0" />
-              <select
+            <div className="w-full sm:w-56">
+              <CustomSelect
                 value={codeTeamId}
-                onChange={(e) => setCodeTeamId(e.target.value)}
-                className="bg-transparent text-slate-900 dark:text-white text-xs font-bold focus:outline-none cursor-pointer"
-              >
-                <option value="" disabled className="bg-white dark:bg-slate-900">Select team</option>
-                {managedTeams.map(t => (
-                  <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                    {t.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setCodeTeamId}
+                options={managedTeams.map(t => ({ value: t.id, label: t.name }))}
+                icon={Shield}
+                placeholder="Select team"
+              />
             </div>
 
             {/* Join button */}
@@ -733,39 +724,27 @@ export const TournamentHub = () => {
         </div>
 
         <div className="saas-card p-6 rounded-2xl border flex flex-col justify-between space-y-4">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Competition Format</span>
-            <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white mt-1">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Competition Format</span>
+              <Layers className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+            </div>
+            <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
               {getFormatLabel(tournament.format)}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
-              {tournament.format === 'knockout' 
-                ? 'Single elimination bracket tree with sudden death playoff matches.'
-                : tournament.format === 'league'
-                ? 'Comprehensive league table with points, goal difference, and weekly fixtures.'
-                : 'Group phase round-robin with advancing playoff knockout bracket.'}
-            </p>
           </div>
-          <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center space-x-1">
-            <Layers className="w-3.5 h-3.5" />
-            <span>Structured Bracket System</span>
-          </span>
         </div>
 
         <div className="saas-card p-6 rounded-2xl border flex flex-col justify-between space-y-4">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Venue & Pitch</span>
-            <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white mt-1">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Venue & Pitch</span>
+              <MapPin className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+            </div>
+            <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
               {tournament.location || 'Metropolis Stadium'}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
-              Official verified turf with automated timer integration and on-site match event logging.
-            </p>
           </div>
-          <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
-            <MapPin className="w-3.5 h-3.5" />
-            <span>Official Match Venue</span>
-          </span>
         </div>
 
       </section>

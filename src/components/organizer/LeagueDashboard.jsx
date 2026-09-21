@@ -23,6 +23,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { LeagueStandings } from './LeagueStandings';
 import { GroupStageStandings } from './GroupStageStandings';
+import { CustomSelect } from '../common/CustomSelect';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Toast } from '../common/Toast';
 import { tournamentService } from '../../services/tournamentService';
@@ -287,17 +288,16 @@ export const LeagueDashboard = ({
 
         {/* Dropdown switch & actions */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <select
-            value={activeId || ''}
-            onChange={(e) => onSelectTournament && onSelectTournament(e.target.value)}
-            className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:flex-none"
-          >
-            {tournaments.map(t => (
-              <option key={t.id} value={t.id}>
-                {t.name} ({t.format ? t.format.replace('_', ' ') : 'League'})
-              </option>
-            ))}
-          </select>
+          <div className="flex-1 sm:w-60">
+            <CustomSelect
+              value={activeId || ''}
+              onChange={(val) => onSelectTournament && onSelectTournament(val)}
+              options={tournaments.map(t => ({
+                value: t.id,
+                label: `${t.name} (${t.format ? t.format.replace('_', ' ') : 'League'})`
+              }))}
+            />
+          </div>
 
           {/* Quick Schedule match button */}
           {onOpenCreateMatch && (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Key, Shield, Hash, X, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { CustomSelect } from '../common/CustomSelect';
 import { tournamentJoinRequestService } from '../../services/tournamentJoinRequestService';
 import { teamService } from '../../services/teamService';
 import { useAuth } from '../../context/AuthContext';
@@ -161,21 +162,17 @@ export const JoinTournamentCodeModal = ({ isOpen, onClose, onSuccess, initialTea
                 You do not manage any teams yet. Create a team first to enter tournaments.
               </div>
             ) : (
-              <div className="relative">
-                <Shield className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <select
-                  id="modal-tournament-team-select"
-                  value={selectedTeamId}
-                  onChange={(e) => setSelectedTeamId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
-                >
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id} className="bg-white dark:bg-slate-900">
-                      {team.name} ({team.city || 'Club'})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CustomSelect
+                id="modal-tournament-team-select"
+                value={selectedTeamId}
+                onChange={setSelectedTeamId}
+                icon={Shield}
+                options={teams.map((team) => ({
+                  value: team.id,
+                  label: `${team.name} (${team.city || 'Club'})`
+                }))}
+                placeholder="Select team"
+              />
             )}
           </div>
 

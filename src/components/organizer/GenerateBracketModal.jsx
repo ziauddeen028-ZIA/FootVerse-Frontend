@@ -13,6 +13,7 @@ import {
   Sliders,
   Check
 } from 'lucide-react';
+import { CustomSelect } from '../common/CustomSelect';
 import { teamService } from '../../services/teamService';
 
 export const GenerateBracketModal = ({
@@ -377,51 +378,37 @@ export const GenerateBracketModal = ({
                         {/* Home Team Select */}
                         <div>
                           <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Home Squad</label>
-                          <select
+                          <CustomSelect
                             value={match.homeTeamId}
-                            onChange={(e) => handleMatchupChange(idx, 'home', e.target.value)}
-                            className="w-full py-2 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                          >
-                            <option value="">Select team...</option>
-                            {teams.map(t => {
+                            onChange={(val) => handleMatchupChange(idx, 'home', val)}
+                            placeholder="Select team..."
+                            options={teams.map(t => {
                               const isSelectedElsewhere = selectedTeamIds.has(t.id) && t.id !== match.homeTeamId;
-                              return (
-                                <option
-                                  key={t.id}
-                                  value={t.id}
-                                  disabled={isSelectedElsewhere}
-                                  className="bg-white dark:bg-slate-900"
-                                >
-                                  {t.name} {t.city ? `(${t.city})` : ''} {isSelectedElsewhere ? '• [Selected]' : ''}
-                                </option>
-                              );
+                              return {
+                                value: t.id,
+                                label: `${t.name} ${t.city ? `(${t.city})` : ''} ${isSelectedElsewhere ? '• [Selected]' : ''}`,
+                                disabled: isSelectedElsewhere
+                              };
                             })}
-                          </select>
+                          />
                         </div>
 
                         {/* Away Team Select */}
                         <div>
                           <label className="text-[10px] font-semibold text-slate-500 block mb-0.5">Away Squad</label>
-                          <select
+                          <CustomSelect
                             value={match.awayTeamId}
-                            onChange={(e) => handleMatchupChange(idx, 'away', e.target.value)}
-                            className="w-full py-2 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                          >
-                            <option value="">Select team...</option>
-                            {teams.map(t => {
+                            onChange={(val) => handleMatchupChange(idx, 'away', val)}
+                            placeholder="Select team..."
+                            options={teams.map(t => {
                               const isSelectedElsewhere = selectedTeamIds.has(t.id) && t.id !== match.awayTeamId;
-                              return (
-                                <option
-                                  key={t.id}
-                                  value={t.id}
-                                  disabled={isSelectedElsewhere}
-                                  className="bg-white dark:bg-slate-900"
-                                >
-                                  {t.name} {t.city ? `(${t.city})` : ''} {isSelectedElsewhere ? '• [Selected]' : ''}
-                                </option>
-                              );
+                              return {
+                                value: t.id,
+                                label: `${t.name} ${t.city ? `(${t.city})` : ''} ${isSelectedElsewhere ? '• [Selected]' : ''}`,
+                                disabled: isSelectedElsewhere
+                              };
                             })}
-                          </select>
+                          />
                         </div>
                       </div>
                     </div>

@@ -18,6 +18,20 @@ export const SUB_MODES = {
 };
 
 /**
+ * Strips internal config metadata tag and any HTML comments from tournament descriptions.
+ *
+ * @param {string} description - Raw tournament description
+ * @returns {string} Clean human-readable tournament description
+ */
+export const cleanTournamentDescription = (description = '') => {
+  if (!description || typeof description !== 'string') return '';
+  return description
+    .replace(/<!--config:[\s\S]*?-->/gi, '')
+    .replace(/<!--[\s\S]*?-->/gi, '')
+    .trim();
+};
+
+/**
  * Extracts tournament configuration (fieldSize, substitutionMode) from tournament object.
  * Supports direct properties as well as embedded configuration in metadata/description.
  *
@@ -36,16 +50,15 @@ export const extractTournamentConfig = (tournament) => {
   const tObj = tournament.tournament || tournament;
   let fieldSize = tObj.fieldSize ? Number(tObj.fieldSize) : 11;
   let substitutionMode = tObj.substitutionMode || SUB_MODES.NORMAL;
-  let cleanDescription = tObj.description || '';
+  let cleanDescription = cleanTournamentDescription(tObj.description);
 
   if (tObj.description) {
-    const configMatch = tObj.description.match(/<!--config:(.*?)-->/);
+    const configMatch = tObj.description.match(/<!--config:([\s\S]*?)-->/i);
     if (configMatch) {
       try {
         const parsed = JSON.parse(configMatch[1]);
         if (parsed.fieldSize) fieldSize = Number(parsed.fieldSize);
         if (parsed.substitutionMode) substitutionMode = parsed.substitutionMode;
-        cleanDescription = tObj.description.replace(/<!--config:.*?-->/g, '').trim();
       } catch (e) {
         // ignore parse error and keep fallback
       }
@@ -77,7 +90,7 @@ export const buildTournamentDescriptionWithConfig = (
   fieldSize = 11,
   substitutionMode = SUB_MODES.NORMAL
 ) => {
-  const cleanDesc = (userDescription || '').replace(/<!--config:.*?-->/g, '').trim();
+  const cleanDesc = cleanTournamentDescription(userDescription);
   const config = {
     fieldSize: Number(fieldSize) || 11,
     substitutionMode: substitutionMode === SUB_MODES.ROLLING ? SUB_MODES.ROLLING : SUB_MODES.NORMAL,

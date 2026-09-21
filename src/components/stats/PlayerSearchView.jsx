@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Search, User, Trophy, Shield, ChevronRight, CheckCircle2,
-  Activity, Flame, ArrowLeft, Globe, Lock
+  Activity, Flame, ArrowLeft, Lock
 } from "lucide-react";
 import statsService from "../../services/statsService";
 
@@ -55,12 +55,6 @@ const PublicPlayerPanel = ({ playerId, onBack }) => {
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
         <span>Back to Search Results</span>
       </button>
-
-      {/* Public Notice Badge */}
-      <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-        <Globe className="w-3.5 h-3.5" />
-        <span>Public Stats — No private team or roster data shown</span>
-      </div>
 
       {/* Hero */}
       <div className="saas-card rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-[#10172A] to-[#151D33] text-white border border-slate-800 shadow-xl relative overflow-hidden">
@@ -256,12 +250,6 @@ export const PlayerSearchView = ({ initialPlayerId = null }) => {
 
   return (
     <div className="space-y-6">
-      {/* Public search notice */}
-      <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold">
-        <Globe className="w-3.5 h-3.5" />
-        <span>Public search — anyone can view basic player stats (no private team/roster data)</span>
-      </div>
-
       {/* Search bar */}
       <div className="saas-card rounded-2xl p-4 sm:p-5 bg-white dark:bg-[#111726] border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="relative">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Trophy, Zap, Radio, Clock, Shield, Sparkles, ChevronRight, Award, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { CustomSelect } from '../common/CustomSelect';
 import { tournamentService } from '../../services/tournamentService';
 import { matchService } from '../../services/matchService';
 
@@ -509,18 +510,16 @@ export const KnockoutBracket = ({
         {/* Tournament Selector */}
         <div className="flex flex-wrap items-center gap-2">
           {tournaments.length > 1 && (
-            <select
-              value={selectedTournamentId || 'all'}
-              onChange={(e) => onSelectTournament(e.target.value)}
-              className="px-3 py-2 text-xs font-bold rounded-xl bg-slate-900 text-white border border-slate-700 hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all cursor-pointer"
-            >
-              <option value="all">All Tournaments</option>
-              {tournaments.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({t.format})
-                </option>
-              ))}
-            </select>
+            <div className="w-48">
+              <CustomSelect
+                value={selectedTournamentId || 'all'}
+                onChange={(val) => onSelectTournament(val)}
+                options={[
+                  { value: 'all', label: 'All Tournaments' },
+                  ...tournaments.map((t) => ({ value: t.id, label: `${t.name} (${t.format})` }))
+                ]}
+              />
+            </div>
           )}
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300">

@@ -8,6 +8,38 @@ import { teamService } from '../../services/teamService';
 import { matchService } from '../../services/matchService';
 import { playerService } from '../../services/playerService';
 
+// Format relative time helper
+function formatTimeAgo(dateInput) {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return '';
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'Just now';
+  }
+  const mins = Math.floor(diffInSeconds / 60);
+  if (mins < 60) {
+    return `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
+  }
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) {
+    return `${hrs} ${hrs === 1 ? 'hour' : 'hours'} ago`;
+  }
+  const days = Math.floor(hrs / 24);
+  if (days < 30) {
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  }
+  const months = Math.floor(days / 30);
+  if (months < 12) {
+    return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+  }
+  const years = Math.floor(days / 365);
+  return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+}
+
 export const Dashboard = () => {
   const [stats, setStats] = useState({
     tournaments: 0,
@@ -15,6 +47,7 @@ export const Dashboard = () => {
     players: 0,
     upcomingMatches: 0,
   });
+  const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -39,13 +72,10 @@ export const Dashboard = () => {
 
         // Flatten and filter for upcoming matches
         const allMatches = matchesResults.flatMap(res => res.matches || []);
-        const upcomingMatches = allMatches.filter(m => m.status !== 'Completed').length;
+        const upcomingMatches = allMatches.filter(m => m.status !== 'Completed' && m.status !== 'completed' && m.status !== 'fulltime').length;
 
         // Fetch team members (players) across all teams
-        // Using Promise.all with catch to prevent single team errors from breaking the dashboard
-        // Fetch all players
         const playersRes = await playerService.getAll();
-
         const totalPlayers = playersRes.teamMembers?.length || 0;
 
         setStats({
@@ -54,6 +84,119 @@ export const Dashboard = () => {
           players: totalPlayers,
           upcomingMatches,
         });
+
+        // ── Build Dynamic Recent Activity ──────────────────────────────────
+        const activities = [];
+
+        // 1. Tournament Created
+        tournaments.forEach(t => {
+          if (t.createdAt) {
+            activities.push({
+              id: `tournament-created-${t.id}`,
+              type: 'tournament_created',
+              action: `New tournament '${t.name}' was created.`,
+              timestamp: t.createdAt,
+              color: 'bg-blue-500',
+              icon: Trophy,
+            });
+          }
+        });
+
+        // 2. Team Registered
+        teams.forEach(team => {
+          if (team.createdAt) {
+            const tournamentName = team.tournament?.name || tournaments.find(t => t.id === team.tournamentId)?.name;
+            activities.push({
+              id: `team-registered-${team.id}`,
+              type: 'team_registered',
+              action: tournamentName
+                ? `Team '${team.name}' registered for ${tournamentName}.`
+                : `Team '${team.name}' registered.`,
+              timestamp: team.createdAt,
+              color: 'bg-purple-500',
+              icon: Users,
+            });
+          }
+        });
+
+        // 3. Tournament Completed — show winner name
+        tournaments.forEach((t, index) => {
+          const tMatches = matchesResults[index]?.matches || [];
+          const isMarkedCompleted = t.status === 'completed';
+          const allMatchesFinished = tMatches.length > 0 && tMatches.every(m => m.status === 'completed' || m.status === 'fulltime');
+
+          if (isMarkedCompleted || allMatchesFinished) {
+            let winnerName = null;
+            let completionTime = t.updatedAt || t.createdAt;
+
+            // Knockout / Hybrid: find Final match
+            const finalMatch = tMatches.find(m => m.roundName && m.roundName.toLowerCase().trim() === 'final');
+            if (finalMatch && (finalMatch.status === 'completed' || finalMatch.status === 'fulltime')) {
+              winnerName = finalMatch.winnerTeam?.name ||
+                (finalMatch.winnerTeamId && (finalMatch.homeTeam?.id === finalMatch.winnerTeamId ? finalMatch.homeTeam?.name : finalMatch.awayTeam?.name)) ||
+                (finalMatch.homeScore > finalMatch.awayScore ? finalMatch.homeTeam?.name : (finalMatch.awayScore > finalMatch.homeScore ? finalMatch.awayTeam?.name : null));
+              completionTime = finalMatch.updatedAt || finalMatch.matchDate || completionTime;
+            }
+
+            // League: calculate standings if no final match
+            if (!winnerName && tMatches.length > 0) {
+              const teamScores = {};
+              tMatches.filter(m => m.status === 'completed' || m.status === 'fulltime').forEach(m => {
+                const hId = m.homeTeamId;
+                const aId = m.awayTeamId;
+                const hName = m.homeTeam?.name || 'Team';
+                const aName = m.awayTeam?.name || 'Team';
+                if (hId) {
+                  if (!teamScores[hId]) teamScores[hId] = { name: hName, pts: 0, gd: 0, gf: 0 };
+                  const hScore = m.homeScore ?? 0;
+                  const aScore = m.awayScore ?? 0;
+                  teamScores[hId].gf += hScore;
+                  teamScores[hId].gd += (hScore - aScore);
+                  if (hScore > aScore) teamScores[hId].pts += 3;
+                  else if (hScore === aScore) teamScores[hId].pts += 1;
+                }
+                if (aId) {
+                  if (!teamScores[aId]) teamScores[aId] = { name: aName, pts: 0, gd: 0, gf: 0 };
+                  const hScore = m.homeScore ?? 0;
+                  const aScore = m.awayScore ?? 0;
+                  teamScores[aId].gf += aScore;
+                  teamScores[aId].gd += (aScore - hScore);
+                  if (aScore > hScore) teamScores[aId].pts += 3;
+                  else if (aScore === hScore) teamScores[aId].pts += 1;
+                }
+              });
+              const sorted = Object.values(teamScores).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+              if (sorted.length > 0) {
+                winnerName = sorted[0].name;
+              }
+            }
+
+            if (isMarkedCompleted || winnerName) {
+              activities.push({
+                id: `tournament-completed-${t.id}`,
+                type: 'tournament_completed',
+                action: winnerName
+                  ? `Tournament '${t.name}' completed. Winner: ${winnerName}`
+                  : `Tournament '${t.name}' completed.`,
+                timestamp: completionTime,
+                color: 'bg-emerald-500',
+                icon: Trophy,
+              });
+            }
+          }
+        });
+
+        // Sort activities by timestamp descending and keep only the latest 3
+        const latestActivities = activities
+          .filter(a => a.timestamp)
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 3)
+          .map(a => ({
+            ...a,
+            time: formatTimeAgo(a.timestamp)
+          }));
+
+        setRecentActivities(latestActivities);
 
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
@@ -119,7 +262,7 @@ export const Dashboard = () => {
         </div>
       )}
 
-      {/* Recent Activity (Placeholder as per requirements) */}
+      {/* Recent Activity */}
       <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800/80 flex justify-between items-center">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -141,25 +284,29 @@ export const Dashboard = () => {
                 </div>
               ))}
             </div>
+          ) : recentActivities.length === 0 ? (
+            <div className="py-6 text-center text-slate-500 dark:text-slate-400 text-sm">
+              No recent activity yet.
+            </div>
           ) : (
             <div className="space-y-6">
-              {/* Static Placeholder Data */}
-              {[
-                { id: 1, action: "New tournament 'Summer Cup 2026' was created.", time: "2 hours ago", color: "bg-blue-500" },
-                { id: 2, action: "Team 'FC Falcons' registered for Summer Cup 2026.", time: "5 hours ago", color: "bg-purple-500" },
-                { id: 3, action: "Match result: Tigers 2 - 1 Lions", time: "1 day ago", color: "bg-emerald-500" },
-              ].map(item => (
-                <div key={item.id} className="flex gap-4 relative">
-                  <div className="absolute top-8 left-5 w-px h-full bg-slate-200 dark:bg-slate-700 -z-10 last:hidden"></div>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0 ${item.color}`}>
-                    <Activity className="w-4 h-4" />
+              {recentActivities.map((item, index) => {
+                const IconComponent = item.icon || Activity;
+                return (
+                  <div key={item.id} className="flex gap-4 relative">
+                    {index < recentActivities.length - 1 && (
+                      <div className="absolute top-8 left-5 w-px h-full bg-slate-200 dark:bg-slate-700 -z-10"></div>
+                    )}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0 ${item.color}`}>
+                      <IconComponent className="w-4 h-4" />
+                    </div>
+                    <div className="pt-2">
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{item.action}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{item.time}</p>
+                    </div>
                   </div>
-                  <div className="pt-2">
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{item.action}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{item.time}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

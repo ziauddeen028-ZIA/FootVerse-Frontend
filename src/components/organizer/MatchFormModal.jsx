@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock, MapPin, Trophy, Shield, Activity } from 'lucide-react';
+import { CustomSelect } from '../common/CustomSelect';
 
 export const MatchFormModal = ({
   isOpen,
@@ -199,23 +200,14 @@ export const MatchFormModal = ({
               <Trophy className="w-3.5 h-3.5 text-blue-500" />
               Tournament <span className="text-red-500">*</span>
             </label>
-            <select
+            <CustomSelect
               name="tournamentId"
               value={formData.tournamentId}
-              onChange={handleTournamentChange}
-              className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                errors.tournamentId ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-              } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
-            >
-              <option value="" disabled>
-                Select a Tournament
-              </option>
-              {tournaments.map(t => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => handleTournamentChange({ target: { name: 'tournamentId', value: val } })}
+              placeholder="Select a Tournament"
+              options={tournaments.map(t => ({ value: t.id, label: t.name }))}
+              buttonClassName={errors.tournamentId ? 'border-red-500' : ''}
+            />
             {errors.tournamentId && <p className="text-xs text-red-500 mt-1">{errors.tournamentId}</p>}
             {tournaments.length === 0 && (
               <p className="text-xs text-amber-500 mt-1">
@@ -231,24 +223,15 @@ export const MatchFormModal = ({
                 <Shield className="w-3.5 h-3.5 text-blue-500" />
                 Home Team <span className="text-red-500">*</span>
               </label>
-              <select
+              <CustomSelect
                 name="homeTeamId"
                 value={formData.homeTeamId}
-                onChange={handleChange}
+                onChange={(val) => setFormData(prev => ({ ...prev, homeTeamId: val }))}
                 disabled={!formData.tournamentId}
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.homeTeamId ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50`}
-              >
-                <option value="" disabled>
-                  Select Home Team
-                </option>
-                {availableTeams.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.shortName})
-                  </option>
-                ))}
-              </select>
+                placeholder="Select Home Team"
+                options={availableTeams.map(t => ({ value: t.id, label: `${t.name} (${t.shortName})` }))}
+                buttonClassName={errors.homeTeamId ? 'border-red-500' : ''}
+              />
               {errors.homeTeamId && <p className="text-xs text-red-500 mt-1">{errors.homeTeamId}</p>}
               {formData.tournamentId && availableTeams.length < 2 && (
                 <p className="text-xs text-amber-500 mt-1">
@@ -262,30 +245,21 @@ export const MatchFormModal = ({
                 <Shield className="w-3.5 h-3.5 text-purple-500" />
                 Away Team <span className="text-red-500">*</span>
               </label>
-              <select
+              <CustomSelect
                 name="awayTeamId"
                 value={formData.awayTeamId}
-                onChange={handleChange}
+                onChange={(val) => setFormData(prev => ({ ...prev, awayTeamId: val }))}
                 disabled={!formData.tournamentId}
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.awayTeamId ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50`}
-              >
-                <option value="" disabled>
-                  Select Away Team
-                </option>
-                {availableTeams.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.shortName})
-                  </option>
-                ))}
-              </select>
+                placeholder="Select Away Team"
+                options={availableTeams.map(t => ({ value: t.id, label: `${t.name} (${t.shortName})` }))}
+                buttonClassName={errors.awayTeamId ? 'border-red-500' : ''}
+              />
               {errors.awayTeamId && <p className="text-xs text-red-500 mt-1">{errors.awayTeamId}</p>}
             </div>
           </div>
 
-          {/* Date & Kickoff Time */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Date, Time & Venue */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -319,14 +293,11 @@ export const MatchFormModal = ({
               />
               {errors.kickoffTime && <p className="text-xs text-red-500 mt-1">{errors.kickoffTime}</p>}
             </div>
-          </div>
 
-          {/* Venue & Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                Venue / Pitch <span className="text-red-500">*</span>
+                Venue / Pitch
               </label>
               <input
                 type="text"
@@ -340,27 +311,27 @@ export const MatchFormModal = ({
               />
               {errors.venue && <p className="text-xs text-red-500 mt-1">{errors.venue}</p>}
             </div>
+          </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-slate-400" />
-                Match Status <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.status ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 capitalize`}
-              >
-                <option value="scheduled">Scheduled</option>
-                <option value="live">Live</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-              {errors.status && <p className="text-xs text-red-500 mt-1">{errors.status}</p>}
-            </div>
+          {/* Status */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-slate-400" />
+              Match Status <span className="text-red-500">*</span>
+            </label>
+            <CustomSelect
+              name="status"
+              value={formData.status}
+              onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+              options={[
+                { value: 'scheduled', label: 'Scheduled' },
+                { value: 'live', label: 'Live' },
+                { value: 'completed', label: 'Completed' },
+                { value: 'cancelled', label: 'Cancelled' },
+              ]}
+              buttonClassName={errors.status ? 'border-red-500' : ''}
+            />
+            {errors.status && <p className="text-xs text-red-500 mt-1">{errors.status}</p>}
           </div>
 
           {/* Action Buttons */}

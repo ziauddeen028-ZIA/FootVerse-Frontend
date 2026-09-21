@@ -11,7 +11,8 @@ import {
   Activity, 
   CheckCircle2, 
   Flame,
-  Clock
+  Clock,
+  X
 } from 'lucide-react';
 import statsService from '../../services/statsService';
 
@@ -92,47 +93,58 @@ export const PlayerStatsView = ({ initialPlayerId = null }) => {
   return (
     <div className="space-y-8">
       {/* ─── 1. PLAYER SELECTOR & SEARCH BAR ────────────────────── */}
-      <div className="saas-card rounded-2xl p-4 sm:p-6 bg-white dark:bg-[#111726] border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search athlete by name, club or position..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-            />
-          </div>
+      <div className="saas-card rounded-2xl p-4 sm:p-5 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-3.5">
+        <div className="relative w-full sm:max-w-md">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search athlete by name, club or position..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-9 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md transition-colors"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
 
-          <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full">
-            {filteredPlayers.slice(0, 6).map((p) => {
-              const isSelected = p.id === selectedPlayerId;
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => setSelectedPlayerId(p.id)}
-                  className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                    isSelected
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-[#111726]'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-[10px]">
-                    {p.fullName.charAt(0).toUpperCase()}
-                  </div>
-                  <span>{p.fullName}</span>
-                  {p.goals > 0 && (
-                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                      isSelected ? 'bg-white/25 text-white' : 'bg-blue-500/10 text-blue-500 font-bold'
-                    }`}>
-                      ⚽ {p.goals}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+        <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+          {filteredPlayers.map((p) => {
+            const isSelected = p.id === selectedPlayerId;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setSelectedPlayerId(p.id)}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                  isSelected
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-2 ring-blue-500/50'
+                    : 'bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700/40'
+                }`}
+              >
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-[10px]">
+                  {p.fullName?.charAt(0)?.toUpperCase() || 'P'}
+                </div>
+                <span>{p.fullName}</span>
+                {p.goals > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                    isSelected ? 'bg-white/25 text-white' : 'bg-blue-500/10 text-blue-500 font-bold'
+                  }`}>
+                    ⚽ {p.goals}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          {filteredPlayers.length === 0 && (
+            <span className="text-xs text-slate-400 py-1 italic">No players matching "{searchQuery}"</span>
+          )}
         </div>
       </div>
 

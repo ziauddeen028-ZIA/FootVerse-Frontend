@@ -5,6 +5,7 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Toast } from '../../components/common/Toast';
+import { CustomSelect } from '../../components/common/CustomSelect';
 import { LoadingSkeleton } from '../../components/organizer/LoadingSkeleton';
 import { TeamFormModal } from '../../components/organizer/TeamFormModal';
 
@@ -222,33 +223,31 @@ export const Teams = () => {
 
         <div className="flex items-center gap-3 w-full md:w-auto">
           {/* Tournament Filter */}
-          <div className="relative flex-1 md:w-48">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <select
+          <div className="flex-1 md:w-52">
+            <CustomSelect
               value={tournamentFilter}
-              onChange={(e) => setTournamentFilter(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-            >
-              <option value="all">All Tournaments</option>
-              {tournaments.map(t => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+              onChange={setTournamentFilter}
+              options={[
+                { value: 'all', label: 'All Tournaments' },
+                ...tournaments.map(t => ({ value: t.id, label: t.name }))
+              ]}
+              icon={Filter}
+            />
           </div>
 
           {/* Sort Order */}
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className="flex-1 md:w-40 px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-          >
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="name_asc">Name (A-Z)</option>
-            <option value="name_desc">Name (Z-A)</option>
-          </select>
+          <div className="flex-1 md:w-44">
+            <CustomSelect
+              value={sortOrder}
+              onChange={setSortOrder}
+              options={[
+                { value: 'newest', label: 'Newest First' },
+                { value: 'oldest', label: 'Oldest First' },
+                { value: 'name_asc', label: 'Name (A-Z)' },
+                { value: 'name_desc', label: 'Name (Z-A)' },
+              ]}
+            />
+          </div>
         </div>
       </div>
 

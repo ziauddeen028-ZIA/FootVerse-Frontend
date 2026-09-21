@@ -5,6 +5,7 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Toast } from '../../components/common/Toast';
+import { CustomSelect } from '../../components/common/CustomSelect';
 import { LoadingSkeleton } from '../../components/organizer/LoadingSkeleton';
 import { MatchFormModal } from '../../components/organizer/MatchFormModal';
 import { KnockoutBracket } from '../../components/organizer/KnockoutBracket';
@@ -453,12 +454,10 @@ export const Matches = () => {
           </div>
 
           {/* Tournament Filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-400 hidden sm:block" />
-            <select
+          <div className="w-full sm:w-52">
+            <CustomSelect
               value={tournamentFilter}
-              onChange={e => {
-                const val = e.target.value;
+              onChange={val => {
                 setTournamentFilter(val);
                 const selectedTourney = tournaments.find(t => t.id === val);
                 let targetView = viewMode;
@@ -491,40 +490,41 @@ export const Matches = () => {
                   return n;
                 });
               }}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Tournaments</option>
-              {tournaments.map(t => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: 'all', label: 'All Tournaments' },
+                ...tournaments.map(t => ({ value: t.id, label: t.name }))
+              ]}
+              icon={Filter}
+            />
           </div>
 
           {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="live">Live</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+          <div className="w-full sm:w-40">
+            <CustomSelect
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { value: 'all', label: 'All Statuses' },
+                { value: 'scheduled', label: 'Scheduled' },
+                { value: 'live', label: 'Live' },
+                { value: 'completed', label: 'Completed' },
+                { value: 'cancelled', label: 'Cancelled' },
+              ]}
+            />
+          </div>
 
           {/* Sort */}
-          <select
-            value={sortOrder}
-            onChange={e => setSortOrder(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="date_asc">Date (Earliest First)</option>
-            <option value="date_desc">Date (Latest First)</option>
-            <option value="status">Status</option>
-          </select>
+          <div className="w-full sm:w-44">
+            <CustomSelect
+              value={sortOrder}
+              onChange={setSortOrder}
+              options={[
+                { value: 'date_asc', label: 'Date (Earliest First)' },
+                { value: 'date_desc', label: 'Date (Latest First)' },
+                { value: 'status', label: 'Status' },
+              ]}
+            />
+          </div>
         </div>
       </div>
 

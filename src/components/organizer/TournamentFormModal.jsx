@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trophy, Users, GitMerge, Zap, Settings, CheckCircle2, Info, RefreshCw, Shield } from 'lucide-react';
-import { extractTournamentConfig, buildTournamentDescriptionWithConfig, SUB_MODES } from '../../utils/substitutionUtils';
+import { extractTournamentConfig, buildTournamentDescriptionWithConfig, cleanTournamentDescription, SUB_MODES } from '../../utils/substitutionUtils';
+import { CustomSelect } from '../common/CustomSelect';
 
 export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = null, isLoading = false }) => {
   const [formData, setFormData] = useState({
@@ -38,7 +39,7 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
           location: initialData.location || '',
           startDate: initialData.startDate ? initialData.startDate.split('T')[0] : '',
           endDate: initialData.endDate ? initialData.endDate.split('T')[0] : '',
-          description: config.cleanDescription || initialData.description || '',
+          description: cleanTournamentDescription(initialData.description),
           maxTeams: initialData.maxTeams || 16,
           entryFee: initialData.entryFee || 0,
           format: initialData.format || 'knockout',
@@ -154,7 +155,7 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
         computedMaxTeams = Number(formData.numberOfGroups) * Number(formData.teamsPerGroup);
       }
 
-      const cleanDesc = formData.description ? formData.description.trim() : '';
+      const cleanDesc = cleanTournamentDescription(formData.description);
       const finalDesc = buildTournamentDescriptionWithConfig(
         cleanDesc,
         formData.fieldSize,
@@ -511,30 +512,30 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Elimination Type</label>
-                      <select
+                      <CustomSelect
                         name="eliminationType"
                         value={formData.eliminationType}
-                        onChange={handleChange}
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="single">Single Elimination</option>
-                        <option value="double">Double Elimination</option>
-                      </select>
+                        onChange={(val) => setFormData(prev => ({ ...prev, eliminationType: val }))}
+                        options={[
+                          { value: 'single', label: 'Single Elimination' },
+                          { value: 'double', label: 'Double Elimination' },
+                        ]}
+                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200/60 dark:border-slate-800">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Seeding Method</label>
-                      <select
+                      <CustomSelect
                         name="seedingMethod"
                         value={formData.seedingMethod}
-                        onChange={handleChange}
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="seeded">Seeded Bracket</option>
-                        <option value="random">Random Bracket Draw</option>
-                      </select>
+                        onChange={(val) => setFormData(prev => ({ ...prev, seedingMethod: val }))}
+                        options={[
+                          { value: 'seeded', label: 'Seeded Bracket' },
+                          { value: 'random', label: 'Random Bracket Draw' },
+                        ]}
+                      />
                     </div>
 
                     <div className="flex items-center gap-2.5 pt-4">
@@ -627,28 +628,28 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Elimination Type</label>
-                        <select
+                        <CustomSelect
                           name="eliminationType"
                           value={formData.eliminationType}
-                          onChange={handleChange}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="single">Single Elimination</option>
-                          <option value="double">Double Elimination</option>
-                        </select>
+                          onChange={(val) => setFormData(prev => ({ ...prev, eliminationType: val }))}
+                          options={[
+                            { value: 'single', label: 'Single Elimination' },
+                            { value: 'double', label: 'Double Elimination' },
+                          ]}
+                        />
                       </div>
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Bracket Seeding</label>
-                        <select
+                        <CustomSelect
                           name="seedingMethod"
                           value={formData.seedingMethod}
-                          onChange={handleChange}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="seeded">Group Winners vs Runners-Up</option>
-                          <option value="random">Random Draw</option>
-                        </select>
+                          onChange={(val) => setFormData(prev => ({ ...prev, seedingMethod: val }))}
+                          options={[
+                            { value: 'seeded', label: 'Group Winners vs Runners-Up' },
+                            { value: 'random', label: 'Random Draw' },
+                          ]}
+                        />
                       </div>
                     </div>
                   </div>
@@ -723,15 +724,15 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Substitution Mode *
                   </label>
-                  <select
+                  <CustomSelect
                     name="substitutionMode"
                     value={formData.substitutionMode}
-                    onChange={handleChange}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={SUB_MODES.NORMAL}>Normal (Standard Football: Subbed-out cannot return)</option>
-                    <option value={SUB_MODES.ROLLING}>Rolling (Futsal / Rolling: Subbed-out can re-enter)</option>
-                  </select>
+                    onChange={(val) => setFormData(prev => ({ ...prev, substitutionMode: val }))}
+                    options={[
+                      { value: SUB_MODES.NORMAL, label: 'Normal (Standard Football: Subbed-out cannot return)' },
+                      { value: SUB_MODES.ROLLING, label: 'Rolling (Futsal / Rolling: Subbed-out can re-enter)' },
+                    ]}
+                  />
 
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug pt-0.5">
                     {formData.substitutionMode === SUB_MODES.ROLLING
@@ -758,18 +759,18 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Status</label>
-                <select
+                <CustomSelect
                   name="status"
                   value={formData.status}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="registration_open">Registration Open</option>
-                  <option value="ongoing">Ongoing</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+                  onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+                  options={[
+                    { value: 'draft', label: 'Draft' },
+                    { value: 'registration_open', label: 'Registration Open' },
+                    { value: 'ongoing', label: 'Ongoing' },
+                    { value: 'completed', label: 'Completed' },
+                    { value: 'cancelled', label: 'Cancelled' },
+                  ]}
+                />
               </div>
             </div>
 

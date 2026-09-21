@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, User, Trophy, Shield, Hash, Target, Mail, Image as ImageIcon } from 'lucide-react';
+import { CustomSelect } from '../common/CustomSelect';
 
 const POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
 
@@ -186,21 +187,13 @@ export const PlayerFormModal = ({
                 <Trophy className="w-3.5 h-3.5 text-blue-500" />
                 Tournament <span className="text-red-500">*</span>
               </label>
-              <select
+              <CustomSelect
                 name="tournamentId"
                 value={formData.tournamentId}
-                onChange={handleTournamentChange}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="" disabled>
-                  Select Tournament
-                </option>
-                {tournaments.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => handleTournamentChange({ target: { name: 'tournamentId', value: val } })}
+                placeholder="Select Tournament"
+                options={tournaments.map(t => ({ value: t.id, label: t.name }))}
+              />
             </div>
 
             <div>
@@ -208,23 +201,14 @@ export const PlayerFormModal = ({
                 <Shield className="w-3.5 h-3.5 text-blue-500" />
                 Team <span className="text-red-500">*</span>
               </label>
-              <select
+              <CustomSelect
                 name="teamId"
                 value={formData.teamId}
-                onChange={handleChange}
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.teamId ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              >
-                <option value="" disabled>
-                  {availableTeams.length > 0 ? 'Select Team' : 'No Teams in this Tournament'}
-                </option>
-                {availableTeams.map(tm => (
-                  <option key={tm.id} value={tm.id}>
-                    {tm.name} ({tm.shortName})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData(prev => ({ ...prev, teamId: val }))}
+                placeholder={availableTeams.length > 0 ? 'Select Team' : 'No Teams in this Tournament'}
+                options={availableTeams.map(tm => ({ value: tm.id, label: `${tm.name} (${tm.shortName})` }))}
+                buttonClassName={errors.teamId ? 'border-red-500' : ''}
+              />
               {errors.teamId && <p className="text-xs text-red-500 mt-1">{errors.teamId}</p>}
             </div>
           </div>
@@ -249,18 +233,24 @@ export const PlayerFormModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-slate-400" />
-                Email (Optional)
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
+                <span>Email Address</span>
+                <span className="text-slate-400 dark:text-slate-500 font-normal lowercase">(optional - links to profile)</span>
               </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="player@example.com"
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="e.g. player@footverse.com"
+                  className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
+                    errors.email ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
+                  } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
             </div>
           </div>
 
@@ -268,14 +258,14 @@ export const PlayerFormModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                <Hash className="w-3.5 h-3.5 text-blue-500" />
+                <Hash className="w-3.5 h-3.5 text-slate-400" />
                 Jersey Number <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
                 name="jerseyNumber"
-                min={1}
-                max={99}
+                min="1"
+                max="99"
                 value={formData.jerseyNumber}
                 onChange={handleChange}
                 placeholder="e.g. 9"
@@ -291,18 +281,12 @@ export const PlayerFormModal = ({
                 <Target className="w-3.5 h-3.5 text-slate-400" />
                 Position
               </label>
-              <select
+              <CustomSelect
                 name="position"
                 value={formData.position}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {POSITIONS.map(pos => (
-                  <option key={pos} value={pos}>
-                    {pos}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData(prev => ({ ...prev, position: val }))}
+                options={POSITIONS.map(pos => ({ value: pos, label: pos }))}
+              />
             </div>
           </div>
 

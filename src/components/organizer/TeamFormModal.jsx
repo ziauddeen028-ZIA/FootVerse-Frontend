@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Shield, Palette, MapPin, Building, Trophy, AlertCircle } from 'lucide-react';
 import { useAuth, ROLES } from '../../context/AuthContext';
+import { CustomSelect } from '../common/CustomSelect';
 
 export const TeamFormModal = ({
   isOpen,
@@ -179,41 +180,32 @@ export const TeamFormModal = ({
               <Trophy className="w-3.5 h-3.5 text-blue-500" />
               Tournament {isTournamentRequired ? <span className="text-red-500">*</span> : <span className="text-slate-400 font-normal lowercase">(optional)</span>}
             </label>
-            <select
+            <CustomSelect
               name="tournamentId"
               value={formData.tournamentId}
-              onChange={handleChange}
+              onChange={(val) => setFormData(prev => ({ ...prev, tournamentId: val }))}
               disabled={isTournamentLocked}
-              className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                errors.tournamentId ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-              } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                isTournamentLocked ? 'opacity-75 cursor-not-allowed bg-slate-100 dark:bg-slate-800' : ''
-              }`}
-            >
-              {!isTournamentRequired ? (
-                <option value="">No Tournament (Standalone Team)</option>
-              ) : (
-                <option value="" disabled>
-                  Select a Tournament
-                </option>
-              )}
-              {tournaments.map(t => {
-                const count = getTeamCount(t);
-                const max = t.maxTeams || 16;
-                const full = isTournamentFull(t);
-                // Allow selecting the team's current tournament even when editing
-                const isCurrentTournament = t.id === currentTournamentId;
-                const disableOption = full && !isCurrentTournament;
-                const label = full
-                  ? `${t.name} (Full — ${count}/${max})`
-                  : `${t.name} (${count}/${max})`;
-                return (
-                  <option key={t.id} value={t.id} disabled={disableOption}>
-                    {label}
-                  </option>
-                );
-              })}
-            </select>
+              placeholder={isTournamentRequired ? 'Select a Tournament' : 'No Tournament (Standalone Team)'}
+              options={[
+                ...(!isTournamentRequired ? [{ value: '', label: 'No Tournament (Standalone Team)' }] : []),
+                ...tournaments.map(t => {
+                  const count = getTeamCount(t);
+                  const max = t.maxTeams || 16;
+                  const full = isTournamentFull(t);
+                  const isCurrentTournament = t.id === currentTournamentId;
+                  const disableOption = full && !isCurrentTournament;
+                  const label = full
+                    ? `${t.name} (Full — ${count}/${max})`
+                    : `${t.name} (${count}/${max})`;
+                  return {
+                    value: t.id,
+                    label,
+                    disabled: disableOption
+                  };
+                })
+              ]}
+              buttonClassName={errors.tournamentId ? 'border-red-500' : ''}
+            />
             {isTournamentLocked && (
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Tournament selection is locked for this registration.
