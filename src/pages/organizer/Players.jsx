@@ -327,6 +327,7 @@ export const Players = () => {
                       <img
                         src={player.avatarUrl}
                         alt={player.fullName}
+                        loading="lazy"
                         className="w-14 h-14 rounded-2xl object-cover border border-slate-200 dark:border-[#1E3A29] shrink-0"
                       />
                     ) : (

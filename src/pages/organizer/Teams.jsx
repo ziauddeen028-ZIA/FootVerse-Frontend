@@ -312,6 +312,7 @@ export const Teams = () => {
                     <img
                       src={team.logoUrl}
                       alt={team.name}
+                      loading="lazy"
                       className="w-14 h-14 rounded-2xl object-cover border border-slate-200 dark:border-[#1E3A29]"
                     />
                   ) : (

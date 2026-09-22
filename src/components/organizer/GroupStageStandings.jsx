@@ -122,7 +122,7 @@ export const GroupStageStandings = ({
                     <div className="flex items-center gap-2.5 sm:gap-3">
                       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-100 dark:bg-[#16261C] flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 overflow-hidden shrink-0 border border-slate-200/60 dark:border-[#1E3A29]">
                         {row.team?.logoUrl ? (
-                          <img src={row.team.logoUrl} alt={row.team.name} className="w-full h-full object-cover" />
+                          <img src={row.team.logoUrl} alt={row.team.name} loading="lazy" className="w-full h-full object-cover" />
                         ) : (
                           row.team?.shortName || row.team?.name?.substring(0, 3).toUpperCase() || 'FC'
                         )}

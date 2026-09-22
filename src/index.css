@@ -106,3 +106,20 @@ select option {
   background-color: #101C14;
   color: #F1F5F9;
 }
+
+/* FootVerse Hero Section Responsive Background */
+.hero-section-bg {
+  background-image: url('/image2.webp');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+@media (min-width: 768px) {
+  .hero-section-bg {
+    background-image: url('/image.webp');
+    background-size: cover;
+    background-position: center;
+  }
+}
+

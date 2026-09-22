@@ -1,41 +1,40 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 
-// Layouts
+// Layouts & Guards (loaded synchronously for fast scaffolding)
 import { PublicLayout } from './components/layout/PublicLayout';
 import { OrganizerLayout } from './components/layout/OrganizerLayout';
 import { ScrollToTop } from './components/common/ScrollToTop';
-
-// Auth guards
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AuthLoadingScreen } from './components/auth/AuthLoadingScreen';
+import { LoadingFallback } from './components/common/LoadingFallback';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
-// Public Pages
-import { HomePage } from './pages/HomePage';
-import { DashboardShell } from './pages/DashboardShell';
-import { ProfilePage } from './pages/ProfilePage';
-import { LoginPage } from './pages/auth/LoginPage';
-import { RegisterPage } from './pages/auth/RegisterPage';
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
-import { UnauthorizedPage } from './pages/auth/UnauthorizedPage';
-import { ModulePreviewPage } from './pages/ModulePreviewPage';
-import { StatsHub } from './pages/StatsHub';
-import { TournamentHub } from './pages/TournamentHub';
-import { PublicMatchDetail } from './pages/PublicMatchDetail';
-import { PublicTeamDetail } from './pages/PublicTeamDetail';
-import { NotificationsPage } from './pages/NotificationsPage';
-import { TeamDashboard } from './pages/TeamDashboard';
+// Lazy-loaded Public Pages
+const HomePage = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const LoginPage = lazy(() => import('./pages/auth/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const UnauthorizedPage = lazy(() => import('./pages/auth/UnauthorizedPage').then(m => ({ default: m.UnauthorizedPage })));
+const ModulePreviewPage = lazy(() => import('./pages/ModulePreviewPage').then(m => ({ default: m.ModulePreviewPage })));
+const StatsHub = lazy(() => import('./pages/StatsHub').then(m => ({ default: m.StatsHub })));
+const TournamentHub = lazy(() => import('./pages/TournamentHub').then(m => ({ default: m.TournamentHub })));
+const PublicMatchDetail = lazy(() => import('./pages/PublicMatchDetail').then(m => ({ default: m.PublicMatchDetail })));
+const PublicTeamDetail = lazy(() => import('./pages/PublicTeamDetail').then(m => ({ default: m.PublicTeamDetail })));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
+const TeamDashboard = lazy(() => import('./pages/TeamDashboard').then(m => ({ default: m.TeamDashboard })));
 
-// Organizer Pages
-import { Dashboard as OrganizerDashboard } from './pages/organizer/Dashboard';
-import { Tournaments as OrganizerTournaments } from './pages/organizer/Tournaments';
-import { Teams as OrganizerTeams } from './pages/organizer/Teams';
-import { Matches as OrganizerMatches } from './pages/organizer/Matches';
-import { Players as OrganizerPlayers } from './pages/organizer/Players';
-import { LiveMatch } from './pages/organizer/LiveMatch';
+// Lazy-loaded Organizer Pages (Heavy components loaded on-demand)
+const OrganizerDashboard = lazy(() => import('./pages/organizer/Dashboard').then(m => ({ default: m.Dashboard })));
+const OrganizerTournaments = lazy(() => import('./pages/organizer/Tournaments').then(m => ({ default: m.Tournaments })));
+const OrganizerTeams = lazy(() => import('./pages/organizer/Teams').then(m => ({ default: m.Teams })));
+const OrganizerPlayers = lazy(() => import('./pages/organizer/Players').then(m => ({ default: m.Players })));
+const OrganizerMatches = lazy(() => import('./pages/organizer/Matches').then(m => ({ default: m.Matches })));
+const LiveMatch = lazy(() => import('./pages/organizer/LiveMatch').then(m => ({ default: m.LiveMatch })));
 
 function AppContent() {
   const { loading } = useAuth();
@@ -46,7 +45,9 @@ function AppContent() {
   }
 
   return (
-    <Routes>
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
       {/* ─── Organizer Section ─────────────────────────────────────────────
           All /organizer/* routes are nested under OrganizerLayout.
           The ProtectedRoute guard on the parent propagates to all children.
@@ -207,20 +208,24 @@ function AppContent() {
         <Route path="*" element={<HomePage />} />
       </Route>
     </Routes>
+    </Suspense>
+    </ErrorBoundary>
   );
 }
 
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <NotificationProvider>
-          <Router>
-            <ScrollToTop />
-            <AppContent />
-          </Router>
-        </NotificationProvider>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <NotificationProvider>
+            <Router>
+              <ScrollToTop />
+              <AppContent />
+            </Router>
+          </NotificationProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

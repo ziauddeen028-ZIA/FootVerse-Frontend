@@ -20,6 +20,7 @@ const Avatar = ({ url, name, size = 'md' }) => {
       <img
         src={url}
         alt={name || 'Player'}
+        loading="lazy"
         className={`${sizes[size]} rounded-full object-cover ring-2 ring-white dark:ring-slate-800 bg-slate-100 dark:bg-slate-800 flex-shrink-0`}
       />
     );
@@ -367,7 +368,7 @@ const BestPlayerModal = ({ isOpen, onClose, tournamentId, currentBestPlayer, onS
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         {t.logoUrl ? (
-                          <img src={t.logoUrl} alt={t.name} className="w-9 h-9 rounded-xl object-contain bg-slate-100 dark:bg-slate-800 p-1 shrink-0" />
+                          <img src={t.logoUrl} alt={t.name} loading="lazy" className="w-9 h-9 rounded-xl object-contain bg-slate-100 dark:bg-slate-800 p-1 shrink-0" />
                         ) : (
                           <div
                             className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-xs shrink-0 shadow-xs"

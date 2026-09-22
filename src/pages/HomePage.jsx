@@ -1,26 +1,26 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { 
-  Trophy, 
-  Users, 
-  Activity, 
-  Calendar, 
-  Flame, 
-  Shield, 
-  Sparkles, 
-  Plus, 
-  ChevronRight, 
-  ChevronDown, 
+import {
+  Trophy,
+  Users,
+  Activity,
+  Calendar,
+  Flame,
+  Shield,
+  Sparkles,
+  Plus,
+  ChevronRight,
+  ChevronDown,
   ChevronUp,
-  Award, 
-  Zap, 
-  Clock, 
-  BarChart2, 
-  Radio, 
-  Search, 
-  MapPin, 
-  Layers, 
-  TrendingUp, 
+  Award,
+  Zap,
+  Clock,
+  BarChart2,
+  Radio,
+  Search,
+  MapPin,
+  Layers,
+  TrendingUp,
   ArrowRight,
   UserCheck,
   Swords,
@@ -329,11 +329,16 @@ export const HomePage = () => {
 
   return (
     <div className="space-y-10 pb-16">
-      
+
       {/* ─── 1. HERO SECTION ──────────────────────────────────────────────── */}
-      <section className="saas-card rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-slate-900 via-[#0C1B12] to-[#07130C] text-white border border-slate-800 dark:border-[#1E3A29] shadow-2xl overflow-hidden relative">
+      <section
+        className="saas-card hero-section-bg rounded-3xl p-6 sm:p-10 text-white border border-slate-800 dark:border-[#1E3A29] shadow-2xl overflow-hidden relative"
+      >
+        {/* Subtle Dark/Green Overlay for text readability & brand cohesion */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-[#0a1f13]/85 to-[#05130b]/90 pointer-events-none" />
+
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
-          
+
           <div className="space-y-5 max-w-2xl text-center lg:text-left">
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 text-xs font-semibold shadow-inner">
               <Sparkles className="w-4 h-4 text-green-400 animate-pulse" />
@@ -406,23 +411,12 @@ export const HomePage = () => {
               </span>
             </div>
           </div>
-
-          {/* Football Artwork with Glow Effects */}
-          <div className="w-full lg:w-80 flex-shrink-0 flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-green-600/25 to-emerald-600/15 rounded-full blur-3xl animate-pulse" />
-            <img 
-              src="/hero_artwork.png" 
-              alt="FootVerse Football Engine Artwork" 
-              className="w-52 sm:w-64 lg:w-72 object-contain relative z-10 drop-shadow-2xl hover:scale-105 transition duration-500" 
-            />
-          </div>
-
         </div>
       </section>
 
       {/* ─── 2. MATCH SCORECENTER HUB (6 MOST RECENT MATCHES) ─────────────── */}
       <section id="matches-section" className="saas-card p-6 sm:p-8 rounded-3xl space-y-6 scroll-mt-20">
-        
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-[#1E3A29]">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
@@ -448,11 +442,10 @@ export const HomePage = () => {
                 <button
                   key={tab.id}
                   onClick={() => setMatchFilter(tab.id)}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                    matchFilter === tab.id
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${matchFilter === tab.id
                       ? 'bg-white dark:bg-green-600 text-green-700 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                    }`}
                 >
                   <span>{tab.label}</span>
                   {tab.badge !== undefined && tab.badge > 0 && (
@@ -506,11 +499,10 @@ export const HomePage = () => {
                   <Link
                     key={match.id}
                     to={`/matches/${match.id}`}
-                    className={`p-5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer group saas-card-hover ${
-                      isLive
+                    className={`p-5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer group saas-card-hover ${isLive
                         ? 'bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/30 shadow-md ring-1 ring-emerald-500/20'
                         : 'bg-slate-50/80 dark:bg-[#16261C]/80 border-slate-200/70 dark:border-[#1E3A29]'
-                    }`}
+                      }`}
                   >
                     {/* Top Bar: Tournament & Status */}
                     <div className="flex items-center justify-between gap-2 mb-3">
@@ -540,7 +532,7 @@ export const HomePage = () => {
 
                     {/* Team vs Team Scoreboard */}
                     <div className="py-3 px-4 rounded-xl bg-white dark:bg-[#101C14] border border-slate-200/60 dark:border-[#1E3A29] space-y-3 group-hover:border-green-500/40 transition">
-                      
+
                       {/* Home Team */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2.5 min-w-0 pr-2">
@@ -603,8 +595,8 @@ export const HomePage = () => {
               className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center space-x-2 group"
             >
               <span>{isMatchesExpanded ? 'View Less' : `View All ${allFilteredMatches.length} Matches`}</span>
-              {isMatchesExpanded 
-                ? <ChevronUp className="w-4 h-4 transition-transform group-hover:-translate-y-0.5 text-green-600 dark:text-green-400" /> 
+              {isMatchesExpanded
+                ? <ChevronUp className="w-4 h-4 transition-transform group-hover:-translate-y-0.5 text-green-600 dark:text-green-400" />
                 : <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5 text-green-600 dark:text-green-400" />
               }
             </button>
@@ -623,7 +615,7 @@ export const HomePage = () => {
 
       {/* ─── 3. FEATURED TOURNAMENTS & CUPS ───────────────────────────────── */}
       <section id="tournaments-section" className="saas-card p-6 sm:p-8 rounded-3xl space-y-6 scroll-mt-20">
-        
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-[#1E3A29]">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
@@ -646,28 +638,25 @@ export const HomePage = () => {
                 <button
                   id="tab-all-tournaments"
                   onClick={() => setTournamentScope('all')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                    tournamentScope === 'all'
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${tournamentScope === 'all'
                       ? 'bg-white dark:bg-green-600 text-green-700 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                    }`}
                 >
                   All Tournaments
                 </button>
                 <button
                   id="tab-my-tournaments"
                   onClick={() => setTournamentScope('my')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center space-x-1.5 ${
-                    tournamentScope === 'my'
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center space-x-1.5 ${tournamentScope === 'my'
                       ? 'bg-white dark:bg-green-600 text-green-700 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                    }`}
                 >
                   <span>My Tournaments</span>
                   {myTournaments.length > 0 && (
-                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                      tournamentScope === 'my' ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                    }`}>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${tournamentScope === 'my' ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      }`}>
                       {myTournaments.length}
                     </span>
                   )}
@@ -687,11 +676,10 @@ export const HomePage = () => {
                   <button
                     key={tab.id}
                     onClick={() => setTournamentFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                      tournamentFilter === tab.id
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${tournamentFilter === tab.id
                         ? 'bg-white dark:bg-green-600 text-green-700 dark:text-white shadow-sm'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -822,8 +810,8 @@ export const HomePage = () => {
                               </span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-[#16261C] rounded-full h-1.5 overflow-hidden">
-                              <div 
-                                className="bg-green-600 h-1.5 rounded-full transition-all duration-500" 
+                              <div
+                                className="bg-green-600 h-1.5 rounded-full transition-all duration-500"
                                 style={{ width: `${progressPercent}%` }}
                               />
                             </div>
@@ -905,8 +893,8 @@ export const HomePage = () => {
                           </span>
                         </div>
                         <div className="w-full bg-slate-100 dark:bg-[#16261C] rounded-full h-1.5 overflow-hidden">
-                          <div 
-                            className="bg-green-600 h-1.5 rounded-full transition-all duration-500" 
+                          <div
+                            className="bg-green-600 h-1.5 rounded-full transition-all duration-500"
                             style={{ width: `${progressPercent}%` }}
                           />
                         </div>
@@ -964,7 +952,7 @@ export const HomePage = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          
+
           <div className="saas-card p-6 rounded-3xl space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-green-50 dark:bg-green-950/60 text-green-600 dark:text-green-400 flex items-center justify-center border border-green-200/50 dark:border-green-800/50">
               <Radio className="w-6 h-6" />

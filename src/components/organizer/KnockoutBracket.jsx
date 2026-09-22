@@ -61,7 +61,7 @@ const TeamRow = ({ team, score, penalties, tieBreakMethod, isWinner, isLoser, is
           }`}
         >
           {team?.logoUrl ? (
-            <img src={team.logoUrl} alt={team.name || 'Team'} className="w-full h-full object-cover" />
+            <img src={team.logoUrl} alt={team.name || 'Team'} loading="lazy" className="w-full h-full object-cover" />
           ) : team?.shortName || team?.name ? (
             team.shortName || team.name.substring(0, 3).toUpperCase()
           ) : (

@@ -368,7 +368,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                     <div className="flex items-center space-x-3 min-w-0">
                       <div className="w-11 h-11 rounded-2xl bg-green-600/10 text-green-700 dark:text-green-400 font-bold text-sm flex items-center justify-center overflow-hidden border border-green-500/20 flex-shrink-0">
                         {reqItem.player?.avatarUrl ? (
-                          <img src={reqItem.player.avatarUrl} alt={reqItem.player.fullName} className="w-full h-full object-cover" />
+                          <img src={reqItem.player.avatarUrl} alt={reqItem.player.fullName} loading="lazy" className="w-full h-full object-cover" />
                         ) : (
                           <span>{reqItem.player?.fullName?.charAt(0)?.toUpperCase() || 'P'}</span>
                         )}
@@ -642,7 +642,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                       <div className="relative flex-shrink-0">
                         <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-[#101C14] text-slate-800 dark:text-white font-black text-xs flex items-center justify-center overflow-hidden border border-slate-300 dark:border-[#1E3A29]">
                           {player.avatarUrl ? (
-                            <img src={player.avatarUrl} alt={player.fullName} className="w-full h-full object-cover" />
+                            <img src={player.avatarUrl} alt={player.fullName} loading="lazy" className="w-full h-full object-cover" />
                           ) : (
                             <span>{player.fullName.charAt(0).toUpperCase()}</span>
                           )}

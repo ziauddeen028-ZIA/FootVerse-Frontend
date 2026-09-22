@@ -332,7 +332,7 @@ export const TeamDashboard = () => {
                       style={{ backgroundColor: team.primaryColor || '#16A34A' }}
                     >
                       {team.logoUrl ? (
-                        <img src={team.logoUrl} alt={team.name} className="w-full h-full object-cover rounded-2xl" />
+                        <img src={team.logoUrl} alt={team.name} loading="lazy" className="w-full h-full object-cover rounded-2xl" />
                       ) : (
                         <span>{team.shortName || team.name?.substring(0, 3)?.toUpperCase() || 'FC'}</span>
                       )}

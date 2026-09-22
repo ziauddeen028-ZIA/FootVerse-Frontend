@@ -638,7 +638,7 @@ export const Matches = () => {
                         : 'bg-green-600/10 dark:bg-green-600/20 border border-green-600/30 text-green-700 dark:text-green-300'
                     }`}>
                       {match.homeTeam?.logoUrl ? (
-                        <img src={match.homeTeam.logoUrl} alt={match.homeTeam.name || 'Home Team'} className="w-full h-full object-cover rounded-xl" />
+                        <img src={match.homeTeam.logoUrl} alt={match.homeTeam.name || 'Home Team'} loading="lazy" className="w-full h-full object-cover rounded-xl" />
                       ) : match.homeTeam?.shortName || match.homeTeam?.name ? (
                         match.homeTeam?.shortName || match.homeTeam?.name?.substring(0, 3).toUpperCase()
                       ) : (
@@ -691,7 +691,7 @@ export const Matches = () => {
                         : 'bg-emerald-600/10 dark:bg-emerald-600/20 border border-emerald-600/30 text-emerald-700 dark:text-emerald-300'
                     }`}>
                       {match.awayTeam?.logoUrl ? (
-                        <img src={match.awayTeam.logoUrl} alt={match.awayTeam.name || 'Away Team'} className="w-full h-full object-cover rounded-xl" />
+                        <img src={match.awayTeam.logoUrl} alt={match.awayTeam.name || 'Away Team'} loading="lazy" className="w-full h-full object-cover rounded-xl" />
                       ) : match.awayTeam?.shortName || match.awayTeam?.name ? (
                         match.awayTeam?.shortName || match.awayTeam?.name?.substring(0, 3).toUpperCase()
                       ) : (

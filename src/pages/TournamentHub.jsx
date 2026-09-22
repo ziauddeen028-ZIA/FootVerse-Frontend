@@ -468,12 +468,17 @@ export const TournamentHub = () => {
       </div>
 
       {/* ─── TOURNAMENT HERO BANNER ───────────────────────────────────────── */}
-      <section className="saas-card rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-slate-900 via-[#0C1B12] to-[#07130C] text-white border border-slate-800 dark:border-[#1E3A29] shadow-2xl relative overflow-hidden">
-        <div className="relative z-10 space-y-6">
+      <section 
+        className="saas-card rounded-3xl p-4 sm:p-8 md:p-10 text-white border border-slate-800 dark:border-[#1E3A29] shadow-2xl relative overflow-hidden bg-[url('/tournament-bg-2.webp')] md:bg-[url('/tournament-bg.webp')] bg-cover bg-center bg-no-repeat"
+      >
+        {/* Subtle Dark/Green Overlay for text readability & brand cohesion */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-[#0a1f13]/85 to-[#05130b]/90 pointer-events-none" />
 
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getFormatBadgeStyle(tournament.format)}`}>
+        <div className="relative z-10 space-y-4 sm:space-y-6">
+
+          <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <span className={`px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-bold border ${getFormatBadgeStyle(tournament.format)}`}>
                 {getFormatLabel(tournament.format)}
               </span>
               {getStatusBadge(tournament.status)}
@@ -481,20 +486,20 @@ export const TournamentHub = () => {
 
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/80 text-xs font-semibold transition"
+              className="inline-flex items-center space-x-1.5 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/80 text-xs font-semibold transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back</span>
             </button>
           </div>
 
-          <div className="space-y-3 max-w-3xl">
+          <div className="space-y-2 sm:space-y-3 max-w-3xl">
             <div className="inline-flex items-center space-x-2 text-green-400 text-xs font-bold tracking-wide uppercase">
               <Trophy className="w-4 h-4 text-green-400" />
               <span>FootVerse Official Tournament</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-black font-heading tracking-tight text-white leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black font-heading tracking-tight text-white leading-tight">
               {tournament.name}
             </h1>
 
@@ -876,7 +881,7 @@ export const TournamentHub = () => {
                       style={{ backgroundColor: team.primaryColor || '#16A34A' }}
                     >
                       {team.logoUrl ? (
-                        <img src={team.logoUrl} alt={team.name} className="w-full h-full object-cover rounded-2xl" />
+                        <img src={team.logoUrl} alt={team.name} loading="lazy" className="w-full h-full object-cover rounded-2xl" />
                       ) : (
                         <span>{team.shortName || team.name?.substring(0, 3)?.toUpperCase()}</span>
                       )}

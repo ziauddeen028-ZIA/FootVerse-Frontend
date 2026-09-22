@@ -497,7 +497,7 @@ export const LeagueDashboard = ({
                           : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                       }`}>
                         {match.homeTeam?.logoUrl ? (
-                          <img src={match.homeTeam.logoUrl} alt={match.homeTeam.name} className="w-full h-full object-cover rounded-xl" />
+                          <img src={match.homeTeam.logoUrl} alt={match.homeTeam.name} loading="lazy" className="w-full h-full object-cover rounded-xl" />
                         ) : (
                           match.homeTeam?.shortName || match.homeTeam?.name?.substring(0, 3).toUpperCase() || 'HOM'
                         )}
@@ -528,7 +528,7 @@ export const LeagueDashboard = ({
                           : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                       }`}>
                         {match.awayTeam?.logoUrl ? (
-                          <img src={match.awayTeam.logoUrl} alt={match.awayTeam.name} className="w-full h-full object-cover rounded-xl" />
+                          <img src={match.awayTeam.logoUrl} alt={match.awayTeam.name} loading="lazy" className="w-full h-full object-cover rounded-xl" />
                         ) : (
                           match.awayTeam?.shortName || match.awayTeam?.name?.substring(0, 3).toUpperCase() || 'AWA'
                         )}

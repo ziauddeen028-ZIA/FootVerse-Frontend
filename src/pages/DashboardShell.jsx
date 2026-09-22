@@ -133,7 +133,7 @@ export const DashboardShell = () => {
           <div className="w-full md:w-64 lg:w-72 flex-shrink-0 flex items-center justify-center relative">
             <div className="absolute inset-0 bg-green-600/20 rounded-full blur-3xl" />
             <img 
-              src="/hero_artwork.png" 
+              src="/hero_artwork.webp" 
               alt="Futuristic Football Artwork" 
               className="w-48 sm:w-56 lg:w-64 object-contain relative z-10 drop-shadow-2xl hover:scale-105 transition duration-300" 
             />

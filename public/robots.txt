@@ -1,0 +1,22 @@
+# FootVerse robots.txt
+User-agent: *
+Allow: /
+Allow: /tournaments
+Allow: /matches
+Allow: /teams
+Allow: /players
+Allow: /stats
+Allow: /login
+Allow: /register
+
+# Disallow private user and organizer routes
+Disallow: /organizer/
+Disallow: /profile
+Disallow: /notifications
+Disallow: /settings
+Disallow: /admin
+Disallow: /matches-manage
+Disallow: /teams-manage
+
+# Sitemap Location
+Sitemap: https://footverse.app/sitemap.xml
