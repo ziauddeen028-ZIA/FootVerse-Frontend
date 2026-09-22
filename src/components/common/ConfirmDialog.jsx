@@ -7,15 +7,15 @@ export const ConfirmDialog = ({ isOpen, title, message, confirmLabel = 'Confirm'
   return (
     <div
       onClick={onCancel}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="bg-white dark:bg-[#141C2E] rounded-2xl w-full max-w-md shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+        className="bg-white dark:bg-[#101C14] rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 dark:border-[#1E3A29] overflow-hidden"
       >
         <div className="p-6">
           <div className="flex justify-between items-start">
-            <div className={`p-3 rounded-xl ${isDestructive ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'}`}>
+            <div className={`p-3 rounded-xl ${isDestructive ? 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400'}`}>
               <AlertTriangle className="w-6 h-6" />
             </div>
             <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
@@ -31,11 +31,11 @@ export const ConfirmDialog = ({ isOpen, title, message, confirmLabel = 'Confirm'
           </p>
         </div>
         
-        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+        <div className="px-6 py-4 bg-slate-50 dark:bg-[#0B150E] border-t border-slate-100 dark:border-[#1E3A29] flex justify-end gap-3">
           <button
             onClick={onCancel}
             disabled={isLoading}
-            className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#16261C] rounded-xl transition-colors disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -45,7 +45,7 @@ export const ConfirmDialog = ({ isOpen, title, message, confirmLabel = 'Confirm'
             className={`px-4 py-2 text-sm font-semibold text-white rounded-xl shadow-sm transition-all ${
               isDestructive 
                 ? 'bg-red-600 hover:bg-red-700 active:bg-red-800 focus:ring-2 focus:ring-red-500/50' 
-                : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus:ring-2 focus:ring-blue-500/50'
+                : 'bg-green-600 hover:bg-green-700 active:bg-green-800 focus:ring-2 focus:ring-green-500/50 shadow-green-600/20'
             } disabled:opacity-70 flex items-center gap-2`}
           >
             {isLoading && (

@@ -327,7 +327,7 @@ export const Matches = () => {
       />
 
       {/* Filters Bar & View Switcher */}
-      <div className="bg-white dark:bg-[#141C2E] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
+      <div className="bg-white dark:bg-[#101C14] p-4 rounded-2xl border border-slate-200 dark:border-[#1E3A29] flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
         {/* Search */}
         <div className="relative w-full lg:w-80">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -336,14 +336,14 @@ export const Matches = () => {
             placeholder="Search teams, venue, or tournament..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
 
         {/* Filters, View Switcher & Sorting */}
         <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
           {/* View Mode Toggle */}
-          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900/80 rounded-xl border border-slate-200/80 dark:border-slate-800">
+          <div className="flex items-center p-1 bg-slate-100 dark:bg-[#16261C] rounded-xl border border-slate-200/80 dark:border-[#1E3A29]">
             <button
               type="button"
               onClick={() => {
@@ -356,7 +356,7 @@ export const Matches = () => {
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'list'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                  ? 'bg-white dark:bg-[#101C14] text-slate-900 dark:text-white shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
               title="List View (All Fixtures)"
@@ -381,7 +381,7 @@ export const Matches = () => {
                 isBracketDisabled
                   ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
                   : viewMode === 'bracket'
-                  ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-500/20'
+                  ? 'bg-green-600 text-white shadow-xs shadow-green-600/20'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
               title={
@@ -412,7 +412,7 @@ export const Matches = () => {
                 isLeagueDisabled
                   ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
                   : viewMode === 'league'
-                  ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20'
+                  ? 'bg-emerald-700 text-white shadow-xs shadow-emerald-700/20'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
               title={
@@ -610,17 +610,17 @@ export const Matches = () => {
             return (
               <div
                 key={match.id}
-                className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm flex flex-col justify-between"
+                className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-5 hover:border-green-500/50 dark:hover:border-green-500/50 transition-all shadow-sm flex flex-col justify-between"
               >
                 {/* Top info: Tournament Name & Status */}
-                <div className="flex items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-[#1E3A29]">
                   <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                    <Trophy className="w-4 h-4 text-blue-500 shrink-0" />
+                    <Trophy className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
                     <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
                       {match.tournament?.name || 'Tournament'}
                     </span>
                     {match.roundName && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-50 text-green-700 dark:bg-green-950/60 dark:text-green-300 border border-green-200 dark:border-green-800 shrink-0">
                         {match.roundName}
                       </span>
                     )}
@@ -634,8 +634,8 @@ export const Matches = () => {
                   <div className={`col-span-3 flex flex-col items-center gap-2 transition-all ${isAwayWinner ? 'opacity-55' : 'opacity-100'}`}>
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${
                       isHomeWinner
-                        ? 'bg-blue-500/20 dark:bg-blue-500/30 border-2 border-emerald-500/70 dark:border-emerald-400/80 ring-2 ring-emerald-500/20 text-blue-600 dark:text-blue-400 shadow-sm'
-                        : 'bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-400'
+                        ? 'bg-green-600/20 dark:bg-green-600/30 border-2 border-emerald-500/70 dark:border-emerald-400/80 ring-2 ring-emerald-500/20 text-green-700 dark:text-green-300 shadow-sm'
+                        : 'bg-green-600/10 dark:bg-green-600/20 border border-green-600/30 text-green-700 dark:text-green-300'
                     }`}>
                       {match.homeTeam?.logoUrl ? (
                         <img src={match.homeTeam.logoUrl} alt={match.homeTeam.name || 'Home Team'} className="w-full h-full object-cover rounded-xl" />
@@ -662,7 +662,7 @@ export const Matches = () => {
                   <div className="col-span-1 flex flex-col items-center gap-0.5">
                     {isCompleted || isLiveOrHalftime || hasScores ? (
                       <>
-                        <span className="text-xs font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/90 px-2.5 py-1 rounded-lg tabular-nums tracking-wide">
+                        <span className="text-xs font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] px-2.5 py-1 rounded-lg tabular-nums tracking-wide">
                           {match.homeScore ?? 0} : {match.awayScore ?? 0}
                         </span>
                         {match.tieBreakMethod === 'penalty' && match.homePenaltyScore !== null && match.homePenaltyScore !== undefined && (
@@ -677,7 +677,7 @@ export const Matches = () => {
                         )}
                       </>
                     ) : (
-                      <span className="text-xs font-extrabold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg">
+                      <span className="text-xs font-extrabold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-[#16261C] px-2.5 py-1 rounded-lg">
                         VS
                       </span>
                     )}
@@ -687,8 +687,8 @@ export const Matches = () => {
                   <div className={`col-span-3 flex flex-col items-center gap-2 transition-all ${isHomeWinner ? 'opacity-55' : 'opacity-100'}`}>
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${
                       isAwayWinner
-                        ? 'bg-purple-500/20 dark:bg-purple-500/30 border-2 border-emerald-500/70 dark:border-emerald-400/80 ring-2 ring-emerald-500/20 text-purple-600 dark:text-purple-400 shadow-sm'
-                        : 'bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-400'
+                        ? 'bg-emerald-600/20 dark:bg-emerald-600/30 border-2 border-emerald-500/70 dark:border-emerald-400/80 ring-2 ring-emerald-500/20 text-emerald-700 dark:text-emerald-300 shadow-sm'
+                        : 'bg-emerald-600/10 dark:bg-emerald-600/20 border border-emerald-600/30 text-emerald-700 dark:text-emerald-300'
                     }`}>
                       {match.awayTeam?.logoUrl ? (
                         <img src={match.awayTeam.logoUrl} alt={match.awayTeam.name || 'Away Team'} className="w-full h-full object-cover rounded-xl" />
@@ -713,7 +713,7 @@ export const Matches = () => {
                 </div>
 
                 {/* Bottom Info & Quick Actions */}
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <div className="pt-4 border-t border-slate-100 dark:border-[#1E3A29] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -728,7 +728,7 @@ export const Matches = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100/60 dark:border-slate-800/60">
+                  <div className="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100/60 dark:border-[#1E3A29]/60">
                     <div className="flex items-center gap-1.5">
                       {/* Scheduled matches → Manage Live (only if both teams are assigned) */}
                       {match.status === 'scheduled' && (
@@ -739,7 +739,7 @@ export const Matches = () => {
                               const tourneyParam = tId && tId !== 'all' ? `?tournament=${tId}` : '';
                               navigate(`/organizer/matches/${match.id}/live${tourneyParam}`);
                             }}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
                             title="Manage Live Match"
                           >
                             <Zap className="w-3.5 h-3.5" />
@@ -747,7 +747,7 @@ export const Matches = () => {
                           </button>
                         ) : (
                           <span
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/60 rounded-lg cursor-not-allowed border border-slate-200/50 dark:border-slate-700/50"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-[#16261C] rounded-lg cursor-not-allowed border border-slate-200/50 dark:border-[#1E3A29]"
                             title="Both teams must qualify before this match can be started"
                           >
                             <Clock className="w-3.5 h-3.5" />
@@ -763,7 +763,7 @@ export const Matches = () => {
                             const tourneyParam = tId && tId !== 'all' ? `?tournament=${tId}` : '';
                             navigate(`/organizer/matches/${match.id}/live${tourneyParam}`);
                           }}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                           title="View Live Match"
                         >
                           <Radio className="w-3.5 h-3.5 animate-pulse" />
@@ -778,7 +778,7 @@ export const Matches = () => {
                             const tourneyParam = tId && tId !== 'all' ? `?tournament=${tId}` : '';
                             navigate(`/organizer/matches/${match.id}/live${tourneyParam}`);
                           }}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
                           title="Resume Match"
                         >
                           <Zap className="w-3.5 h-3.5" />
@@ -794,7 +794,7 @@ export const Matches = () => {
                             const readOnlyParam = tourneyParam ? '&readonly=true' : '?readonly=true';
                             navigate(`/organizer/matches/${match.id}/live${tourneyParam}${readOnlyParam}`);
                           }}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
                           title="View Match Summary"
                         >
                           <FileText className="w-3.5 h-3.5" />
@@ -806,7 +806,7 @@ export const Matches = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleOpenEdit(match)}
-                        className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="p-2 text-slate-400 hover:text-green-600 dark:hover:text-green-400 rounded-lg hover:bg-slate-100 dark:hover:bg-[#16261C] transition-colors"
                         title="Edit Match"
                         aria-label="Edit Match"
                       >
@@ -814,7 +814,7 @@ export const Matches = () => {
                       </button>
                       <button
                         onClick={() => handleOpenDelete(match)}
-                        className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-slate-100 dark:hover:bg-[#16261C] transition-colors"
                         title="Delete Match"
                         aria-label="Delete Match"
                       >

@@ -10,7 +10,7 @@ import {
   Sparkles, 
   Plus, 
   ChevronRight, 
-  ChevronDown,
+  ChevronDown, 
   ChevronUp,
   Award, 
   Zap, 
@@ -52,8 +52,8 @@ export const HomePage = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [matchFilter, setMatchFilter] = useState(isLiveParam ? 'live' : 'all'); // 'all', 'live', 'upcoming', 'completed'
-  const [tournamentFilter, setTournamentFilter] = useState('all'); // 'all', 'knockout', 'league', 'group_stage'
+  const [matchFilter, setMatchFilter] = useState(isLiveParam ? 'live' : 'all');
+  const [tournamentFilter, setTournamentFilter] = useState('all');
   const [tournamentScope, setTournamentScope] = useState(
     searchParams.get('tab') === 'my' || location.pathname === '/my-tournaments' ? 'my' : 'all'
   );
@@ -247,13 +247,6 @@ export const HomePage = () => {
     { id: 'p5', fullName: 'Kevin De Bruyne', teamName: 'Apex Predators', preferredPosition: 'Playmaker', goals: 7 }
   ];
 
-  const displayTeams = teams.length > 0 ? teams : [
-    { id: 'tm1', name: 'Strikers FC', shortName: 'STK', city: 'Metropolis', squadCount: 16, matchesPlayed: 8, primaryColor: '#3B82F6' },
-    { id: 'tm2', name: 'Titans SC', shortName: 'TTN', city: 'North District', squadCount: 15, matchesPlayed: 8, primaryColor: '#6366F1' },
-    { id: 'tm3', name: 'Galacticos FC', shortName: 'GLC', city: 'Skyline City', squadCount: 18, matchesPlayed: 7, primaryColor: '#EC4899' },
-    { id: 'tm4', name: 'Gunners FC', shortName: 'GUN', city: 'Metro East', squadCount: 14, matchesPlayed: 7, primaryColor: '#EF4444' }
-  ];
-
   // Filter matches
   const isHomePage = location.pathname === '/' || location.pathname === '/dashboard';
   const [isMatchesExpanded, setIsMatchesExpanded] = useState(!isHomePage);
@@ -273,13 +266,11 @@ export const HomePage = () => {
   const visibleMatches = (!isHomePage || isMatchesExpanded) ? allFilteredMatches : matchesPreview;
   const liveMatchesCount = displayMatches.filter(m => m.status === 'live' || m.status === 'in_progress').length;
 
-  // Measure and animate grid height for smooth expand/collapse
   useEffect(() => {
     if (!isHomePage || !matchGridInnerRef.current) {
       setMatchGridHeight('none');
       return;
     }
-    // Use requestAnimationFrame to ensure DOM has rendered the new children
     requestAnimationFrame(() => {
       if (matchGridInnerRef.current) {
         const fullHeight = matchGridInnerRef.current.scrollHeight;
@@ -290,7 +281,6 @@ export const HomePage = () => {
 
   const handleToggleMatches = useCallback(() => {
     if (isMatchesExpanded) {
-      // Collapsing: scroll back to section top, then collapse
       setIsMatchesExpanded(false);
       setTimeout(() => {
         const el = document.getElementById('matches-section');
@@ -309,20 +299,17 @@ export const HomePage = () => {
     return true;
   }).slice(0, 6);
 
-  // Total goals logged calculation
-  const totalGoals = displayPlayers.reduce((acc, p) => acc + (p.goals || 0), 0) || 48;
-
   const formatBadgeStyle = (format) => {
     switch (format?.toLowerCase()) {
       case 'knockout':
         return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
       case 'league':
       case 'round_robin':
-        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
+        return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20';
       case 'group_stage':
       case 'group_knockout':
       case 'hybrid':
-        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
+        return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20';
       default:
         return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
     }
@@ -344,18 +331,18 @@ export const HomePage = () => {
     <div className="space-y-10 pb-16">
       
       {/* ─── 1. HERO SECTION ──────────────────────────────────────────────── */}
-      <section className="saas-card rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-slate-900 via-[#0F172A] to-[#151E36] text-white border border-slate-800 shadow-2xl overflow-hidden relative">
+      <section className="saas-card rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-slate-900 via-[#0C1B12] to-[#07130C] text-white border border-slate-800 dark:border-[#1E3A29] shadow-2xl overflow-hidden relative">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
           
           <div className="space-y-5 max-w-2xl text-center lg:text-left">
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-xs font-semibold shadow-inner">
-              <Sparkles className="w-4 h-4 text-blue-400 animate-pulse" />
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 text-xs font-semibold shadow-inner">
+              <Sparkles className="w-4 h-4 text-green-400 animate-pulse" />
               <span>From Kickoff to Final</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-black font-heading tracking-tight text-white leading-tight">
               Where Every Match {' '}
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-sky-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-green-400 via-emerald-300 to-green-200 bg-clip-text text-transparent">
                 Becomes a Story
               </span>
             </h1>
@@ -368,7 +355,7 @@ export const HomePage = () => {
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
               <Link
                 to="/tournaments"
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition flex items-center space-x-2 group"
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-lg shadow-green-600/30 transition flex items-center space-x-2 group"
               >
                 <Trophy className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                 <span>Explore Tournaments</span>
@@ -379,7 +366,7 @@ export const HomePage = () => {
                 to="/matches"
                 className="px-6 py-3 bg-slate-800/80 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700/80 font-bold rounded-2xl text-xs sm:text-sm transition flex items-center space-x-2"
               >
-                <Swords className="w-4 h-4 text-blue-400" />
+                <Swords className="w-4 h-4 text-green-400" />
                 <span>Live Match Center</span>
               </Link>
 
@@ -396,7 +383,7 @@ export const HomePage = () => {
               {isGuest && (
                 <Link
                   to="/register"
-                  className="px-5 py-3 bg-indigo-600/80 hover:bg-indigo-600 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-md transition flex items-center space-x-1.5"
+                  className="px-5 py-3 bg-emerald-600/80 hover:bg-emerald-600 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-md transition flex items-center space-x-1.5"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Join / Register Free</span>
@@ -405,16 +392,16 @@ export const HomePage = () => {
             </div>
 
             {/* Quick Status Bar */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-3 text-xs text-slate-400 border-t border-slate-800/80">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-3 text-xs text-slate-400 border-t border-slate-800/80 dark:border-[#1E3A29]">
               <span className="flex items-center space-x-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-ping" />
                 <strong className="text-slate-200">
                   {liveMatchesCount > 0 ? `${liveMatchesCount} Match Live Now` : 'Live Match Center Ready'}
                 </strong>
               </span>
               <span>•</span>
               <span className="flex items-center space-x-1.5">
-                <BarChart2 className="w-3.5 h-3.5 text-purple-400" />
+                <BarChart2 className="w-3.5 h-3.5 text-green-400" />
                 <span>Automated Standings & Brackets</span>
               </span>
             </div>
@@ -422,7 +409,7 @@ export const HomePage = () => {
 
           {/* Football Artwork with Glow Effects */}
           <div className="w-full lg:w-80 flex-shrink-0 flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/30 to-indigo-600/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-green-600/25 to-emerald-600/15 rounded-full blur-3xl animate-pulse" />
             <img 
               src="/hero_artwork.png" 
               alt="FootVerse Football Engine Artwork" 
@@ -433,13 +420,13 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* ─── 3. MATCH SCORECENTER HUB (6 MOST RECENT MATCHES) ─────────────── */}
+      {/* ─── 2. MATCH SCORECENTER HUB (6 MOST RECENT MATCHES) ─────────────── */}
       <section id="matches-section" className="saas-card p-6 sm:p-8 rounded-3xl space-y-6 scroll-mt-20">
         
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-[#1E3A29]">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <Swords className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <Swords className="w-5 h-5 text-green-600 dark:text-green-400" />
               <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white">
                 Match Scorecenter
               </h2>
@@ -451,7 +438,7 @@ export const HomePage = () => {
 
           <div className="flex flex-wrap items-center gap-3">
             {/* Filter Pills */}
-            <div className="flex items-center bg-slate-100 dark:bg-[#111726] p-1 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto">
+            <div className="flex items-center bg-slate-100 dark:bg-[#16261C] p-1 rounded-2xl border border-slate-200 dark:border-[#1E3A29] overflow-x-auto">
               {[
                 { id: 'all', label: 'All' },
                 { id: 'live', label: '🔴 Live', badge: liveMatchesCount },
@@ -463,7 +450,7 @@ export const HomePage = () => {
                   onClick={() => setMatchFilter(tab.id)}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                     matchFilter === tab.id
-                      ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm'
+                      ? 'bg-white dark:bg-green-600 text-green-700 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
@@ -480,7 +467,7 @@ export const HomePage = () => {
             {/* View All Matches Button */}
             <Link
               to="/matches"
-              className="px-3.5 py-1.5 bg-blue-50 dark:bg-blue-950/70 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl border border-blue-200/80 dark:border-blue-800/80 transition flex items-center space-x-1 whitespace-nowrap"
+              className="px-3.5 py-1.5 bg-green-50 dark:bg-green-950/70 hover:bg-green-100 dark:hover:bg-green-900/60 text-green-700 dark:text-green-400 font-bold text-xs rounded-xl border border-green-200/80 dark:border-green-800/80 transition flex items-center space-x-1 whitespace-nowrap"
             >
               <span>View All Matches</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -522,7 +509,7 @@ export const HomePage = () => {
                     className={`p-5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer group saas-card-hover ${
                       isLive
                         ? 'bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/30 shadow-md ring-1 ring-emerald-500/20'
-                        : 'bg-slate-50/80 dark:bg-slate-800/40 border-slate-200/70 dark:border-slate-800/80'
+                        : 'bg-slate-50/80 dark:bg-[#16261C]/80 border-slate-200/70 dark:border-[#1E3A29]'
                     }`}
                   >
                     {/* Top Bar: Tournament & Status */}
@@ -539,25 +526,25 @@ export const HomePage = () => {
                       )}
 
                       {isCompleted && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold flex-shrink-0">
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-[#101C14] text-slate-700 dark:text-slate-300 text-[10px] font-bold flex-shrink-0">
                           FULL TIME
                         </span>
                       )}
 
                       {isScheduled && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 text-[10px] font-bold flex-shrink-0">
+                        <span className="px-2.5 py-0.5 rounded-full bg-green-50 dark:bg-green-950/80 text-green-700 dark:text-green-400 text-[10px] font-bold flex-shrink-0">
                           SCHEDULED
                         </span>
                       )}
                     </div>
 
                     {/* Team vs Team Scoreboard */}
-                    <div className="py-3 px-4 rounded-xl bg-white dark:bg-[#0D121F] border border-slate-200/60 dark:border-slate-800/70 space-y-3 group-hover:border-blue-500/40 transition">
+                    <div className="py-3 px-4 rounded-xl bg-white dark:bg-[#101C14] border border-slate-200/60 dark:border-[#1E3A29] space-y-3 group-hover:border-green-500/40 transition">
                       
                       {/* Home Team */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2.5 min-w-0 pr-2">
-                          <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-green-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
                             {match.homeTeam?.shortName || homeName.substring(0, 2).toUpperCase()}
                           </div>
                           <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
@@ -572,7 +559,7 @@ export const HomePage = () => {
                       {/* Away Team */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2.5 min-w-0 pr-2">
-                          <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-700 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
                             {match.awayTeam?.shortName || awayName.substring(0, 2).toUpperCase()}
                           </div>
                           <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
@@ -608,39 +595,39 @@ export const HomePage = () => {
           </div>
         )}
 
-        {/* Bottom action: expand/collapse on homepage, link to /matches on /matches route */}
+        {/* Bottom action: expand/collapse on homepage */}
         <div className="pt-2 flex justify-center">
           {isHomePage && hasMoreMatches ? (
             <button
               onClick={handleToggleMatches}
-              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center space-x-2 group"
+              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center space-x-2 group"
             >
               <span>{isMatchesExpanded ? 'View Less' : `View All ${allFilteredMatches.length} Matches`}</span>
               {isMatchesExpanded 
-                ? <ChevronUp className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" /> 
-                : <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
+                ? <ChevronUp className="w-4 h-4 transition-transform group-hover:-translate-y-0.5 text-green-600 dark:text-green-400" /> 
+                : <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5 text-green-600 dark:text-green-400" />
               }
             </button>
           ) : isHomePage ? (
             <Link
               to="/matches"
-              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition flex items-center space-x-2"
+              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition flex items-center space-x-2"
             >
               <span>View Full Match Center & Fixtures Calendar</span>
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 text-green-600 dark:text-green-400" />
             </Link>
           ) : null}
         </div>
 
       </section>
 
-      {/* ─── 4. FEATURED TOURNAMENTS & CUPS ───────────────────────────────── */}
+      {/* ─── 3. FEATURED TOURNAMENTS & CUPS ───────────────────────────────── */}
       <section id="tournaments-section" className="saas-card p-6 sm:p-8 rounded-3xl space-y-6 scroll-mt-20">
         
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-[#1E3A29]">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <Trophy className="w-5 h-5 text-amber-500" />
+              <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
               <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white">
                 {tournamentScope === 'my' ? 'My Tournaments' : 'Featured Tournaments & Cups'}
               </h2>
@@ -655,13 +642,13 @@ export const HomePage = () => {
           <div className="flex flex-wrap items-center gap-3">
             {/* Scope Toggle: All Tournaments vs My Tournaments */}
             {user && (
-              <div className="flex items-center bg-slate-100 dark:bg-[#111726] p-1 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center bg-slate-100 dark:bg-[#16261C] p-1 rounded-2xl border border-slate-200 dark:border-[#1E3A29]">
                 <button
                   id="tab-all-tournaments"
                   onClick={() => setTournamentScope('all')}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                     tournamentScope === 'all'
-                      ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm'
+                      ? 'bg-white dark:bg-green-600 text-green-700 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
@@ -672,14 +659,14 @@ export const HomePage = () => {
                   onClick={() => setTournamentScope('my')}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center space-x-1.5 ${
                     tournamentScope === 'my'
-                      ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm'
+                      ? 'bg-white dark:bg-green-600 text-green-700 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   <span>My Tournaments</span>
                   {myTournaments.length > 0 && (
                     <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                      tournamentScope === 'my' ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      tournamentScope === 'my' ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                     }`}>
                       {myTournaments.length}
                     </span>
@@ -690,7 +677,7 @@ export const HomePage = () => {
 
             {/* Format Filter Tabs (All Tournaments scope only) */}
             {tournamentScope === 'all' && (
-              <div className="flex items-center bg-slate-100 dark:bg-[#111726] p-1 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto">
+              <div className="flex items-center bg-slate-100 dark:bg-[#16261C] p-1 rounded-2xl border border-slate-200 dark:border-[#1E3A29] overflow-x-auto">
                 {[
                   { id: 'all', label: 'All' },
                   { id: 'knockout', label: 'Knockout' },
@@ -702,7 +689,7 @@ export const HomePage = () => {
                     onClick={() => setTournamentFilter(tab.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                       tournamentFilter === tab.id
-                        ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm'
+                        ? 'bg-white dark:bg-green-600 text-green-700 dark:text-white shadow-sm'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
@@ -717,7 +704,7 @@ export const HomePage = () => {
               <button
                 id="open-tournament-code-btn"
                 onClick={() => setIsTournamentCodeModalOpen(true)}
-                className="px-3.5 py-1.5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs rounded-xl shadow-md shadow-violet-600/20 transition flex items-center space-x-1.5 whitespace-nowrap"
+                className="px-3.5 py-1.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-xs rounded-xl shadow-md shadow-green-600/20 transition flex items-center space-x-1.5 whitespace-nowrap"
               >
                 <Key className="w-3.5 h-3.5" />
                 <span>Join with Code</span>
@@ -728,7 +715,7 @@ export const HomePage = () => {
             {tournamentScope === 'all' && (
               <Link
                 to="/tournaments"
-                className="px-3.5 py-1.5 bg-blue-50 dark:bg-blue-950/70 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 font-bold text-xs rounded-xl border border-blue-200/80 dark:border-blue-800/80 transition flex items-center space-x-1 whitespace-nowrap"
+                className="px-3.5 py-1.5 bg-green-50 dark:bg-green-950/70 hover:bg-green-100 dark:hover:bg-green-900/60 text-green-700 dark:text-green-400 font-bold text-xs rounded-xl border border-green-200/80 dark:border-green-800/80 transition flex items-center space-x-1 whitespace-nowrap"
               >
                 <span>View All</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -741,9 +728,9 @@ export const HomePage = () => {
         {tournamentScope === 'my' && (
           <div>
             {myTournaments.length === 0 ? (
-              <div className="p-10 sm:p-12 rounded-3xl bg-gradient-to-br from-violet-50/50 to-indigo-50/30 dark:from-violet-950/20 dark:to-indigo-950/10 border border-violet-200/60 dark:border-violet-900/40 text-center space-y-5">
-                <div className="w-16 h-16 rounded-3xl bg-violet-600/10 dark:bg-violet-500/10 flex items-center justify-center mx-auto">
-                  <Trophy className="w-8 h-8 text-violet-600 dark:text-violet-400" />
+              <div className="p-10 sm:p-12 rounded-3xl bg-green-50/40 dark:bg-green-950/20 border border-green-200/60 dark:border-green-900/40 text-center space-y-5">
+                <div className="w-16 h-16 rounded-3xl bg-green-600/10 dark:bg-green-500/10 flex items-center justify-center mx-auto">
+                  <Trophy className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="space-y-1.5">
                   <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -757,16 +744,16 @@ export const HomePage = () => {
                   <button
                     id="my-tournaments-join-code-btn"
                     onClick={() => setIsTournamentCodeModalOpen(true)}
-                    className="px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-xs shadow-md shadow-violet-600/25 transition inline-flex items-center space-x-2"
+                    className="px-5 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold rounded-xl text-xs shadow-md shadow-green-600/25 transition inline-flex items-center space-x-2"
                   >
                     <Key className="w-4 h-4" />
                     <span>Join with Tournament Code</span>
                   </button>
                   <button
                     onClick={() => setTournamentScope('all')}
-                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold rounded-xl text-xs shadow-md transition inline-flex items-center space-x-2"
+                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-white font-bold rounded-xl text-xs shadow-md transition inline-flex items-center space-x-2"
                   >
-                    <Trophy className="w-4 h-4" />
+                    <Trophy className="w-4 h-4 text-green-400" />
                     <span>Browse Open Tournaments</span>
                   </button>
                 </div>
@@ -782,7 +769,7 @@ export const HomePage = () => {
                     <Link
                       key={t.id}
                       to={`/tournaments/${t.id}`}
-                      className="saas-card saas-card-hover p-6 rounded-3xl border border-blue-200/80 dark:border-blue-900/50 bg-white dark:bg-[#111726] flex flex-col justify-between space-y-4 cursor-pointer group shadow-sm"
+                      className="saas-card saas-card-hover p-6 rounded-3xl border border-green-200/80 dark:border-[#1E3A29] bg-white dark:bg-[#101C14] flex flex-col justify-between space-y-4 cursor-pointer group shadow-sm"
                     >
                       <div>
                         {/* Top Badges */}
@@ -792,22 +779,22 @@ export const HomePage = () => {
                           </span>
 
                           {t.myTeam ? (
-                            <span className="px-2.5 py-1 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-bold flex items-center space-x-1">
+                            <span className="px-2.5 py-1 rounded-xl bg-green-100 dark:bg-green-950/80 text-green-800 dark:text-green-300 text-[10px] font-bold flex items-center space-x-1">
                               <Shield className="w-3 h-3" />
                               <span>{t.myTeam.name}</span>
                             </span>
                           ) : t.isOrganizer ? (
-                            <span className="px-2.5 py-1 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 text-[10px] font-bold">
+                            <span className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold">
                               Organizer
                             </span>
                           ) : (
-                            <span className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                            <span className="px-2.5 py-1 rounded-xl bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-400 text-[10px] font-bold">
                               Enrolled
                             </span>
                           )}
                         </div>
 
-                        <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                        <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition">
                           {t.name}
                         </h3>
 
@@ -830,13 +817,13 @@ export const HomePage = () => {
                           <div className="space-y-1 pt-1">
                             <div className="flex justify-between text-[11px]">
                               <span className="text-slate-500 dark:text-slate-400">Squads Enrolled</span>
-                              <span className="font-bold text-blue-600 dark:text-blue-400">
+                              <span className="font-bold text-green-600 dark:text-green-400">
                                 {registered} / {max}
                               </span>
                             </div>
-                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                            <div className="w-full bg-slate-100 dark:bg-[#16261C] rounded-full h-1.5 overflow-hidden">
                               <div 
-                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
+                                className="bg-green-600 h-1.5 rounded-full transition-all duration-500" 
                                 style={{ width: `${progressPercent}%` }}
                               />
                             </div>
@@ -844,13 +831,13 @@ export const HomePage = () => {
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
-                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
+                      <div className="pt-2 border-t border-slate-100 dark:border-[#1E3A29] flex items-center justify-between gap-3">
+                        <span className="text-xs font-semibold text-green-600 dark:text-green-400 flex items-center space-x-1">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Registered</span>
                         </span>
 
-                        <span className="px-4 py-2 bg-blue-600 group-hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
+                        <span className="px-4 py-2 bg-green-600 group-hover:bg-green-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
                           <span>View Details</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </span>
@@ -884,12 +871,12 @@ export const HomePage = () => {
                         {getFormatLabel(t.format)}
                       </span>
 
-                      <span className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                      <span className="px-2.5 py-1 rounded-xl bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-400 text-[10px] font-bold">
                         Open Registration
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                    <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition">
                       {t.name}
                     </h3>
 
@@ -913,13 +900,13 @@ export const HomePage = () => {
                       <div className="space-y-1 pt-1">
                         <div className="flex justify-between text-[11px]">
                           <span className="text-slate-500 dark:text-slate-400">Registered Teams</span>
-                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                          <span className="font-bold text-green-600 dark:text-green-400">
                             {registered} / {max}
                           </span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                        <div className="w-full bg-slate-100 dark:bg-[#16261C] rounded-full h-1.5 overflow-hidden">
                           <div 
-                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
+                            className="bg-green-600 h-1.5 rounded-full transition-all duration-500" 
                             style={{ width: `${progressPercent}%` }}
                           />
                         </div>
@@ -927,15 +914,15 @@ export const HomePage = () => {
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                  <div className="pt-2 border-t border-slate-100 dark:border-[#1E3A29] flex items-center justify-between gap-3">
                     <div>
                       <span className="text-[10px] text-slate-400 block font-semibold">Entry Fee</span>
                       <span className="text-xs font-bold text-slate-900 dark:text-white">
-                        {t.entryFee ? `$${t.entryFee}` : 'Free Entry'}
+                        {t.entryFee ? `₹ ${t.entryFee}` : 'Free Entry'}
                       </span>
                     </div>
 
-                    <span className="px-4 py-2 bg-blue-600 group-hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
+                    <span className="px-4 py-2 bg-green-600 group-hover:bg-green-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
                       <span>View Hub</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </span>
@@ -951,21 +938,20 @@ export const HomePage = () => {
           <div className="pt-2 flex justify-center">
             <Link
               to="/tournaments"
-              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition flex items-center space-x-2"
+              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition flex items-center space-x-2"
             >
               <span>Browse All Platform Tournaments & Full Brackets</span>
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 text-green-600 dark:text-green-400" />
             </Link>
           </div>
         )}
 
       </section>
 
-
-      {/* ─── 6. PLATFORM VALUE PILLARS & FEATURES ─────────────────────────── */}
+      {/* ─── 4. PLATFORM VALUE PILLARS & FEATURES ─────────────────────────── */}
       <section className="space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-700 dark:text-green-400 text-xs font-bold border border-green-500/20">
             <Zap className="w-3.5 h-3.5" />
             <span>Engine Highlights</span>
           </div>
@@ -980,7 +966,7 @@ export const HomePage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           
           <div className="saas-card p-6 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-green-50 dark:bg-green-950/60 text-green-600 dark:text-green-400 flex items-center justify-center border border-green-200/50 dark:border-green-800/50">
               <Radio className="w-6 h-6" />
             </div>
             <h3 className="text-sm font-bold font-heading text-slate-900 dark:text-white">
@@ -992,7 +978,7 @@ export const HomePage = () => {
           </div>
 
           <div className="saas-card p-6 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/50">
               <Layers className="w-6 h-6" />
             </div>
             <h3 className="text-sm font-bold font-heading text-slate-900 dark:text-white">
@@ -1004,7 +990,7 @@ export const HomePage = () => {
           </div>
 
           <div className="saas-card p-6 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-200/50 dark:border-teal-800/50">
               <TrendingUp className="w-6 h-6" />
             </div>
             <h3 className="text-sm font-bold font-heading text-slate-900 dark:text-white">
@@ -1016,7 +1002,7 @@ export const HomePage = () => {
           </div>
 
           <div className="saas-card p-6 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-lime-50 dark:bg-lime-950/60 text-lime-700 dark:text-lime-400 flex items-center justify-center border border-lime-200/50 dark:border-lime-800/50">
               <Shield className="w-6 h-6" />
             </div>
             <h3 className="text-sm font-bold font-heading text-slate-900 dark:text-white">
@@ -1030,30 +1016,30 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* ─── 7. BOTTOM CTA CALLOUT ────────────────────────────────────────── */}
-      <section className="saas-card rounded-3xl p-8 sm:p-10 bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white border border-blue-800/60 shadow-xl relative overflow-hidden text-center space-y-5">
+      {/* ─── 5. BOTTOM CTA CALLOUT ────────────────────────────────────────── */}
+      <section className="saas-card rounded-3xl p-8 sm:p-10 bg-gradient-to-r from-[#0C1B12] via-[#101C14] to-[#07130C] text-white border border-green-900/40 shadow-xl relative overflow-hidden text-center space-y-5">
         <div className="max-w-2xl mx-auto space-y-3 relative z-10">
           <h2 className="text-2xl sm:text-3xl font-black font-heading tracking-tight text-white">
             Ready to Kick Off Your Next Football Tournament?
           </h2>
-          <p className="text-xs sm:text-sm text-blue-200">
+          <p className="text-xs sm:text-sm text-green-200">
             Join hundreds of teams, organizers, and footballers on the fastest-growing amateur and pro football tournament OS.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
             <Link
               to="/tournaments"
-              className="px-6 py-3 bg-white hover:bg-slate-100 text-blue-900 font-extrabold rounded-2xl text-xs sm:text-sm shadow-md transition flex items-center space-x-2"
+              className="px-6 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md transition flex items-center space-x-2"
             >
-              <Trophy className="w-4 h-4 text-blue-700" />
+              <Trophy className="w-4 h-4 text-white" />
               <span>Browse Tournaments</span>
             </Link>
 
             <Link
               to="/stats"
-              className="px-6 py-3 bg-blue-600/80 hover:bg-blue-600 text-white font-extrabold rounded-2xl text-xs sm:text-sm border border-blue-400/40 shadow-md transition flex items-center space-x-2"
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-extrabold rounded-2xl text-xs sm:text-sm border border-white/20 shadow-md transition flex items-center space-x-2"
             >
-              <BarChart2 className="w-4 h-4" />
+              <BarChart2 className="w-4 h-4 text-green-400" />
               <span>Explore Analytics & Stats</span>
             </Link>
           </div>

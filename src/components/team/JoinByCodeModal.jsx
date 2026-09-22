@@ -76,12 +76,12 @@ export const JoinByCodeModal = ({ isOpen, onClose, onSuccess }) => {
       style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
     >
-      <div className="relative w-full max-w-md bg-white dark:bg-[#0F1623] rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fade-in">
-        <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500" />
+      <div className="relative w-full max-w-md bg-white dark:bg-[#101C14] rounded-3xl shadow-2xl border border-slate-200 dark:border-[#1E3A29] overflow-hidden animate-fade-in">
+        <div className="h-1.5 w-full bg-green-600" />
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#16261C] transition"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
@@ -89,8 +89,8 @@ export const JoinByCodeModal = ({ isOpen, onClose, onSuccess }) => {
 
         <div className="p-8 space-y-6">
           <div className="space-y-2">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600/10 dark:bg-blue-500/10 flex items-center justify-center mb-3">
-              <Hash className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="w-12 h-12 rounded-2xl bg-green-600/10 dark:bg-green-500/10 flex items-center justify-center mb-3">
+              <Hash className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Join with Team Code
@@ -115,7 +115,7 @@ export const JoinByCodeModal = ({ isOpen, onClose, onSuccess }) => {
                   placeholder="e.g. A3F9C21B"
                   maxLength={8}
                   disabled={loading || Boolean(success)}
-                  className={`w-full px-4 py-3 rounded-2xl border font-mono text-lg font-bold tracking-widest text-center bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:opacity-60 disabled:cursor-not-allowed ${error ? 'border-rose-400 dark:border-rose-500 focus:ring-rose-400' : 'border-slate-200 dark:border-slate-700'}`}
+                  className={`w-full px-4 py-3 rounded-2xl border font-mono text-lg font-bold tracking-widest text-center bg-slate-50 dark:bg-[#16261C] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition disabled:opacity-60 disabled:cursor-not-allowed ${error ? 'border-rose-400 dark:border-rose-500 focus:ring-rose-400' : 'border-slate-200 dark:border-[#1E3A29]'}`}
                   autoComplete="off"
                   spellCheck={false}
                 />
@@ -143,7 +143,7 @@ export const JoinByCodeModal = ({ isOpen, onClose, onSuccess }) => {
               id="join-by-code-submit"
               type="submit"
               disabled={loading || code.length !== 8 || Boolean(success)}
-              className="w-full py-3 rounded-2xl font-bold text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md flex items-center justify-center space-x-2"
+              className="w-full py-3 rounded-2xl font-bold text-sm text-white bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md shadow-green-600/20 flex items-center justify-center space-x-2"
             >
               {loading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /><span>Joining...</span></>

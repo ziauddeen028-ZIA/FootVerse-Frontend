@@ -27,12 +27,12 @@ export const GroupStageStandings = ({
         {[1, 2].map(i => (
           <div
             key={i}
-            className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm animate-pulse space-y-4"
+            className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] p-6 shadow-sm animate-pulse space-y-4"
           >
-            <div className="h-6 w-40 bg-slate-200 dark:bg-slate-700/60 rounded-lg" />
+            <div className="h-6 w-40 bg-slate-200 dark:bg-[#16261C] rounded-lg" />
             <div className="space-y-2">
               {[1, 2, 3, 4].map(j => (
-                <div key={j} className="h-12 bg-slate-100 dark:bg-slate-800/40 rounded-xl" />
+                <div key={j} className="h-12 bg-slate-100 dark:bg-[#16261C]/60 rounded-xl" />
               ))}
             </div>
           </div>
@@ -43,7 +43,7 @@ export const GroupStageStandings = ({
 
   if (!groups || groups.length === 0) {
     return (
-      <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-10 shadow-sm text-center">
+      <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] p-10 shadow-sm text-center">
         <Shield className="w-10 h-10 mx-auto mb-2 opacity-30 text-slate-400" />
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
           No group standings available yet.
@@ -65,9 +65,9 @@ export const GroupStageStandings = ({
     }
 
     return (
-      <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+      <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-[#1E3A29] shadow-xs">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800 text-[11px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400 select-none">
+          <thead className="bg-slate-50 dark:bg-[#07130C]/80 border-b border-slate-200/80 dark:border-[#1E3A29] text-[11px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400 select-none">
             <tr>
               <th className="py-3 px-3 sm:px-4 text-center w-12 sm:w-16">Pos</th>
               <th className="py-3 px-3 sm:px-4 min-w-[140px] sm:min-w-[200px]">Club</th>
@@ -78,12 +78,12 @@ export const GroupStageStandings = ({
               <th className="py-3 px-2 sm:px-3 text-center hidden md:table-cell">GF</th>
               <th className="py-3 px-2 sm:px-3 text-center hidden md:table-cell">GA</th>
               <th className="py-3 px-2 sm:px-3 text-center">GD</th>
-              <th className="py-3 px-3 sm:px-4 text-center font-black text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/30">
+              <th className="py-3 px-3 sm:px-4 text-center font-black text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-950/30">
                 Pts
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#141C2E]">
+          <tbody className="divide-y divide-slate-100 dark:divide-[#1E3A29] bg-white dark:bg-[#101C14]">
             {groupStandings.map((row, index) => {
               const pos = row.position || index + 1;
               const isLeader = pos === 1;
@@ -94,7 +94,7 @@ export const GroupStageStandings = ({
               return (
                 <tr
                   key={row.team?.id || index}
-                  className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40 ${
+                  className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-[#16261C] ${
                     isLeader ? 'bg-amber-50/30 dark:bg-amber-950/10' : ''
                   }`}
                 >
@@ -106,7 +106,7 @@ export const GroupStageStandings = ({
                           1
                         </span>
                       ) : isQualifying ? (
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-bold text-xs">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300 font-bold text-xs">
                           {pos}
                         </span>
                       ) : (
@@ -120,7 +120,7 @@ export const GroupStageStandings = ({
                   {/* Team Info */}
                   <td className="py-3.5 px-3 sm:px-4">
                     <div className="flex items-center gap-2.5 sm:gap-3">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 overflow-hidden shrink-0 border border-slate-200/60 dark:border-slate-700">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-100 dark:bg-[#16261C] flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 overflow-hidden shrink-0 border border-slate-200/60 dark:border-[#1E3A29]">
                         {row.team?.logoUrl ? (
                           <img src={row.team.logoUrl} alt={row.team.name} className="w-full h-full object-cover" />
                         ) : (
@@ -155,7 +155,7 @@ export const GroupStageStandings = ({
                       {gdFormatted}
                     </span>
                   </td>
-                  <td className="py-3.5 px-3 sm:px-4 text-center text-xs sm:text-sm font-black text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/30">
+                  <td className="py-3.5 px-3 sm:px-4 text-center text-xs sm:text-sm font-black text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-950/30">
                     {row.points ?? 0}
                   </td>
                 </tr>
@@ -172,12 +172,12 @@ export const GroupStageStandings = ({
       {groups.map((group) => (
         <div
           key={group.name}
-          className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-4"
+          className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] p-4 sm:p-6 shadow-sm space-y-4"
         >
           {/* Group Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1E3A29]">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+              <div className="p-2 rounded-xl bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
@@ -196,7 +196,7 @@ export const GroupStageStandings = ({
                 <span>1st — Qualifies</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
                 <span>2nd — Qualifies</span>
               </div>
             </div>
@@ -209,7 +209,7 @@ export const GroupStageStandings = ({
 
       {/* Knockout Generation CTA — shown when group stage is complete */}
       {groupStageComplete && !hasKnockoutBracket && onGenerateKnockout && (
-        <div className="bg-gradient-to-r from-emerald-600/10 via-teal-600/10 to-emerald-600/5 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-slate-900 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl p-6 sm:p-8 space-y-5">
+        <div className="bg-gradient-to-r from-emerald-600/10 via-teal-600/10 to-emerald-600/5 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-[#101C14] border border-emerald-200 dark:border-emerald-800/80 rounded-2xl p-6 sm:p-8 space-y-5">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-600/30">
               <Zap className="w-6 h-6" />
@@ -229,7 +229,7 @@ export const GroupStageStandings = ({
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border ${
                       s.position === 1
                         ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/60'
-                        : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800/60'
+                        : 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800/60'
                     }`}
                   >
                     <span>{s.position === 1 ? '🥇' : '🥈'}</span>
@@ -259,9 +259,9 @@ export const GroupStageStandings = ({
 
       {/* Already generated banner */}
       {groupStageComplete && hasKnockoutBracket && (
-        <div className="bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/80 dark:border-blue-800/40 rounded-2xl p-4 flex items-center gap-3">
-          <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
-          <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+        <div className="bg-green-50/60 dark:bg-green-950/20 border border-green-200/80 dark:border-green-800/40 rounded-2xl p-4 flex items-center gap-3">
+          <Zap className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
+          <p className="text-sm font-semibold text-green-700 dark:text-green-300">
             Knockout bracket generated. View the Knockout tab to manage the bracket.
           </p>
         </div>

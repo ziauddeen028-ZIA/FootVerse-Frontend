@@ -148,11 +148,11 @@ export const TeamFormModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="bg-white dark:bg-[#141C2E] rounded-2xl w-full max-w-2xl shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col my-auto max-h-full">
+      <div className="bg-white dark:bg-[#101C14] rounded-2xl w-full max-w-2xl shadow-xl border border-slate-200 dark:border-[#1E3A29] flex flex-col my-auto max-h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#1E3A29]">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
+            <div className="p-2.5 bg-green-50 dark:bg-green-950/40 rounded-xl text-green-600 dark:text-green-400">
               <Shield className="w-5 h-5" />
             </div>
             <div>
@@ -166,7 +166,7 @@ export const TeamFormModal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-[#16261C] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -177,7 +177,7 @@ export const TeamFormModal = ({
           {/* Tournament Selection */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-              <Trophy className="w-3.5 h-3.5 text-blue-500" />
+              <Trophy className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
               Tournament {isTournamentRequired ? <span className="text-red-500">*</span> : <span className="text-slate-400 font-normal lowercase">(optional)</span>}
             </label>
             <CustomSelect
@@ -237,9 +237,9 @@ export const TeamFormModal = ({
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="e.g. Manchester City"
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.name ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border ${
+                  errors.name ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
+                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500`}
               />
               {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
             </div>
@@ -255,9 +255,9 @@ export const TeamFormModal = ({
                 value={formData.shortName}
                 onChange={handleChange}
                 placeholder="e.g. MCI"
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.shortName ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border ${
+                  errors.shortName ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
+                } rounded-xl text-slate-900 dark:text-white text-sm uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-green-500`}
               />
               {errors.shortName && <p className="text-xs text-red-500 mt-1">{errors.shortName}</p>}
             </div>
@@ -276,7 +276,7 @@ export const TeamFormModal = ({
                 value={formData.city}
                 onChange={handleChange}
                 placeholder="e.g. Manchester"
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
@@ -291,15 +291,15 @@ export const TeamFormModal = ({
                 value={formData.homeGround}
                 onChange={handleChange}
                 placeholder="e.g. Etihad Stadium"
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
           </div>
 
           {/* Colors Selection */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-800">
+          <div className="p-4 bg-slate-50 dark:bg-[#16261C] rounded-xl border border-slate-100 dark:border-[#1E3A29]">
             <div className="flex items-center gap-2 mb-3">
-              <Palette className="w-4 h-4 text-blue-500" />
+              <Palette className="w-4 h-4 text-green-600 dark:text-green-400" />
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Team Colors
               </span>
@@ -322,7 +322,7 @@ export const TeamFormModal = ({
                     name="primaryColor"
                     value={formData.primaryColor}
                     onChange={handleChange}
-                    className="w-full px-3 py-1.5 text-xs font-mono bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-lg text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -344,41 +344,26 @@ export const TeamFormModal = ({
                     name="secondaryColor"
                     value={formData.secondaryColor}
                     onChange={handleChange}
-                    className="w-full px-3 py-1.5 text-xs font-mono bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-lg text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Logo URL */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-              Logo URL (Optional)
-            </label>
-            <input
-              type="url"
-              name="logoUrl"
-              value={formData.logoUrl}
-              onChange={handleChange}
-              placeholder="https://example.com/logo.png"
-              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-[#1E3A29]">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#16261C] rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || tournaments.length === 0 || isSelectedTournamentFull}
-              className="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:opacity-50 rounded-xl shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
             >
               {isLoading && (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

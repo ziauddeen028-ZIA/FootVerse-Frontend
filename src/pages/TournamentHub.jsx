@@ -1,24 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  Trophy, 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Shield, 
-  ArrowLeft, 
-  Activity, 
-  Layers, 
-  DollarSign, 
-  Clock, 
-  Sparkles,
+import {
+  Trophy,
+  Calendar,
+  MapPin,
+  Users,
+  Shield,
+  ArrowLeft,
+  Activity,
+  Layers,
+  Clock,
   ChevronRight,
   AlertCircle,
-  User,
   Award,
   X,
-  Shirt,
-  Check,
   UserPlus,
   CheckCircle2,
   XCircle,
@@ -123,12 +118,12 @@ export const TournamentHub = () => {
   ];
 
   const demoTeams = [
-    { id: 'dt1', name: 'Strikers FC', shortName: 'STK', city: 'Metropolis', primaryColor: '#1E50FF', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 7, draws: 1, losses: 0, goalsFor: 22, goalsAgainst: 6, isCaptain: true },
-    { id: 'dt2', name: 'Titans FC', shortName: 'TTN', city: 'Metro East', primaryColor: '#6366F1', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 6, draws: 1, losses: 1, goalsFor: 19, goalsAgainst: 8 },
-    { id: 'dt3', name: 'Galacticos', shortName: 'GLX', city: 'Westside', primaryColor: '#EC4899', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 5, draws: 2, losses: 1, goalsFor: 17, goalsAgainst: 10 },
+    { id: 'dt1', name: 'Strikers FC', shortName: 'STK', city: 'Metropolis', primaryColor: '#16A34A', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 7, draws: 1, losses: 0, goalsFor: 22, goalsAgainst: 6, isCaptain: true },
+    { id: 'dt2', name: 'Titans FC', shortName: 'TTN', city: 'Metro East', primaryColor: '#059669', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 6, draws: 1, losses: 1, goalsFor: 19, goalsAgainst: 8 },
+    { id: 'dt3', name: 'Galacticos', shortName: 'GLX', city: 'Westside', primaryColor: '#0D9488', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 5, draws: 2, losses: 1, goalsFor: 17, goalsAgainst: 10 },
     { id: 'dt4', name: 'Apex Predators', shortName: 'APX', city: 'Highland', primaryColor: '#10B981', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 4, draws: 2, losses: 2, goalsFor: 14, goalsAgainst: 12 },
-    { id: 'dt5', name: 'Thunder FC', shortName: 'THN', city: 'North Bay', primaryColor: '#F59E0B', secondaryColor: '#000000', matchesPlayed: 8, wins: 3, draws: 1, losses: 4, goalsFor: 11, goalsAgainst: 15 },
-    { id: 'dt6', name: 'Vipers SC', shortName: 'VPR', city: 'Southside', primaryColor: '#EF4444', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 2, draws: 2, losses: 4, goalsFor: 9, goalsAgainst: 14 }
+    { id: 'dt5', name: 'Thunder FC', shortName: 'THN', city: 'North Bay', primaryColor: '#D97706', secondaryColor: '#000000', matchesPlayed: 8, wins: 3, draws: 1, losses: 4, goalsFor: 11, goalsAgainst: 15 },
+    { id: 'dt6', name: 'Vipers SC', shortName: 'VPR', city: 'Southside', primaryColor: '#DC2626', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 2, draws: 2, losses: 4, goalsFor: 9, goalsAgainst: 14 }
   ];
 
   const handleSelectTeam = async (team) => {
@@ -327,12 +322,11 @@ export const TournamentHub = () => {
       const res = await tournamentJoinRequestService.joinByCode(codeInput.trim(), codeTeamId);
       setToast({ message: res.message || 'Team registered successfully!', type: 'success' });
 
-      // Mark as registered immediately
       setJoinRequestStatus('code_join');
       setIsRegistered(true);
       setCodeInput('');
 
-      // Refresh teams list so the newly registered team shows in the Registered Teams section
+      // Refresh teams list
       try {
         const teamsRes = await teamService.getAll();
         const allTeams = teamsRes?.teams || [];
@@ -368,11 +362,11 @@ export const TournamentHub = () => {
         return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
       case 'league':
       case 'round_robin':
-        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
+        return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20';
       case 'group_stage':
       case 'group_knockout':
       case 'hybrid':
-        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
+        return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20';
       default:
         return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
     }
@@ -382,21 +376,21 @@ export const TournamentHub = () => {
     switch (status?.toLowerCase()) {
       case 'registration_open':
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-400 flex items-center space-x-1.5">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span>Registration Open</span>
           </span>
         );
       case 'ongoing':
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 flex items-center space-x-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
             <span>Ongoing Competition</span>
           </span>
         );
       case 'completed':
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 dark:bg-[#16261C] border border-slate-300 dark:border-[#1E3A29] text-slate-700 dark:text-slate-300">
             Completed
           </span>
         );
@@ -408,7 +402,7 @@ export const TournamentHub = () => {
         );
       default:
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-400">
             {status ? status.replace('_', ' ') : 'Active'}
           </span>
         );
@@ -427,12 +421,12 @@ export const TournamentHub = () => {
   if (loading) {
     return (
       <div className="space-y-8 animate-pulse pb-16">
-        <div className="h-6 w-36 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded-3xl" />
+        <div className="h-6 w-36 bg-slate-200 dark:bg-[#16261C] rounded-lg" />
+        <div className="h-64 bg-slate-200 dark:bg-[#16261C] rounded-3xl" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="h-32 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
-          <div className="h-32 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
-          <div className="h-32 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+          <div className="h-32 bg-slate-200 dark:bg-[#16261C] rounded-2xl" />
+          <div className="h-32 bg-slate-200 dark:bg-[#16261C] rounded-2xl" />
+          <div className="h-32 bg-slate-200 dark:bg-[#16261C] rounded-2xl" />
         </div>
       </div>
     );
@@ -440,7 +434,7 @@ export const TournamentHub = () => {
 
   if (error || !tournament) {
     return (
-      <div className="saas-card p-12 rounded-3xl text-center space-y-5 my-8 max-w-xl mx-auto border border-slate-200 dark:border-slate-800">
+      <div className="saas-card p-12 rounded-3xl text-center space-y-5 my-8 max-w-xl mx-auto border border-slate-200 dark:border-[#1E3A29]">
         <div className="w-16 h-16 rounded-3xl bg-red-50 dark:bg-red-950/50 text-red-500 flex items-center justify-center mx-auto">
           <AlertCircle className="w-8 h-8" />
         </div>
@@ -448,7 +442,7 @@ export const TournamentHub = () => {
         <p className="text-sm text-slate-500 dark:text-slate-400">{error || 'The requested tournament could not be loaded.'}</p>
         <Link
           to="/tournaments"
-          className="inline-flex items-center space-x-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition"
+          className="inline-flex items-center space-x-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-xs rounded-xl shadow transition"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Tournaments</span>
@@ -463,20 +457,20 @@ export const TournamentHub = () => {
 
   return (
     <div className="space-y-8 pb-16">
-      
+
       {/* ─── BREADCRUMB & BACK NAVIGATION ─────────────────────────────────── */}
       <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
-        <Link to="/" className="hover:text-blue-500 transition">Home</Link>
+        <Link to="/" className="hover:text-green-600 dark:hover:text-green-400 transition">Home</Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <Link to="/tournaments" className="hover:text-blue-500 transition">Tournaments</Link>
+        <Link to="/tournaments" className="hover:text-green-600 dark:hover:text-green-400 transition">Tournaments</Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[200px]">{tournament.name}</span>
       </div>
 
       {/* ─── TOURNAMENT HERO BANNER ───────────────────────────────────────── */}
-      <section className="saas-card rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-slate-900 via-[#0F172A] to-[#151E36] text-white border border-slate-800 shadow-2xl relative overflow-hidden">
+      <section className="saas-card rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-slate-900 via-[#0C1B12] to-[#07130C] text-white border border-slate-800 dark:border-[#1E3A29] shadow-2xl relative overflow-hidden">
         <div className="relative z-10 space-y-6">
-          
+
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getFormatBadgeStyle(tournament.format)}`}>
@@ -495,8 +489,8 @@ export const TournamentHub = () => {
           </div>
 
           <div className="space-y-3 max-w-3xl">
-            <div className="inline-flex items-center space-x-2 text-blue-400 text-xs font-bold tracking-wide uppercase">
-              <Trophy className="w-4 h-4 text-amber-400" />
+            <div className="inline-flex items-center space-x-2 text-green-400 text-xs font-bold tracking-wide uppercase">
+              <Trophy className="w-4 h-4 text-green-400" />
               <span>FootVerse Official Tournament</span>
             </div>
 
@@ -510,10 +504,10 @@ export const TournamentHub = () => {
           </div>
 
           {/* Quick Meta Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-800/80">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-800/80 dark:border-[#1E3A29]">
             <div className="space-y-1">
               <span className="text-[11px] font-semibold text-slate-400 flex items-center space-x-1">
-                <MapPin className="w-3.5 h-3.5 text-blue-400" />
+                <MapPin className="w-3.5 h-3.5 text-green-400" />
                 <span>Location</span>
               </span>
               <p className="text-sm font-bold text-white truncate">{tournament.location || 'Metropolis Stadium'}</p>
@@ -532,7 +526,7 @@ export const TournamentHub = () => {
 
             <div className="space-y-1">
               <span className="text-[11px] font-semibold text-slate-400 flex items-center space-x-1">
-                <Users className="w-3.5 h-3.5 text-purple-400" />
+                <Users className="w-3.5 h-3.5 text-teal-400" />
                 <span>Teams</span>
               </span>
               <p className="text-sm font-bold text-white">
@@ -542,11 +536,11 @@ export const TournamentHub = () => {
 
             <div className="space-y-1">
               <span className="text-[11px] font-semibold text-slate-400 flex items-center space-x-1">
-                <DollarSign className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-sm font-bold text-green-400">₹</span>
                 <span>Entry Fee</span>
               </span>
               <p className="text-sm font-bold text-white">
-                {tournament.entryFee > 0 ? `$${tournament.entryFee}` : 'Free Entry'}
+                {tournament.entryFee > 0 ? `₹ ${tournament.entryFee}` : 'Free Entry'}
               </p>
             </div>
           </div>
@@ -556,11 +550,11 @@ export const TournamentHub = () => {
 
       {/* ─── MANAGER TOURNAMENT JOIN REQUEST CARD (approval flow) ─────────── */}
       {user && managedTeams.length > 0 && (
-        <section className="saas-card p-6 rounded-2xl bg-white dark:bg-[#111726] border border-blue-500/30 dark:border-blue-500/20 shadow-md space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <section className="saas-card p-6 rounded-2xl bg-white dark:bg-[#101C14] border border-green-500/30 dark:border-[#1E3A29] shadow-md space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#1E3A29] pb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                <Trophy className="w-5 h-5 text-amber-500" />
+              <div className="w-10 h-10 rounded-2xl bg-green-600/10 text-green-700 dark:text-green-400 flex items-center justify-center font-bold">
+                <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -594,17 +588,17 @@ export const TournamentHub = () => {
 
             <div>
               {isRegistered ? (
-                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Team Registered</span>
                 </div>
               ) : joinRequestStatus === 'pending' ? (
-                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold">
+                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-bold">
                   <Clock className="w-4 h-4" />
                   <span>Request Pending</span>
                 </div>
               ) : joinRequestStatus === 'approved' ? (
-                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                <div className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Request Approved &amp; Registered</span>
                 </div>
@@ -622,7 +616,7 @@ export const TournamentHub = () => {
                 <button
                   onClick={handleRequestToJoinTournament}
                   disabled={isSubmittingRequest}
-                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition disabled:opacity-50"
+                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-xs font-bold shadow-md shadow-green-600/30 transition disabled:opacity-50"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>{isSubmittingRequest ? 'Submitting...' : 'Request to Join Tournament'}</span>
@@ -635,11 +629,11 @@ export const TournamentHub = () => {
 
       {/* ─── JOIN WITH INVITE CODE CARD (Captain / Manager instant join) ──── */}
       {user && managedTeams.length > 0 && !isRegistered && (
-        <section className="saas-card p-6 rounded-2xl bg-white dark:bg-[#111726] border border-violet-500/30 dark:border-violet-500/20 shadow-md space-y-4">
+        <section className="saas-card p-6 rounded-2xl bg-white dark:bg-[#101C14] border border-green-500/30 dark:border-[#1E3A29] shadow-md space-y-4">
           {/* Header */}
-          <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-            <div className="w-10 h-10 rounded-2xl bg-violet-600/10 flex items-center justify-center">
-              <Key className="w-5 h-5 text-violet-500" />
+          <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-[#1E3A29] pb-4">
+            <div className="w-10 h-10 rounded-2xl bg-green-600/10 flex items-center justify-center">
+              <Key className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
@@ -654,8 +648,8 @@ export const TournamentHub = () => {
           {/* Inputs row */}
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Code input */}
-            <div className="flex-1 flex items-center space-x-2 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
-              <Hash className="w-4 h-4 text-violet-500 shrink-0" />
+            <div className="flex-1 flex items-center space-x-2 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl px-3 py-2">
+              <Hash className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
               <input
                 id="tournament-code-input"
                 type="text"
@@ -684,7 +678,7 @@ export const TournamentHub = () => {
               id="join-by-code-btn"
               onClick={handleJoinByCode}
               disabled={isJoiningByCode || !codeInput.trim() || !codeTeamId}
-              className="inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-violet-600/30 transition shrink-0"
+              className="inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-green-600/30 transition shrink-0"
             >
               <Key className="w-4 h-4" />
               <span>{isJoiningByCode ? 'Joining...' : 'Join Now'}</span>
@@ -699,25 +693,25 @@ export const TournamentHub = () => {
 
       {/* ─── TOURNAMENT CAPACITY & DETAILS SUMMARY ─────────────────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+
         <div className="saas-card p-6 rounded-2xl border flex flex-col justify-between space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Team Capacity</span>
-              <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{progressPercent}% Filled</span>
+              <span className="text-xs font-bold text-green-700 dark:text-green-400">{progressPercent}% Filled</span>
             </div>
             <h3 className="text-2xl font-extrabold font-heading text-slate-900 dark:text-white">
               {registeredCount} / {maxTeams}
             </h3>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+            <div className="w-full bg-slate-100 dark:bg-[#16261C] rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-green-600 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            {maxTeams - registeredCount > 0 
+            {maxTeams - registeredCount > 0
               ? `${maxTeams - registeredCount} slot(s) remaining for squad registration.`
               : 'Tournament registration is currently full.'}
           </p>
@@ -727,7 +721,7 @@ export const TournamentHub = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Competition Format</span>
-              <Layers className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+              <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
               {getFormatLabel(tournament.format)}
@@ -739,7 +733,7 @@ export const TournamentHub = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Venue & Pitch</span>
-              <MapPin className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+              <MapPin className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
               {tournament.location || 'Metropolis Stadium'}
@@ -757,7 +751,7 @@ export const TournamentHub = () => {
           return (
             <section className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-amber-500" />
+                <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
                 <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
                   Knockout Fixture Bracket
                 </h2>
@@ -777,7 +771,7 @@ export const TournamentHub = () => {
           return (
             <section className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-blue-500" />
+                <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
                 <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
                   Official League Standings
                 </h2>
@@ -796,7 +790,7 @@ export const TournamentHub = () => {
             <section className="space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
-                  <Trophy className="w-5 h-5 text-purple-500" />
+                  <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
                   <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
                     Group Stage Tables
                   </h2>
@@ -810,7 +804,7 @@ export const TournamentHub = () => {
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
-                  <Trophy className="w-5 h-5 text-amber-500" />
+                  <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
                   <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
                     Playoff Knockout Tree
                   </h2>
@@ -831,7 +825,7 @@ export const TournamentHub = () => {
         return (
           <section className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Trophy className="w-5 h-5 text-amber-500" />
+              <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
               <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
                 Tournament Fixtures & Bracket Tree
               </h2>
@@ -849,9 +843,9 @@ export const TournamentHub = () => {
 
       {/* ─── PARTICIPATING TEAMS ROSTER GRID ──────────────────────────────── */}
       <section className="saas-card p-6 sm:p-8 rounded-3xl space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E3A29] pb-4">
           <div className="flex items-center space-x-2">
-            <Users className="w-5 h-5 text-blue-500" />
+            <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
             <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
               Participating Squads ({teams.length})
             </h2>
@@ -860,7 +854,7 @@ export const TournamentHub = () => {
         </div>
 
         {teams.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 rounded-2xl bg-slate-50 dark:bg-slate-800/40">
+          <div className="p-8 text-center text-slate-400 rounded-2xl bg-slate-50 dark:bg-[#16261C]">
             No teams registered yet for this tournament.
           </div>
         ) : (
@@ -871,16 +865,15 @@ export const TournamentHub = () => {
                 <div
                   key={team.id}
                   onClick={() => handleSelectTeam(team)}
-                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                    isSelected
-                      ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 ring-2 ring-blue-500/40 shadow-md'
-                      : 'bg-white dark:bg-[#111726] border-slate-200/80 dark:border-slate-800 hover:border-blue-400'
-                  }`}
+                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${isSelected
+                      ? 'bg-green-50 dark:bg-green-950/40 border-green-600 ring-2 ring-green-600/40 shadow-md'
+                      : 'bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] hover:border-green-500'
+                    }`}
                 >
                   <div className="flex items-center space-x-3.5 min-w-0">
                     <div
                       className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0"
-                      style={{ backgroundColor: team.primaryColor || '#1E50FF' }}
+                      style={{ backgroundColor: team.primaryColor || '#16A34A' }}
                     >
                       {team.logoUrl ? (
                         <img src={team.logoUrl} alt={team.name} className="w-full h-full object-cover rounded-2xl" />
@@ -897,7 +890,7 @@ export const TournamentHub = () => {
                     </div>
                   </div>
 
-                  <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? 'rotate-90 text-blue-500' : 'text-slate-400'}`} />
+                  <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? 'rotate-90 text-green-600 dark:text-green-400' : 'text-slate-400'}`} />
                 </div>
               );
             })}
@@ -908,11 +901,11 @@ export const TournamentHub = () => {
       {/* ─── SELECTED TEAM ROSTER SECTION ─────────────────────────────────── */}
       {selectedTeam && (
         <section ref={rosterRef} className="saas-card p-6 sm:p-8 rounded-3xl space-y-6 animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E3A29] pb-4">
             <div className="flex items-center space-x-3">
               <div
                 className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-xs shadow-md"
-                style={{ backgroundColor: selectedTeam.primaryColor || '#1E50FF' }}
+                style={{ backgroundColor: selectedTeam.primaryColor || '#16A34A' }}
               >
                 {selectedTeam.shortName || selectedTeam.name?.substring(0, 3)?.toUpperCase()}
               </div>
@@ -924,7 +917,7 @@ export const TournamentHub = () => {
 
             <button
               onClick={handleDeselectTeam}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#16261C] transition"
               title="Close Roster"
             >
               <X className="w-4 h-4" />
@@ -936,7 +929,7 @@ export const TournamentHub = () => {
           ) : memberError ? (
             <div className="p-4 text-xs text-red-500 bg-red-50 dark:bg-red-950/40 rounded-xl">{memberError}</div>
           ) : teamMembers.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 rounded-2xl bg-slate-50 dark:bg-slate-800/40">
+            <div className="p-8 text-center text-slate-400 rounded-2xl bg-slate-50 dark:bg-[#16261C]">
               No players registered for this team yet.
             </div>
           ) : (
@@ -944,10 +937,10 @@ export const TournamentHub = () => {
               {teamMembers.map((member) => (
                 <div
                   key={member.id}
-                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between"
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/60 dark:border-[#1E3A29] flex items-center justify-between"
                 >
                   <div className="flex items-center space-x-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-[#101C14] text-slate-800 dark:text-white font-bold text-xs flex items-center justify-center">
                       {member.player?.fullName?.charAt(0)?.toUpperCase() || 'P'}
                     </div>
                     <div className="min-w-0">
@@ -955,7 +948,7 @@ export const TournamentHub = () => {
                         {member.player?.fullName || 'Player'}
                       </h5>
                       <div className="flex items-center space-x-2 mt-0.5">
-                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">
+                        <span className="text-[10px] text-green-600 dark:text-green-400 font-bold">
                           {member.position || 'Midfielder'}
                         </span>
                         {member.jerseyNumber && (
@@ -969,7 +962,7 @@ export const TournamentHub = () => {
 
                   <Link
                     to={`/players?id=${member.player?.id || ''}`}
-                    className="text-slate-400 hover:text-blue-500 transition"
+                    className="text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition"
                     title="View Player Profile"
                   >
                     <ChevronRight className="w-4 h-4" />

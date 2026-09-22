@@ -32,9 +32,9 @@ const Avatar = ({ url, name, size = 'md' }) => {
 };
 
 const StatCard = ({ icon: Icon, iconBg, label, children, isEmpty, emptyText, isLoading }) => (
-  <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+  <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] shadow-sm overflow-hidden flex flex-col">
     {/* Header */}
-    <div className={`flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800 ${iconBg}`}>
+    <div className={`flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-[#1E3A29] ${iconBg}`}>
       <Icon className="w-4 h-4" />
       <h3 className="text-sm font-bold tracking-wide uppercase">{label}</h3>
     </div>
@@ -222,9 +222,9 @@ const BestPlayerModal = ({ isOpen, onClose, tournamentId, currentBestPlayer, onS
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="relative bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-[#1E3A29] shrink-0">
           <div className="flex items-center gap-3">
             {selectedTeam ? (
               <button
@@ -362,7 +362,7 @@ const BestPlayerModal = ({ isOpen, onClose, tournamentId, currentBestPlayer, onS
                       className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${
                         hasSelection
                           ? 'bg-amber-50/70 dark:bg-amber-900/15 border-amber-300 dark:border-amber-700/60 shadow-xs'
-                          : 'bg-white dark:bg-[#141C2E] border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                          : 'bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] hover:border-slate-300 dark:hover:border-green-600/40 hover:bg-slate-50 dark:hover:bg-[#16261C]'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -470,7 +470,7 @@ const BestPlayerModal = ({ isOpen, onClose, tournamentId, currentBestPlayer, onS
             <div className="flex items-center gap-3 min-w-0">
               <div className="relative shrink-0">
                 <Avatar url={selectedPlayer.avatarUrl} name={selectedPlayer.fullName} size="sm" />
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 border border-white dark:border-[#141C2E] flex items-center justify-center">
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 border border-white dark:border-[#101C14] flex items-center justify-center">
                   <Star className="w-2.5 h-2.5 text-white fill-white" />
                 </span>
               </div>
@@ -588,7 +588,7 @@ export const TournamentStats = ({ tournamentId, tournaments = [], isOrganizer = 
 
   if (!tournamentId) {
     return (
-      <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-12 text-center">
+      <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] p-12 text-center">
         <Trophy className="w-10 h-10 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
         <p className="text-slate-500 dark:text-slate-400 font-medium">Select a tournament to view statistics.</p>
       </div>
@@ -650,7 +650,7 @@ export const TournamentStats = ({ tournamentId, tournaments = [], isOrganizer = 
               <div className="flex flex-col items-center text-center gap-3 w-full">
                 <div className="relative">
                   <Avatar url={topScorer.player?.avatarUrl} name={topScorer.player?.fullName} size="lg" />
-                  <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-yellow-400 border-2 border-white dark:border-[#141C2E] flex items-center justify-center">
+                  <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-yellow-400 border-2 border-white dark:border-[#101C14] flex items-center justify-center">
                     <Trophy className="w-3 h-3 text-yellow-900" />
                   </span>
                 </div>
@@ -688,8 +688,8 @@ export const TournamentStats = ({ tournamentId, tournaments = [], isOrganizer = 
               <div className="flex flex-col items-center text-center gap-3 w-full">
                 <div className="relative">
                   <Avatar url={bestKeeper.player?.avatarUrl} name={bestKeeper.player?.fullName} size="lg" />
-                  <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-2 border-white dark:border-[#141C2E] flex items-center justify-center">
-                    <Shield className="w-3 h-3 text-emerald-900" />
+                  <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-2 border-white dark:border-[#101C14] flex items-center justify-center">
+                    <Shield className="w-3.5 h-3.5 text-emerald-900" />
                   </span>
                 </div>
                 <div>
@@ -726,8 +726,8 @@ export const TournamentStats = ({ tournamentId, tournaments = [], isOrganizer = 
               <div className="flex flex-col items-center text-center gap-3 w-full">
                 <div className="relative">
                   <Avatar url={bestPlayer.avatarUrl} name={bestPlayer.fullName} size="lg" />
-                  <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-violet-400 border-2 border-white dark:border-[#141C2E] flex items-center justify-center">
-                    <Star className="w-3 h-3 text-violet-900" />
+                  <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-violet-400 border-2 border-white dark:border-[#101C14] flex items-center justify-center">
+                    <Star className="w-3.5 h-3.5 text-violet-900" />
                   </span>
                 </div>
                 <div>
@@ -799,9 +799,9 @@ const ScorersLeaderboard = ({ leaderboard = [] }) => {
   const shown = expanded ? leaderboard : leaderboard.slice(0, 5);
 
   return (
-    <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-[#1E3A29] bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400">
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4" />
           <h3 className="text-sm font-bold uppercase tracking-wide">Top Scorers Leaderboard</h3>

@@ -2,7 +2,7 @@ import React from 'react';
 
 export const DashboardCard = ({ title, value, icon: Icon, trend, trendLabel, colorClass }) => {
   return (
-    <div className="bg-white dark:bg-[#141C2E] rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md">
+    <div className="bg-white dark:bg-[#101C14] rounded-2xl p-6 border border-slate-200/80 dark:border-[#1E3A29] shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">

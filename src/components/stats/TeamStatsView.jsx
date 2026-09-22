@@ -104,11 +104,9 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
 
     const fetchRequestData = async () => {
       try {
-        // Fetch current player status
         const statusRes = await teamJoinRequestService.getStatus(selectedTeamId);
         setJoinRequestStatus(statusRes.status || 'none');
 
-        // Fetch manager requests if managing this team
         const managerRes = await teamJoinRequestService.getManagerRequests(selectedTeamId);
         setManagerRequests(managerRes.joinRequests || []);
       } catch (err) {
@@ -144,11 +142,9 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
       await teamJoinRequestService.approveRequest(requestId);
       setToast({ message: 'Team Request Approved', type: 'success' });
 
-      // Refresh manager requests
       const managerRes = await teamJoinRequestService.getManagerRequests(selectedTeamId);
       setManagerRequests(managerRes.joinRequests || []);
 
-      // Refresh squad data
       if (selectedTeamId) {
         const res = await statsService.getTeamStats(selectedTeamId);
         setTeamData(res);
@@ -164,7 +160,6 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
       await teamJoinRequestService.rejectRequest(requestId);
       setToast({ message: 'Team Request Rejected', type: 'warning' });
 
-      // Refresh manager requests
       const managerRes = await teamJoinRequestService.getManagerRequests(selectedTeamId);
       setManagerRequests(managerRes.joinRequests || []);
     } catch (err) {
@@ -182,7 +177,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
     <div className="space-y-8">
       {/* ─── 1. TEAM SELECTOR & SEARCH (hidden in My Team mode) ──── */}
       {!hideSelector && (
-        <div className="saas-card rounded-2xl p-4 sm:p-5 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-3.5">
+        <div className="saas-card rounded-2xl p-4 sm:p-5 bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] shadow-sm space-y-3.5">
           {/* Top Row: Search Control & Action */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative w-full sm:max-w-md">
@@ -192,7 +187,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                 placeholder="Search team by club name, abbreviation, or city..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                className="w-full pl-10 pr-9 py-2 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-600 text-slate-900 dark:text-white transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
               {searchQuery && (
                 <button
@@ -209,7 +204,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
             {user && (
               <Link
                 to="/teams-manage"
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center space-x-1.5 shrink-0 self-start sm:self-auto"
+                className="px-3.5 py-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center space-x-1.5 shrink-0 self-start sm:self-auto"
               >
                 <Shield className="w-3.5 h-3.5" />
                 <span>Manage / Create Team</span>
@@ -218,7 +213,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
           </div>
 
           {/* Horizontal Scrollable Team Selector */}
-          <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+          <div className="flex items-center space-x-2 overflow-x-auto pb-1 max-w-full">
             {filteredTeams.map((t) => {
               const isSelected = t.id === selectedTeamId;
               return (
@@ -230,8 +225,8 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                   }}
                   className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                     isSelected
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-2 ring-blue-500/50'
-                      : 'bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700/40'
+                      ? 'bg-green-600 text-white shadow-md shadow-green-600/30 ring-2 ring-green-500/50'
+                      : 'bg-slate-100 dark:bg-[#16261C] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1E3A29] border border-transparent dark:border-[#1E3A29]'
                   }`}
                 >
                   <Shield className="w-3.5 h-3.5 opacity-80 shrink-0" />
@@ -254,26 +249,26 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
       )}
 
       {statsLoading ? (
-        <div className="saas-card rounded-2xl p-12 text-center text-slate-400 dark:text-slate-500">
-          <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <div className="saas-card rounded-2xl p-12 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29]">
+          <div className="w-8 h-8 border-3 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm font-medium">Loading club statistics...</p>
         </div>
       ) : teamData?.team ? (
         <div className="space-y-8">
           {/* ─── 2. CLUB HERO HEADER ───────────────────────────────── */}
-          <div className="saas-card rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-[#10172A] to-[#151D33] text-white border border-slate-800 shadow-xl relative overflow-hidden">
+          <div className="saas-card rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-[#0C1B12] to-[#07130C] text-white border border-slate-800 dark:border-[#1E3A29] shadow-xl relative overflow-hidden">
             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 relative z-10">
               <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
                 <div 
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-500/25 flex-shrink-0"
-                  style={{ backgroundColor: teamData.team.primaryColor || '#1E50FF' }}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-green-500/25 flex-shrink-0"
+                  style={{ backgroundColor: teamData.team.primaryColor || '#16A34A' }}
                 >
                   {teamData.team.shortName || teamData.team.name?.substring(0, 3)?.toUpperCase() || 'FC'}
                 </div>
 
                 <div>
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
-                    <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 text-xs font-bold">
                       {teamData.team.city || 'Club'}
                     </span>
                     {teamData.team.manager && (
@@ -283,7 +278,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                     )}
                   </div>
 
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white tracking-tight">
                     {teamData.team.name}
                   </h1>
                   <p className="text-xs text-slate-400 mt-1">
@@ -314,7 +309,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                       <button
                         onClick={handleJoinTeam}
                         disabled={isSubmittingRequest}
-                        className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition disabled:opacity-50"
+                        className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-xs font-bold shadow-md shadow-green-600/30 transition disabled:opacity-50"
                       >
                         <UserPlus className="w-4 h-4" />
                         <span>{isSubmittingRequest ? 'Submitting...' : 'Join Team'}</span>
@@ -351,14 +346,14 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
 
           {/* ─── MANAGER JOIN REQUESTS SECTION ──────────────────────── */}
           {managerRequests.length > 0 && (
-            <div className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#111726] border border-blue-500/30 dark:border-blue-500/20 shadow-lg space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#101C14] border border-green-500/30 dark:border-[#1E3A29] shadow-lg space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E3A29] pb-4">
                 <div className="flex items-center space-x-2">
-                  <UserPlus className="w-5 h-5 text-blue-500" />
+                  <UserPlus className="w-5 h-5 text-green-600 dark:text-green-400" />
                   <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                     Team Join Requests
                   </h3>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold">
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 font-bold">
                     {managerRequests.filter(r => r.status === 'pending').length} Pending
                   </span>
                 </div>
@@ -368,10 +363,10 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                 {managerRequests.map((reqItem) => (
                   <div
                     key={reqItem.id}
-                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-4"
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/60 dark:border-[#1E3A29] flex items-center justify-between gap-4"
                   >
                     <div className="flex items-center space-x-3 min-w-0">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 font-bold text-sm flex items-center justify-center overflow-hidden border border-blue-500/20 flex-shrink-0">
+                      <div className="w-11 h-11 rounded-2xl bg-green-600/10 text-green-700 dark:text-green-400 font-bold text-sm flex items-center justify-center overflow-hidden border border-green-500/20 flex-shrink-0">
                         {reqItem.player?.avatarUrl ? (
                           <img src={reqItem.player.avatarUrl} alt={reqItem.player.fullName} className="w-full h-full object-cover" />
                         ) : (
@@ -383,7 +378,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                           {reqItem.player?.fullName || 'Anonymous Player'}
                         </h5>
                         <div className="flex items-center space-x-2 mt-0.5">
-                          <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 text-[10px] font-bold">
                             {reqItem.player?.preferredPosition || 'Player'}
                           </span>
                           {reqItem.status === 'pending' ? (
@@ -426,18 +421,18 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
           {/* ─── 3. OVERALL TEAM PERFORMANCE (PUBLIC) ──────────────── */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <Activity className="w-5 h-5 text-blue-500" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              <Activity className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <h2 className="text-lg font-bold font-heading text-slate-900 dark:text-white tracking-tight">
                 Overall Team Performance
               </h2>
-              <span className="text-xs px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold">
+              <span className="text-xs px-2 py-0.5 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 font-bold">
                 Public Record
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {/* Matches Played */}
-              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] shadow-sm">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Matches Played
                 </span>
@@ -448,7 +443,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
               </div>
 
               {/* Record (W / D / L) */}
-              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] shadow-sm">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   W / D / L
                 </span>
@@ -463,11 +458,11 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
               </div>
 
               {/* Goals (GF / GA) */}
-              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] shadow-sm">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Goals (GF / GA)
                 </span>
-                <div className="text-2xl sm:text-3xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">
+                <div className="text-2xl sm:text-3xl font-extrabold text-green-600 dark:text-green-400 mt-1">
                   {teamData.overallPerformance.goalsFor} : {teamData.overallPerformance.goalsAgainst}
                 </div>
                 <p className="text-[10px] text-slate-500 mt-1">
@@ -477,7 +472,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
               </div>
 
               {/* Clean Sheets */}
-              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800 shadow-sm">
+              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] shadow-sm">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Clean Sheets
                 </span>
@@ -488,11 +483,11 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
               </div>
 
               {/* Tournaments */}
-              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800 shadow-sm col-span-2 sm:col-span-1">
+              <div className="saas-card rounded-2xl p-5 bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] shadow-sm col-span-2 sm:col-span-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Tournaments
                 </span>
-                <div className="text-2xl sm:text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">
+                <div className="text-2xl sm:text-3xl font-extrabold text-teal-600 dark:text-teal-400 mt-1">
                   {teamData.overallPerformance.tournamentsCount}
                 </div>
                 <p className="text-[10px] text-slate-500 mt-1">Campaigns contested</p>
@@ -503,9 +498,9 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
           {/* ─── 4. TOURNAMENT & MATCH HISTORY (PUBLIC) ─────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Tournament Campaigns */}
-            <div className="saas-card rounded-2xl p-6 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="saas-card rounded-2xl p-6 bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] shadow-sm space-y-4">
               <div className="flex items-center space-x-2">
-                <Trophy className="w-4 h-4 text-amber-500" />
+                <Trophy className="w-4 h-4 text-green-600 dark:text-green-400" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                   Tournament Campaigns ({teamData.tournamentHistory.length})
                 </h3>
@@ -519,13 +514,13 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                     <Link
                       key={t.id}
                       to={`/tournaments/${t.id}`}
-                      className="block p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 space-y-2 hover:border-blue-500/50 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition cursor-pointer group"
+                      className="block p-3.5 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/60 dark:border-[#1E3A29] space-y-2 hover:border-green-500/50 hover:bg-green-50/30 dark:hover:bg-green-950/20 transition cursor-pointer group"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition truncate">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition truncate">
                           {t.name}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold uppercase">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 font-bold uppercase">
                           {t.format || 'Knockout'}
                         </span>
                       </div>
@@ -543,10 +538,10 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
             </div>
 
             {/* Match History */}
-            <div className="lg:col-span-2 saas-card rounded-2xl p-6 bg-white dark:bg-[#111726] border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="lg:col-span-2 saas-card rounded-2xl p-6 bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4 text-blue-500" />
+                  <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                     Match History ({teamData.matchHistory.length})
                   </h3>
@@ -565,7 +560,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                     return (
                       <div
                         key={m.id}
-                        className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 hover:border-slate-300 transition text-xs"
+                        className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/60 dark:border-[#1E3A29] hover:border-slate-300 transition text-xs"
                       >
                         <div className="flex items-center space-x-3">
                           <div className={`w-6 h-6 rounded-md flex items-center justify-center font-black text-[10px] text-white flex-shrink-0 ${
@@ -600,14 +595,14 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
           </div>
 
           {/* ─── 5. SQUAD ROSTER (PUBLIC READ-ONLY) ─────────────────── */}
-          <div className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#111726] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-[#1E3A29] pb-4">
               <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-indigo-500" />
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <h3 className="text-base sm:text-lg font-bold font-heading text-slate-900 dark:text-white tracking-tight">
                   Registered Squad Roster
                 </h3>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-[#16261C] text-slate-600 dark:text-slate-300 font-bold border border-slate-200/50 dark:border-[#1E3A29]/50">
                   {teamData.squad?.length || 0} Players
                 </span>
               </div>
@@ -627,7 +622,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
 
             {/* Public Read-Only Squad Roster */}
             {!teamData.squad || teamData.squad.length === 0 ? (
-              <div className="p-8 text-center rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-800 space-y-2">
+              <div className="p-8 text-center rounded-2xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] space-y-2">
                 <Users className="w-8 h-8 text-slate-400 mx-auto" />
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
                   No registered players yet
@@ -639,13 +634,13 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                   <Link
                     key={player.id}
                     to={`/players?id=${player.id}`}
-                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between space-x-3.5 hover:border-blue-500/60 dark:hover:border-blue-400/60 hover:shadow-md transition-all group cursor-pointer"
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/60 dark:border-[#1E3A29] flex items-center justify-between space-x-3.5 hover:border-green-500/60 dark:hover:border-green-400/60 hover:shadow-md transition-all group cursor-pointer"
                     title={`View ${player.fullName}'s profile`}
                   >
                     <div className="flex items-center space-x-3.5 min-w-0 flex-1">
                       {/* Avatar / Photo or Initials */}
                       <div className="relative flex-shrink-0">
-                        <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-black text-xs flex items-center justify-center overflow-hidden border border-slate-300 dark:border-slate-600">
+                        <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-[#101C14] text-slate-800 dark:text-white font-black text-xs flex items-center justify-center overflow-hidden border border-slate-300 dark:border-[#1E3A29]">
                           {player.avatarUrl ? (
                             <img src={player.avatarUrl} alt={player.fullName} className="w-full h-full object-cover" />
                           ) : (
@@ -654,7 +649,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                         </div>
                         {player.isCaptain && (
                           <span
-                            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center shadow-md border-2 border-white dark:border-[#111726]"
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center shadow-md border-2 border-white dark:border-[#101C14]"
                             title="Team Captain"
                           >
                             C
@@ -664,11 +659,11 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
 
                       {/* Details */}
                       <div className="min-w-0 flex-1">
-                        <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                           {player.fullName}
                         </h5>
                         <div className="flex items-center space-x-2 mt-1">
-                          <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-300 text-[10px] font-bold">
                             {player.position}
                           </span>
                           {player.jerseyNumber && (
@@ -680,7 +675,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                       </div>
                     </div>
 
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors flex-shrink-0" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-green-500 transition-colors flex-shrink-0" />
                   </Link>
                 ))}
               </div>
@@ -688,14 +683,14 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
 
             {/* Detailed performance matrix for Authorized Members only */}
             {teamData.isAuthorizedMember && teamData.detailedPerformance?.roster && (
-              <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="pt-6 border-t border-slate-100 dark:border-[#1E3A29] space-y-3">
                 <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   Detailed Authorized Performance Breakdown
                 </h4>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
+                      <tr className="border-b border-slate-200 dark:border-[#1E3A29] text-slate-400 uppercase tracking-wider font-semibold">
                         <th className="py-3 px-3">Player</th>
                         <th className="py-3 px-3">Position</th>
                         <th className="py-3 px-3">Jersey</th>
@@ -704,11 +699,11 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                         <th className="py-3 px-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-slate-100 dark:divide-[#1E3A29]">
                       {teamData.detailedPerformance.roster.map((player) => (
-                        <tr key={player.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition">
+                        <tr key={player.id} className="hover:bg-slate-50 dark:hover:bg-[#16261C] transition">
                           <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white flex items-center space-x-2">
-                            <div className="w-7 h-7 rounded-full bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs">
+                            <div className="w-7 h-7 rounded-full bg-green-600/10 text-green-700 dark:text-green-400 flex items-center justify-center font-bold text-xs">
                               {player.fullName.charAt(0).toUpperCase()}
                             </div>
                             <span>{player.fullName}</span>
@@ -721,7 +716,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
                           <td className="py-3 px-3 text-slate-500">{player.position}</td>
                           <td className="py-3 px-3 text-slate-500 font-mono">#{player.jerseyNumber || '-'}</td>
                           <td className="py-3 px-3 font-bold text-slate-900 dark:text-white">{player.matchesPlayed}</td>
-                          <td className="py-3 px-3 font-black text-blue-600 dark:text-blue-400">
+                          <td className="py-3 px-3 font-black text-green-600 dark:text-green-400">
                             {player.goals > 0 ? `⚽ ${player.goals}` : '0'}
                           </td>
                           <td className="py-3 px-3">
@@ -739,7 +734,7 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
           </div>
         </div>
       ) : (
-        <div className="saas-card rounded-2xl p-12 text-center text-slate-400">
+        <div className="saas-card rounded-2xl p-12 text-center text-slate-400 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29]">
           <p>Please select a team to view their statistics.</p>
         </div>
       )}

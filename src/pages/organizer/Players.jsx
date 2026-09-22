@@ -206,7 +206,7 @@ export const Players = () => {
       />
 
       {/* Search & Filter Toolbar */}
-      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white dark:bg-[#141C2E] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white dark:bg-[#101C14] p-4 rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] shadow-sm">
         {/* Search Input */}
         <div className="relative w-full lg:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -215,7 +215,7 @@ export const Players = () => {
             placeholder="Search players by name, jersey #, position, team..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
 
@@ -294,7 +294,7 @@ export const Players = () => {
             return (
               <div
                 key={playerMember.id}
-                className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col"
+                className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] overflow-hidden shadow-sm hover:shadow-md hover:border-green-500/50 transition-all group flex flex-col"
               >
                 <div className="p-6 flex-1">
                   {/* Card Top Row: Position & Actions */}
@@ -306,7 +306,7 @@ export const Players = () => {
                     <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleOpenEdit(playerMember)}
-                        className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-[#16261C] rounded-lg transition-colors"
                         title="Edit Player"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -327,12 +327,12 @@ export const Players = () => {
                       <img
                         src={player.avatarUrl}
                         alt={player.fullName}
-                        className="w-14 h-14 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                        className="w-14 h-14 rounded-2xl object-cover border border-slate-200 dark:border-[#1E3A29] shrink-0"
                       />
                     ) : (
                       <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-white shadow-sm shrink-0"
-                        style={{ backgroundColor: team?.primaryColor || '#1E50FF' }}
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg text-white shadow-sm shrink-0 bg-green-600"
+                        style={{ backgroundColor: team?.primaryColor || '#16A34A' }}
                       >
                         {player?.fullName
                           ? player.fullName
@@ -358,20 +358,20 @@ export const Players = () => {
                     </div>
 
                     {/* Jersey Number Badge */}
-                    <div className="flex flex-col items-center justify-center w-12 h-12 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shrink-0">
+                    <div className="flex flex-col items-center justify-center w-12 h-12 bg-slate-100 dark:bg-[#16261C] rounded-2xl border border-slate-200/60 dark:border-[#1E3A29] shrink-0">
                       <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 leading-none mb-0.5">
                         NO
                       </span>
-                      <span className="text-lg font-extrabold font-mono text-blue-600 dark:text-blue-400 leading-none">
+                      <span className="text-lg font-extrabold font-mono text-green-600 dark:text-green-400 leading-none">
                         {playerMember.jerseyNumber}
                       </span>
                     </div>
                   </div>
 
                   {/* Player Details: Team & Tournament */}
-                  <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400 font-medium pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                  <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400 font-medium pt-2 border-t border-slate-100 dark:border-[#1E3A29]">
                     <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-blue-500 shrink-0" />
+                      <Shield className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
                       <span className="truncate">
                         Team: <strong className="text-slate-900 dark:text-white">{team?.name || 'Free Agent'}</strong>
                       </span>
@@ -386,7 +386,7 @@ export const Players = () => {
                 </div>
 
                 {/* Card Footer: Bio / Details & Mobile Actions */}
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center gap-2 shrink-0">
+                <div className="p-4 bg-slate-50 dark:bg-[#16261C] border-t border-slate-100 dark:border-[#1E3A29] flex justify-between items-center gap-2 shrink-0">
                   <div className="flex flex-col min-w-0 pr-1">
                     <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
                       {player?.bio || `Position: ${playerMember.position || 'Midfielder'}`}
@@ -400,7 +400,7 @@ export const Players = () => {
                   <div className="flex md:hidden items-center gap-1 shrink-0">
                     <button
                       onClick={() => handleOpenEdit(playerMember)}
-                      className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors shadow-xs"
+                      className="p-2 text-slate-500 hover:text-green-600 dark:text-slate-400 dark:hover:text-green-400 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-xl transition-colors shadow-xs"
                       title="Edit Player"
                       aria-label="Edit Player"
                     >
@@ -408,7 +408,7 @@ export const Players = () => {
                     </button>
                     <button
                       onClick={() => handleOpenDelete(playerMember)}
-                      className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors shadow-xs"
+                      className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-xl transition-colors shadow-xs"
                       title="Remove Player"
                       aria-label="Remove Player"
                     >

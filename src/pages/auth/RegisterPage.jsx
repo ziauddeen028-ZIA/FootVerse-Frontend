@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trophy, Mail, Lock, User, Shield, AlertCircle, ArrowRight, Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Trophy, Mail, Lock, User, Shield, AlertCircle, ArrowRight, Award } from 'lucide-react';
 import { CustomSelect } from '../../components/common/CustomSelect';
 import { useAuth, ROLES } from '../../context/AuthContext';
 
@@ -76,7 +76,7 @@ export const RegisterPage = () => {
         
         {/* Header Branding */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-extrabold text-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-600/30">
+          <div className="w-12 h-12 rounded-2xl bg-green-600 text-white font-extrabold text-2xl flex items-center justify-center mx-auto shadow-lg shadow-green-600/30">
             ⚽
           </div>
           <h2 className="text-2xl font-extrabold font-heading text-slate-900 dark:text-white">
@@ -112,8 +112,8 @@ export const RegisterPage = () => {
                   if (fieldErrors.fullName) setFieldErrors(prev => ({ ...prev, fullName: null }));
                 }}
                 placeholder="Marcus Rashford"
-                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#1A2338] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                  fieldErrors.fullName ? 'border-red-500' : 'border-slate-200 dark:border-slate-700/80'
+                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
+                  fieldErrors.fullName ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
                 }`}
               />
             </div>
@@ -137,8 +137,8 @@ export const RegisterPage = () => {
                   if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: null }));
                 }}
                 placeholder="player@footverse.com"
-                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#1A2338] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                  fieldErrors.email ? 'border-red-500' : 'border-slate-200 dark:border-slate-700/80'
+                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
+                  fieldErrors.email ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
                 }`}
               />
             </div>
@@ -158,11 +158,11 @@ export const RegisterPage = () => {
                 onClick={() => setRole(ROLES.PLAYER)}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border transition ${
                   role === ROLES.PLAYER
-                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold'
-                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    ? 'border-green-600 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 font-bold'
+                    : 'border-slate-200 dark:border-[#1E3A29] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#16261C]'
                 }`}
               >
-                <Award className="w-5 h-5 mb-1" />
+                <Award className="w-5 h-5 mb-1 text-green-600 dark:text-green-400" />
                 <span className="text-xs">Player</span>
               </button>
 
@@ -171,11 +171,11 @@ export const RegisterPage = () => {
                 onClick={() => setRole(ROLES.TEAM_MANAGER)}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border transition ${
                   role === ROLES.TEAM_MANAGER
-                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold'
-                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    ? 'border-green-600 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 font-bold'
+                    : 'border-slate-200 dark:border-[#1E3A29] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#16261C]'
                 }`}
               >
-                <Users className="w-5 h-5 mb-1" />
+                <Shield className="w-5 h-5 mb-1 text-green-600 dark:text-green-400" />
                 <span className="text-xs">Manager</span>
               </button>
 
@@ -184,11 +184,11 @@ export const RegisterPage = () => {
                 onClick={() => setRole(ROLES.ORGANIZER)}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border transition ${
                   role === ROLES.ORGANIZER
-                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold'
-                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    ? 'border-green-600 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 font-bold'
+                    : 'border-slate-200 dark:border-[#1E3A29] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#16261C]'
                 }`}
               >
-                <Trophy className="w-5 h-5 mb-1" />
+                <Trophy className="w-5 h-5 mb-1 text-green-600 dark:text-green-400" />
                 <span className="text-xs">Organizer</span>
               </button>
             </div>
@@ -228,8 +228,8 @@ export const RegisterPage = () => {
                   if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: null }));
                 }}
                 placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#1A2338] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                  fieldErrors.password ? 'border-red-500' : 'border-slate-200 dark:border-slate-700/80'
+                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
+                  fieldErrors.password ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
                 }`}
               />
             </div>
@@ -253,8 +253,8 @@ export const RegisterPage = () => {
                   if (fieldErrors.confirmPassword) setFieldErrors(prev => ({ ...prev, confirmPassword: null }));
                 }}
                 placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#1A2338] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                  fieldErrors.confirmPassword ? 'border-red-500' : 'border-slate-200 dark:border-slate-700/80'
+                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
+                  fieldErrors.confirmPassword ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
                 }`}
               />
             </div>
@@ -266,7 +266,7 @@ export const RegisterPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/30 transition disabled:opacity-50 flex items-center justify-center space-x-2"
+            className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-xs rounded-xl shadow-md shadow-green-600/30 transition disabled:opacity-50 flex items-center justify-center space-x-2"
           >
             {submitting ? (
               <span>Creating account...</span>
@@ -280,9 +280,9 @@ export const RegisterPage = () => {
 
         </form>
 
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div className="pt-2 border-t border-slate-100 dark:border-[#1E3A29] text-center text-xs text-slate-500 dark:text-slate-400">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
+          <Link to="/login" className="text-green-600 dark:text-green-400 font-bold hover:underline">
             Sign In
           </Link>
         </div>

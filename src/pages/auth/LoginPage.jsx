@@ -61,7 +61,7 @@ export const LoginPage = () => {
         
         {/* Header Branding */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-extrabold text-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-600/30">
+          <div className="w-12 h-12 rounded-2xl bg-green-600 text-white font-extrabold text-2xl flex items-center justify-center mx-auto shadow-lg shadow-green-600/30">
             ⚽
           </div>
           <h2 className="text-2xl font-extrabold font-heading text-slate-900 dark:text-white">
@@ -97,8 +97,8 @@ export const LoginPage = () => {
                   if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: null }));
                 }}
                 placeholder="player@footverse.com"
-                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#1A2338] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                  fieldErrors.email ? 'border-red-500' : 'border-slate-200 dark:border-slate-700/80'
+                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
+                  fieldErrors.email ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
                 }`}
               />
             </div>
@@ -114,7 +114,7 @@ export const LoginPage = () => {
               </label>
               <Link
                 to="/forgot-password"
-                className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                className="text-[11px] text-green-600 dark:text-green-400 font-semibold hover:underline"
               >
                 Forgot password?
               </Link>
@@ -129,8 +129,8 @@ export const LoginPage = () => {
                   if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: null }));
                 }}
                 placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#1A2338] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition ${
-                  fieldErrors.password ? 'border-red-500' : 'border-slate-200 dark:border-slate-700/80'
+                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
+                  fieldErrors.password ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
                 }`}
               />
             </div>
@@ -145,7 +145,7 @@ export const LoginPage = () => {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800"
+                className="w-4 h-4 rounded text-green-600 focus:ring-green-500 border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-[#16261C]"
               />
               <span>Remember this session</span>
             </label>
@@ -154,7 +154,7 @@ export const LoginPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/30 transition disabled:opacity-50 flex items-center justify-center space-x-2"
+            className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-xs rounded-xl shadow-md shadow-green-600/30 transition disabled:opacity-50 flex items-center justify-center space-x-2"
           >
             {submitting ? (
               <span>Signing in...</span>
@@ -168,9 +168,9 @@ export const LoginPage = () => {
 
         </form>
 
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div className="pt-2 border-t border-slate-100 dark:border-[#1E3A29] text-center text-xs text-slate-500 dark:text-slate-400">
           Don't have a FootVerse account?{' '}
-          <Link to="/register" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
+          <Link to="/register" className="text-green-600 dark:text-green-400 font-bold hover:underline">
             Register Account
           </Link>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Sun, Moon, Search, Bell, Sparkles, ChevronDown, User, LogOut,
+  Sun, Moon, Search, Bell, ChevronDown, User, LogOut,
   CheckCheck, BellOff, CheckCircle2, AlertCircle, Info, RefreshCw
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
@@ -10,10 +10,10 @@ import { useNotifications } from '../../context/NotificationContext';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const TYPE_CONFIG = {
-  success: { icon: CheckCircle2, dot: 'bg-emerald-500', text: 'text-emerald-500' },
-  error:   { icon: AlertCircle,  dot: 'bg-red-500',     text: 'text-red-500'     },
-  warning: { icon: AlertCircle,  dot: 'bg-amber-500',   text: 'text-amber-500'   },
-  info:    { icon: Info,         dot: 'bg-blue-500',    text: 'text-blue-500'    },
+  success: { icon: CheckCircle2, dot: 'bg-green-500', text: 'text-green-500' },
+  error:   { icon: AlertCircle,  dot: 'bg-red-500',   text: 'text-red-500'   },
+  warning: { icon: AlertCircle,  dot: 'bg-amber-500', text: 'text-amber-500' },
+  info:    { icon: Info,         dot: 'bg-green-600', text: 'text-green-600' },
 };
 function getCfg(type) { return TYPE_CONFIG[type] || TYPE_CONFIG.info; }
 
@@ -33,14 +33,14 @@ function NotificationDropdown({ onClose }) {
   const recent = notifications.slice(0, 6);
 
   return (
-    <div className="absolute right-0 mt-2 w-80 floating-glass rounded-2xl shadow-2xl z-50 overflow-hidden border border-slate-200/80 dark:border-slate-700/80">
+    <div className="absolute right-0 mt-2 w-80 floating-glass rounded-2xl shadow-2xl z-50 overflow-hidden border border-slate-200/90 dark:border-[#1E3A29]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-[#1E3A29]">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
           <span className="text-sm font-bold text-slate-800 dark:text-white">Notifications</span>
           {unreadCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold">
+            <span className="px-1.5 py-0.5 rounded-full bg-green-600 text-white text-[10px] font-bold">
               {unreadCount}
             </span>
           )}
@@ -49,7 +49,7 @@ function NotificationDropdown({ onClose }) {
           <button
             onClick={fetchNotifications}
             disabled={loading}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1A2E22] transition"
             title="Refresh"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -57,7 +57,7 @@ function NotificationDropdown({ onClose }) {
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-slate-100 dark:hover:bg-[#1A2E22] transition"
               title="Mark all read"
             >
               <CheckCheck className="w-3.5 h-3.5" />
@@ -71,7 +71,7 @@ function NotificationDropdown({ onClose }) {
         {loading ? (
           <div className="space-y-2 p-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+              <div key={i} className="h-12 rounded-xl bg-slate-100 dark:bg-[#16261C] animate-pulse" />
             ))}
           </div>
         ) : recent.length === 0 ? (
@@ -88,8 +88,8 @@ function NotificationDropdown({ onClose }) {
               return (
                 <div
                   key={n.id}
-                  className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors cursor-pointer ${
-                    !isRead ? 'bg-blue-50/30 dark:bg-blue-950/20' : ''
+                  className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#16261C] transition-colors cursor-pointer ${
+                    !isRead ? 'bg-green-50/40 dark:bg-green-950/25' : ''
                   }`}
                   onClick={() => { if (!isRead) markOneRead(n.id); onClose(); }}
                 >
@@ -116,11 +116,11 @@ function NotificationDropdown({ onClose }) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-100 dark:border-slate-800 px-4 py-2.5">
+      <div className="border-t border-slate-100 dark:border-[#1E3A29] px-4 py-2.5">
         <Link
           to="/notifications"
           onClick={onClose}
-          className="flex items-center justify-center text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+          className="flex items-center justify-center text-xs font-semibold text-green-600 dark:text-green-400 hover:underline"
         >
           View all notifications
         </Link>
@@ -132,11 +132,10 @@ function NotificationDropdown({ onClose }) {
 // ─── Header ───────────────────────────────────────────────────────────────────
 export const Header = () => {
   const { isDark, toggleTheme } = useTheme();
-  const { activeRole, switchDevRole, user, profile, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
 
-  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
@@ -160,7 +159,7 @@ export const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-20 w-full bg-white/90 dark:bg-[#111726]/90 border-b border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 transition-colors duration-200">
+    <header className="sticky top-0 z-20 w-full bg-white/95 dark:bg-[#101C14]/95 border-b border-slate-200/85 dark:border-[#1E3A29] backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 transition-colors duration-200">
       <div className="flex items-center justify-between gap-4">
 
         {/* Search Bar */}
@@ -170,59 +169,17 @@ export const Header = () => {
             <input
               type="text"
               placeholder="Search tournaments, teams, players..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-[#1A2338] border border-slate-200/80 dark:border-slate-700/60 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
             />
           </div>
         </div>
 
         {/* Right Controls */}
         <div className="flex items-center space-x-2 sm:space-x-3">
-
-          {/* DEV ROLE SWITCHER DROPDOWN */}
-          <div className="relative">
-            <button
-              onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-              className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/80 rounded-xl text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition"
-              title="Switch Role Preview"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              <span className="hidden sm:inline font-normal">Role:</span>
-              <span className="font-bold">{ROLE_LABELS[activeRole] || activeRole}</span>
-              <ChevronDown className="w-3 h-3 ml-0.5 opacity-70" />
-            </button>
-
-            {isRoleDropdownOpen && (
-              <div
-                className="absolute right-0 mt-2 w-56 floating-glass rounded-2xl shadow-xl py-2 z-50 animate-in fade-in"
-                onMouseLeave={() => setIsRoleDropdownOpen(false)}
-              >
-                <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800">
-                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Dev Role Preview Switcher
-                  </p>
-                </div>
-                {Object.values(ROLES).map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => { switchDevRole(r); setIsRoleDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 text-xs font-medium flex items-center justify-between transition ${
-                      activeRole === r
-                        ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-bold'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                    }`}
-                  >
-                    <span>{ROLE_LABELS[r]}</span>
-                    {activeRole === r && <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
-            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
+            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#16261C] rounded-xl transition"
             aria-label="Toggle Theme"
           >
             {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
@@ -232,13 +189,13 @@ export const Header = () => {
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => { if (user) setIsNotifOpen(p => !p); else navigate('/login'); }}
-              className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition relative"
+              className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#16261C] rounded-xl transition relative"
               title="Notifications"
               id="header-notifications-btn"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 bg-green-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -253,19 +210,19 @@ export const Header = () => {
           <div className="relative">
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center space-x-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="flex items-center space-x-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-[#16261C] transition"
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-green-600 text-white font-bold flex items-center justify-center text-xs shadow-sm shadow-green-600/20">
                 {profile?.full_name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
               </div>
             </button>
 
             {isUserMenuOpen && (
               <div
-                className="absolute right-0 mt-2 w-48 floating-glass rounded-2xl shadow-xl py-1 z-50"
+                className="absolute right-0 mt-2 w-48 floating-glass rounded-2xl shadow-xl py-1 z-50 border border-slate-200 dark:border-[#1E3A29]"
                 onMouseLeave={() => setIsUserMenuOpen(false)}
               >
-                <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="px-4 py-2 border-b border-slate-100 dark:border-[#1E3A29]">
                   <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                     {profile?.full_name || 'FootVerse Athlete'}
                   </p>
@@ -274,14 +231,14 @@ export const Header = () => {
                 <Link
                   to="/profile"
                   onClick={() => setIsUserMenuOpen(false)}
-                  className="flex items-center px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="flex items-center px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#16261C]"
                 >
-                  <User className="w-3.5 h-3.5 mr-2" /> Profile Settings
+                  <User className="w-3.5 h-3.5 mr-2 text-green-600 dark:text-green-400" /> Profile Settings
                 </Link>
                 {user ? (
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center px-4 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="w-full flex items-center px-4 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-[#16261C]"
                   >
                     <LogOut className="w-3.5 h-3.5 mr-2" /> Sign Out
                   </button>
@@ -289,7 +246,7 @@ export const Header = () => {
                   <Link
                     to="/login"
                     onClick={() => setIsUserMenuOpen(false)}
-                    className="w-full flex items-center px-4 py-2 text-xs text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="w-full flex items-center px-4 py-2 text-xs text-green-600 dark:text-green-400 hover:bg-slate-100 dark:hover:bg-[#16261C]"
                   >
                     <User className="w-3.5 h-3.5 mr-2" /> Sign In
                   </Link>

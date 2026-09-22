@@ -68,16 +68,11 @@ export const CustomSelect = ({
 
   const handleSelect = (optionValue) => {
     if (disabled) return;
+
     if (typeof onChange === 'function') {
-      // Provide compatibility with both (value) => {} and (e) => {} handlers
       onChange(optionValue);
-      if (name) {
-        onChange({
-          target: { name, value: optionValue },
-          currentTarget: { name, value: optionValue },
-        });
-      }
     }
+
     setIsOpen(false);
   };
 
@@ -91,13 +86,12 @@ export const CustomSelect = ({
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/50 border rounded-xl text-xs sm:text-sm font-medium transition cursor-pointer text-left shadow-xs ${
-          disabled
-            ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800'
+        className={`w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs sm:text-sm font-medium transition cursor-pointer text-left shadow-xs ${disabled
+            ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-[#101C14] border-slate-200 dark:border-[#1E3A29]'
             : isOpen
-            ? 'border-blue-500 ring-2 ring-blue-500/20 bg-white dark:bg-slate-900 text-slate-900 dark:text-white'
-            : 'border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:bg-slate-100/60 dark:hover:bg-slate-900/80'
-        } ${buttonClassName}`}
+              ? 'border-green-600 ring-2 ring-green-600/20 bg-white dark:bg-[#101C14] text-slate-900 dark:text-white'
+              : 'border-slate-200 dark:border-[#1E3A29] text-slate-900 dark:text-white hover:border-green-600/50 dark:hover:border-green-600/50 hover:bg-slate-100/60 dark:hover:bg-[#16261C]'
+          } ${buttonClassName}`}
       >
         <div className="flex items-center gap-2 truncate">
           {Icon && <Icon className="w-4 h-4 text-slate-400 shrink-0" />}
@@ -107,9 +101,8 @@ export const CustomSelect = ({
         </div>
 
         <ChevronDown
-          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-blue-500' : ''
-          }`}
+          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-green-600 dark:text-green-400' : ''
+            }`}
         />
       </button>
 
@@ -117,7 +110,7 @@ export const CustomSelect = ({
       {isOpen && !disabled && (
         <div
           role="listbox"
-          className={`absolute left-0 top-full mt-1.5 w-full min-w-[170px] z-50 bg-white dark:bg-[#141C2E] border border-slate-200/80 dark:border-slate-800/90 rounded-2xl shadow-xl py-1.5 overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 max-h-64 overflow-y-auto ${menuClassName}`}
+          className={`absolute left-0 top-full mt-1.5 w-full min-w-[170px] z-50 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-2xl shadow-xl py-1.5 overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 max-h-64 overflow-y-auto ${menuClassName}`}
         >
           {normalizedOptions.length === 0 ? (
             <div className="px-3.5 py-2 text-xs text-slate-400 dark:text-slate-500 text-center">
@@ -134,17 +127,16 @@ export const CustomSelect = ({
                   disabled={option.disabled}
                   aria-selected={isSelected}
                   onClick={() => !option.disabled && handleSelect(option.value)}
-                  className={`w-full text-left px-3.5 py-2.5 text-xs sm:text-sm font-medium flex items-center justify-between gap-2 transition ${
-                    option.disabled
+                  className={`w-full text-left px-3.5 py-2.5 text-xs sm:text-sm font-medium flex items-center justify-between gap-2 transition ${option.disabled
                       ? 'opacity-40 cursor-not-allowed'
                       : 'cursor-pointer ' +
-                        (isSelected
-                          ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold'
-                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white')
-                  }`}
+                      (isSelected
+                        ? 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 font-bold'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-[#16261C] hover:text-slate-900 dark:hover:text-white')
+                    }`}
                 >
                   <span className="truncate">{option.label}</span>
-                  {isSelected && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />}
+                  {isSelected && <Check className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />}
                 </button>
               );
             })
@@ -155,4 +147,3 @@ export const CustomSelect = ({
   );
 };
 export default CustomSelect;
-

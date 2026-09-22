@@ -89,15 +89,15 @@ export const JoinTournamentCodeModal = ({ isOpen, onClose, onSuccess, initialTea
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-md bg-white dark:bg-[#111726] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 sm:p-8 space-y-6 animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md bg-white dark:bg-[#101C14] rounded-3xl border border-slate-200 dark:border-[#1E3A29] shadow-2xl p-6 sm:p-8 space-y-6 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-violet-600/10 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold flex-shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-green-600/10 text-green-600 dark:text-green-400 flex items-center justify-center font-bold flex-shrink-0">
               <Key className="w-6 h-6" />
             </div>
             <div>
-              <div className="inline-flex items-center space-x-1.5 text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-0.5">
+              <div className="inline-flex items-center space-x-1.5 text-[11px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-0.5">
                 <Sparkles className="w-3 h-3" />
                 <span>Instant Registration</span>
               </div>
@@ -109,7 +109,7 @@ export const JoinTournamentCodeModal = ({ isOpen, onClose, onSuccess, initialTea
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#16261C] transition"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
@@ -145,7 +145,7 @@ export const JoinTournamentCodeModal = ({ isOpen, onClose, onSuccess, initialTea
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="e.g. TRN892ABC"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-mono font-bold tracking-widest text-center text-base focus:outline-none focus:ring-2 focus:ring-violet-500 uppercase placeholder:tracking-normal placeholder:font-normal placeholder:text-sm"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-2xl text-slate-900 dark:text-white font-mono font-bold tracking-widest text-center text-base focus:outline-none focus:ring-2 focus:ring-green-500 uppercase placeholder:tracking-normal placeholder:font-normal placeholder:text-sm"
               />
             </div>
           </div>
@@ -181,7 +181,7 @@ export const JoinTournamentCodeModal = ({ isOpen, onClose, onSuccess, initialTea
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              className="flex-1 py-3 px-4 rounded-2xl border border-slate-200 dark:border-[#1E3A29] text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-[#16261C] transition"
             >
               Cancel
             </button>
@@ -189,7 +189,7 @@ export const JoinTournamentCodeModal = ({ isOpen, onClose, onSuccess, initialTea
               id="submit-tournament-code-btn"
               type="submit"
               disabled={loading || !code.trim() || !selectedTeamId || teams.length === 0}
-              className="flex-1 py-3 px-4 rounded-2xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition flex items-center justify-center space-x-2"
+              className="flex-1 py-3 px-4 rounded-2xl bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-green-600/30 transition flex items-center justify-center space-x-2"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

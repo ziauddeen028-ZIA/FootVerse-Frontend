@@ -11,31 +11,31 @@ import { useNotifications } from '../context/NotificationContext';
 const TYPE_CONFIG = {
   success: {
     icon: CheckCircle2,
-    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    bg: 'bg-emerald-100 dark:bg-emerald-950/40',
     text: 'text-emerald-600 dark:text-emerald-400',
     ring: 'ring-emerald-200/60 dark:ring-emerald-800/60',
     dot: 'bg-emerald-500'
   },
   error: {
     icon: AlertCircle,
-    bg: 'bg-red-100 dark:bg-red-900/30',
+    bg: 'bg-red-100 dark:bg-red-950/40',
     text: 'text-red-500 dark:text-red-400',
     ring: 'ring-red-200/60 dark:ring-red-800/60',
     dot: 'bg-red-500'
   },
   warning: {
     icon: AlertCircle,
-    bg: 'bg-amber-100 dark:bg-amber-900/30',
+    bg: 'bg-amber-100 dark:bg-amber-950/40',
     text: 'text-amber-600 dark:text-amber-400',
     ring: 'ring-amber-200/60 dark:ring-amber-800/60',
     dot: 'bg-amber-500'
   },
   info: {
     icon: Info,
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-600 dark:text-blue-400',
-    ring: 'ring-blue-200/60 dark:ring-blue-800/60',
-    dot: 'bg-blue-500'
+    bg: 'bg-green-100 dark:bg-green-950/40',
+    text: 'text-green-600 dark:text-green-400',
+    ring: 'ring-green-200/60 dark:ring-green-800/60',
+    dot: 'bg-green-500'
   },
 };
 
@@ -76,8 +76,8 @@ function NotificationCard({ notification, onMarkRead }) {
     <div
       className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 cursor-pointer
         ${isRead
-          ? 'bg-white dark:bg-[#111726] border-slate-200/80 dark:border-slate-800/80 opacity-70 hover:opacity-100'
-          : `bg-white dark:bg-[#111726] border-slate-200/80 dark:border-slate-800/80 
+          ? 'bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] opacity-70 hover:opacity-100'
+          : `bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] 
              ring-2 ${cfg.ring} shadow-sm hover:shadow-md`
         }`}
       onClick={() => !isRead && onMarkRead(notification.id)}
@@ -109,7 +109,7 @@ function NotificationCard({ notification, onMarkRead }) {
           {notification.message}
         </p>
         {!isRead && (
-          <p className="mt-1.5 text-[11px] text-blue-500 dark:text-blue-400 font-medium">
+          <p className="mt-1.5 text-[11px] text-green-600 dark:text-green-400 font-medium">
             Click to mark as read
           </p>
         )}
@@ -117,7 +117,7 @@ function NotificationCard({ notification, onMarkRead }) {
 
       {/* Chevron */}
       {notification.link && (
-        <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0 mt-1 group-hover:text-blue-500 transition-colors" />
+        <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0 mt-1 group-hover:text-green-500 transition-colors" />
       )}
     </div>
   );
@@ -128,8 +128,8 @@ function NotificationCard({ notification, onMarkRead }) {
         <div
           className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 cursor-pointer
             ${isRead
-              ? 'bg-white dark:bg-[#111726] border-slate-200/80 dark:border-slate-800/80 opacity-70 hover:opacity-100'
-              : `bg-white dark:bg-[#111726] border-slate-200/80 dark:border-slate-800/80 
+              ? 'bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] opacity-70 hover:opacity-100'
+              : `bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] 
                  ring-2 ${cfg.ring} shadow-sm hover:shadow-md`
             }`}
           role="article"
@@ -153,7 +153,7 @@ function NotificationCard({ notification, onMarkRead }) {
               {notification.message}
             </p>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0 mt-1 group-hover:text-blue-500 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0 mt-1 group-hover:text-green-500 transition-colors" />
         </div>
       </Link>
     );
@@ -179,8 +179,8 @@ export function NotificationsPage() {
       {/* ── Page Header ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600/10 dark:bg-blue-900/40 flex items-center justify-center">
-            <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div className="w-10 h-10 rounded-2xl bg-green-600/10 dark:bg-green-950/50 flex items-center justify-center">
+            <Bell className="w-5 h-5 text-green-600 dark:text-green-400" />
           </div>
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -196,7 +196,7 @@ export function NotificationsPage() {
           <button
             onClick={fetchNotifications}
             disabled={loading}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#16261C] transition"
             title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -204,7 +204,7 @@ export function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-xl transition"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/50 hover:bg-green-100 dark:hover:bg-green-900/60 rounded-xl transition"
             >
               <CheckCheck className="w-3.5 h-3.5" />
               Mark all read
@@ -214,7 +214,7 @@ export function NotificationsPage() {
       </div>
 
       {/* ── Filter Tabs ── */}
-      <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-2xl w-fit">
+      <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-[#16261C] rounded-2xl w-fit">
         {[
           { key: 'all', label: 'All', count: notifications.length },
           { key: 'unread', label: 'Unread', count: unreadCount }
@@ -224,7 +224,7 @@ export function NotificationsPage() {
             onClick={() => setFilter(tab.key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
               filter === tab.key
-                ? 'bg-white dark:bg-[#111726] text-slate-900 dark:text-white shadow-sm'
+                ? 'bg-white dark:bg-[#101C14] text-slate-900 dark:text-white shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
@@ -232,7 +232,7 @@ export function NotificationsPage() {
             {tab.count > 0 && (
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                 filter === tab.key
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
+                  ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
               }`}>
                 {tab.count}
@@ -246,12 +246,12 @@ export function NotificationsPage() {
       {loading ? (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-[76px] rounded-2xl bg-slate-100 dark:bg-slate-800/60 animate-pulse" />
+            <div key={i} className="h-[76px] rounded-2xl bg-slate-100 dark:bg-[#16261C] animate-pulse" />
           ))}
         </div>
       ) : displayed.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-[#16261C] flex items-center justify-center mb-4">
             <BellOff className="w-7 h-7 text-slate-300 dark:text-slate-600" />
           </div>
           <p className="text-base font-semibold text-slate-600 dark:text-slate-300">

@@ -209,7 +209,7 @@ export const Teams = () => {
       )}
 
       {/* Filters & Search Toolbar */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-[#141C2E] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-[#101C14] p-4 rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] shadow-sm">
         <div className="relative w-full md:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
@@ -217,7 +217,7 @@ export const Teams = () => {
             placeholder="Search teams by name, city, tournament..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
 
@@ -278,12 +278,12 @@ export const Teams = () => {
             <Link
               key={team.id}
               to={`/teams/${team.id}`}
-              className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-md hover:border-blue-400/60 dark:hover:border-blue-500/40 transition-all group flex flex-col"
+              className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] overflow-hidden shadow-sm hover:shadow-md hover:border-green-500/60 dark:hover:border-green-500/40 transition-all group flex flex-col"
             >
               <div className="p-6 flex-1">
                 {/* Header Row: Tournament Badge & Actions */}
                 <div className="flex justify-between items-start mb-4">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 dark:bg-green-950/60 dark:text-green-300">
                     <Trophy className="w-3.5 h-3.5" />
                     {team.tournament?.name || 'Unassigned'}
                   </span>
@@ -291,7 +291,7 @@ export const Teams = () => {
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.preventDefault()}>
                     <button
                       onClick={() => handleOpenEdit(team)}
-                      className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-[#16261C] rounded-lg transition-colors"
                       title="Edit Team"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -312,13 +312,13 @@ export const Teams = () => {
                     <img
                       src={team.logoUrl}
                       alt={team.name}
-                      className="w-14 h-14 rounded-2xl object-cover border border-slate-200 dark:border-slate-700"
+                      className="w-14 h-14 rounded-2xl object-cover border border-slate-200 dark:border-[#1E3A29]"
                     />
                   ) : (
                     <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0"
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg shadow-sm border border-slate-200/50 dark:border-[#1E3A29] shrink-0"
                       style={{
-                        backgroundColor: team.primaryColor || '#1E50FF',
+                        backgroundColor: team.primaryColor || '#16A34A',
                         color: team.secondaryColor || '#FFFFFF'
                       }}
                     >
@@ -330,14 +330,14 @@ export const Teams = () => {
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white line-clamp-1">
                       {team.name}
                     </h3>
-                    <span className="inline-block text-xs font-mono font-semibold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md tracking-wider">
+                    <span className="inline-block text-xs font-mono font-semibold px-2 py-0.5 bg-slate-100 dark:bg-[#16261C] text-slate-600 dark:text-slate-400 rounded-md tracking-wider">
                       {team.shortName}
                     </span>
                   </div>
                 </div>
 
                 {/* Details list */}
-                <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400 font-medium pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400 font-medium pt-2 border-t border-slate-100 dark:border-[#1E3A29] leading-snug">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
                     <span className="truncate">{team.city || 'City: Not specified'}</span>
@@ -350,7 +350,7 @@ export const Teams = () => {
               </div>
 
               {/* Card Footer: Color Swatches */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
+              <div className="p-4 bg-slate-50 dark:bg-[#16261C] border-t border-slate-100 dark:border-[#1E3A29] flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
                   <Shield className="w-3.5 h-3.5 text-slate-400" />
                   <span>Team Colors</span>
@@ -358,7 +358,7 @@ export const Teams = () => {
                 <div className="flex items-center gap-1.5">
                   <span
                     className="w-5 h-5 rounded-full border border-slate-300 dark:border-slate-600 shadow-xs"
-                    style={{ backgroundColor: team.primaryColor || '#1E50FF' }}
+                    style={{ backgroundColor: team.primaryColor || '#16A34A' }}
                     title={`Primary: ${team.primaryColor}`}
                   />
                   <span

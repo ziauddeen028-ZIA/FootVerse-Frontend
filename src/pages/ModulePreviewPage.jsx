@@ -4,7 +4,7 @@ import { ChevronLeft, Lock, Sparkles } from 'lucide-react';
 
 export const ModulePreviewPage = ({ title, moduleName, phaseText }) => {
   return (
-    <div className="max-w-xl mx-auto my-12 text-center glass-card rounded-3xl p-8 space-y-4">
+    <div className="max-w-xl mx-auto my-12 text-center saas-card rounded-3xl p-8 space-y-4 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29]">
       <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center text-xl font-bold shadow-sm">
         <Lock className="w-6 h-6" />
       </div>
@@ -19,13 +19,13 @@ export const ModulePreviewPage = ({ title, moduleName, phaseText }) => {
       </h2>
 
       <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-        {moduleName} will be built in the next requested phase as per project roadmap. All database schema tables and relationships for this module have already been prepared in <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400">database/schema.sql</code>.
+        {moduleName} will be built in the next requested phase as per project roadmap. All database schema tables and relationships for this module have already been prepared in <code className="bg-slate-100 dark:bg-[#16261C] px-1.5 py-0.5 rounded text-green-600 dark:text-green-400">database/schema.sql</code>.
       </p>
 
       <div className="pt-4">
         <Link
           to="/"
-          className="inline-flex items-center space-x-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition"
+          className="inline-flex items-center space-x-2 px-5 py-2.5 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-xl shadow-md shadow-green-600/20 transition"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>Return to Dashboard</span>

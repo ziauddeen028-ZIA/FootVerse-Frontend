@@ -34,19 +34,19 @@ const getRoundWeight = (roundName = '') => {
 const TeamRow = ({ team, score, penalties, tieBreakMethod, isWinner, isLoser, isTBD, side = 'home' }) => {
   const badgeColors =
     side === 'home'
-      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
-      : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
+      ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20'
+      : 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20';
 
   return (
     <div
       className={`flex items-center justify-between px-3 py-2 transition-all ${
         isWinner
-          ? 'bg-emerald-500/15 font-bold text-white'
+          ? 'bg-emerald-500/15 font-bold text-slate-900 dark:text-white'
           : isLoser
-          ? 'opacity-40 grayscale-[30%] text-slate-400'
+          ? 'opacity-40 grayscale-[30%] text-slate-400 dark:text-slate-500'
           : isTBD
-          ? 'text-slate-500 italic'
-          : 'text-slate-200'
+          ? 'text-slate-400 dark:text-slate-500 italic'
+          : 'text-slate-800 dark:text-slate-200'
       }`}
     >
       <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
@@ -54,9 +54,9 @@ const TeamRow = ({ team, score, penalties, tieBreakMethod, isWinner, isLoser, is
         <div
           className={`w-6 h-6 rounded-md border flex items-center justify-center font-bold text-[10px] shrink-0 overflow-hidden ${
             isTBD
-              ? 'border-dashed border-slate-700 bg-slate-800/60 text-slate-500'
+              ? 'border-dashed border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500'
               : isWinner
-              ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40'
+              ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/40'
               : badgeColors
           }`}
         >
@@ -76,7 +76,7 @@ const TeamRow = ({ team, score, penalties, tieBreakMethod, isWinner, isLoser, is
 
         {/* Winner checkmark / trophy indicator */}
         {isWinner && (
-          <span className="shrink-0 text-emerald-400 text-[10px] font-bold">
+          <span className="shrink-0 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
             ✓
           </span>
         )}
@@ -85,7 +85,7 @@ const TeamRow = ({ team, score, penalties, tieBreakMethod, isWinner, isLoser, is
       {/* Score and penalty display */}
       <div className="flex items-center gap-1.5 shrink-0">
         {penalties !== null && penalties !== undefined && tieBreakMethod === 'penalty' && (
-          <span className="text-[10px] font-bold text-amber-400 tabular-nums">
+          <span className="text-[10px] font-bold text-amber-500 dark:text-amber-400 tabular-nums">
             ({penalties}p)
           </span>
         )}
@@ -94,8 +94,8 @@ const TeamRow = ({ team, score, penalties, tieBreakMethod, isWinner, isLoser, is
             isWinner
               ? 'bg-emerald-500 text-white shadow-xs'
               : score !== null && score !== undefined
-              ? 'bg-slate-800 text-slate-200'
-              : 'text-slate-600'
+              ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200'
+              : 'text-slate-400 dark:text-slate-600'
           }`}
         >
           {score !== null && score !== undefined ? score : '-'}
@@ -141,18 +141,18 @@ const BracketMatchCard = ({ match, onOpenLive, isFinal = false, readOnly = false
   return (
     <div
       onClick={readOnly && hasBothTeams ? handleCardAction : undefined}
-      className={`group relative w-[220px] sm:w-[250px] rounded-xl transition-all duration-200 border bg-slate-900/95 ${
+      className={`group relative w-[220px] sm:w-[250px] rounded-xl transition-all duration-200 border bg-white dark:bg-[#101C14] ${
         readOnly && hasBothTeams ? 'cursor-pointer hover:border-emerald-500/50 hover:scale-[1.01]' : ''
       } ${
         isFinal
-          ? 'border-amber-500/60 bg-gradient-to-b from-amber-500/10 via-slate-900 to-slate-900 shadow-xl shadow-amber-500/10 ring-1 ring-amber-500/30'
+          ? 'border-amber-500/60 bg-gradient-to-b from-amber-50/60 via-white dark:via-[#101C14] to-white dark:to-[#101C14] shadow-xl shadow-amber-500/10 ring-1 ring-amber-500/30'
           : isLive
           ? 'border-red-500/60 shadow-lg shadow-red-500/10 ring-1 ring-red-500/30'
-          : 'border-slate-800 shadow-md hover:border-slate-700 hover:shadow-lg'
+          : 'border-slate-200 dark:border-[#1E3A29] shadow-md hover:border-slate-300 dark:hover:border-green-600/40 hover:shadow-lg'
       }`}
     >
       {/* Header with Match Position / Status */}
-      <div className="px-3 py-1.5 border-b border-slate-800 flex items-center justify-between text-[10px] font-bold tracking-wider text-slate-400">
+      <div className="px-3 py-1.5 border-b border-slate-100 dark:border-[#1E3A29] flex items-center justify-between text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400">
         <span className="uppercase truncate max-w-[130px]">
           {match.roundName || `Match #${match.bracketPosition || 1}`}
         </span>
@@ -165,16 +165,16 @@ const BracketMatchCard = ({ match, onOpenLive, isFinal = false, readOnly = false
         ) : isHalftime ? (
           <span className="text-amber-500 font-bold uppercase">HT</span>
         ) : isFinished ? (
-          <span className="text-emerald-400 font-bold uppercase">FT</span>
+          <span className="text-emerald-500 dark:text-emerald-400 font-bold uppercase">FT</span>
         ) : hasBothTeams ? (
-          <span className="text-blue-400 font-semibold">Ready</span>
+          <span className="text-green-600 dark:text-green-400 font-semibold">Ready</span>
         ) : (
-          <span className="text-slate-500 italic">TBD</span>
+          <span className="text-slate-400 dark:text-slate-500 italic">TBD</span>
         )}
       </div>
 
       {/* Team Rows */}
-      <div className="divide-y divide-slate-800/80">
+      <div className="divide-y divide-slate-100 dark:divide-[#1E3A29]">
         <TeamRow
           team={match.homeTeam}
           score={isFinished || isLive || isHalftime ? match.homeScore : null}
@@ -198,7 +198,7 @@ const BracketMatchCard = ({ match, onOpenLive, isFinal = false, readOnly = false
       </div>
 
       {/* Footer / Quick Action */}
-      <div className="px-3 py-1.5 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 bg-slate-950/50 rounded-b-xl">
+      <div className="px-3 py-1.5 border-t border-slate-100 dark:border-[#1E3A29] flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50/70 dark:bg-[#07130C]/50 rounded-b-xl">
         <span className="truncate max-w-[140px]">
           {match.matchDate
             ? new Date(match.matchDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -214,12 +214,12 @@ const BracketMatchCard = ({ match, onOpenLive, isFinal = false, readOnly = false
             }}
             className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded transition-all ${
               readOnly
-                ? 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
+                ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
                 : isLive
-                ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
+                ? 'text-red-500 bg-red-500/10 hover:bg-red-500/20'
                 : isFinished
-                ? 'text-blue-400 hover:bg-blue-500/10'
-                : 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
+                ? 'text-green-600 dark:text-green-400 hover:bg-green-500/10'
+                : 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
             }`}
             title={readOnly ? 'View Public Match Details' : isFinished ? 'View Match Summary' : isLive ? 'Manage Live Match' : 'Start Match'}
           >
@@ -441,9 +441,9 @@ export const KnockoutBracket = ({
 
   if (loading && knockoutMatches.length === 0) {
     return (
-      <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-12 text-center shadow-sm animate-pulse">
-        <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center mx-auto mb-4">
-          <Trophy className="w-6 h-6 animate-spin" />
+      <div className="bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-3xl p-12 text-center shadow-sm animate-pulse">
+        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-[#16261C] text-slate-500 flex items-center justify-center mx-auto mb-4">
+          <Trophy className="w-6 h-6 animate-spin text-green-600 dark:text-green-400" />
         </div>
         <p className="text-sm font-semibold text-slate-400">Loading knockout bracket...</p>
       </div>
@@ -452,7 +452,7 @@ export const KnockoutBracket = ({
 
   if (knockoutMatches.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
+      <div className="bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-2xl p-12 text-center shadow-sm">
         <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
           <Trophy className="w-8 h-8" />
         </div>
@@ -467,7 +467,7 @@ export const KnockoutBracket = ({
         {!readOnly && currentTournament && (
           <button
             onClick={() => navigate('/organizer/tournaments')}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors shadow-sm"
           >
             <Zap className="w-4 h-4" />
             Go to Tournaments to Generate Bracket
@@ -484,23 +484,23 @@ export const KnockoutBracket = ({
   }, [allRounds, selectedRoundFilter]);
 
   return (
-    <div className="w-full bg-slate-950 text-white rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative">
+    <div className="w-full bg-white dark:bg-[#07130C] text-slate-900 dark:text-white rounded-3xl overflow-hidden border border-slate-200 dark:border-[#1E3A29] shadow-2xl relative">
       {/* ── Stadium Glow Background ────────────────────────────────────────── */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-950/40 via-slate-950 to-slate-950 pointer-events-none" />
-      <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-green-50/60 dark:from-green-950/30 via-white dark:via-[#07130C] to-slate-50 dark:to-[#07130C] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-green-500/10 blur-[120px] rounded-full pointer-events-none" />
 
       {/* ── Bracket Header & Tournament Info ──────────────────────────────── */}
-      <div className="relative z-10 px-6 py-6 border-b border-slate-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="relative z-10 px-6 py-6 border-b border-slate-100 dark:border-[#1E3A29] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-widest mb-1">
-            <Trophy className="w-4 h-4 text-amber-400" />
+          <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-xs font-black uppercase tracking-widest mb-1">
+            <Trophy className="w-4 h-4 text-amber-500" />
             <span>Knockout Tournament Tree</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
             <span>{currentTournament?.name || 'Tournament Knockout Stage'}</span>
             {championTeam && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 animate-pulse">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 Champion: {championTeam.name}
               </span>
             )}
@@ -522,17 +522,17 @@ export const KnockoutBracket = ({
             </div>
           )}
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300">
-            <Shield className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <Shield className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
             <span>{knockoutMatches.length} Matches</span>
           </div>
         </div>
       </div>
 
       {/* ── Round Navigation Selector Tabs ─────────────────────────────────── */}
-      <div className="relative z-10 px-6 py-3 border-b border-slate-800/60 bg-slate-950/60 flex items-center justify-between gap-3 overflow-x-auto scrollbar-none">
+      <div className="relative z-10 px-6 py-3 border-b border-slate-100 dark:border-[#1E3A29] bg-slate-50/70 dark:bg-[#07130C]/60 flex items-center justify-between gap-3 overflow-x-auto scrollbar-none">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1 hidden sm:inline-block">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 mr-1 hidden sm:inline-block">
             Rounds:
           </span>
 
@@ -541,8 +541,8 @@ export const KnockoutBracket = ({
             onClick={() => setSelectedRoundFilter('all')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
               selectedRoundFilter === 'all'
-                ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-500/20'
-                : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+                ? 'bg-green-600 text-white shadow-xs shadow-green-500/20'
+                : 'bg-white dark:bg-[#101C14] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29]'
             }`}
           >
             All Rounds (Tree)
@@ -557,8 +557,8 @@ export const KnockoutBracket = ({
                 onClick={() => setSelectedRoundFilter(round.name)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-500/20'
-                    : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+                    ? 'bg-green-600 text-white shadow-xs shadow-green-500/20'
+                    : 'bg-white dark:bg-[#101C14] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29]'
                 }`}
               >
                 <span>{round.name}</span>
@@ -570,7 +570,7 @@ export const KnockoutBracket = ({
       </div>
 
       {/* ── Bracket Canvas (Left-to-Right Cascading Flow with Horizontal Scroll) ─ */}
-      <div className="relative z-10 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900 select-none">
+      <div className="relative z-10 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 scrollbar-track-slate-100 dark:scrollbar-track-slate-900 select-none">
         <div className="w-max min-w-max flex items-stretch justify-start px-6 py-8 sm:p-8 md:p-10 gap-0">
           {displayedRounds.map((round, rIndex) => {
             const isLastRound = rIndex === displayedRounds.length - 1;
@@ -582,7 +582,7 @@ export const KnockoutBracket = ({
                 <div className="flex flex-col items-center">
                   {/* Round Title Header */}
                   <div className="mb-6 text-center">
-                    <span className="text-xs font-black uppercase tracking-widest text-slate-300 bg-slate-900 border border-slate-800 px-4 py-1.5 rounded-full shadow-xs">
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] px-4 py-1.5 rounded-full shadow-xs">
                       {round.name}
                     </span>
                   </div>
@@ -634,7 +634,7 @@ export const KnockoutBracket = ({
 
               <div className="flex flex-col items-center justify-center pl-2 my-auto">
                 <div className="mb-6 text-center">
-                  <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 px-4 py-1.5 rounded-full">
+                  <span className="text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/30 px-4 py-1.5 rounded-full">
                     Champion
                   </span>
                 </div>
@@ -642,15 +642,15 @@ export const KnockoutBracket = ({
                 <div
                   className={`w-[220px] sm:w-[240px] rounded-2xl border-2 p-6 flex flex-col items-center text-center transition-all ${
                     championTeam
-                      ? 'border-amber-400 bg-gradient-to-b from-amber-500/20 via-slate-900 to-slate-900 shadow-2xl shadow-amber-500/20 ring-2 ring-amber-400/40'
-                      : 'border-dashed border-slate-800 bg-slate-900/50 text-slate-500'
+                      ? 'border-amber-400 bg-gradient-to-b from-amber-50 dark:from-amber-500/20 via-white dark:via-[#101C14] to-slate-50 dark:to-[#101C14] shadow-2xl shadow-amber-500/20 ring-2 ring-amber-400/40'
+                      : 'border-dashed border-slate-300 dark:border-[#1E3A29] bg-slate-50/50 dark:bg-[#101C14]/50 text-slate-500'
                   }`}
                 >
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center text-amber-400 mb-3 shadow-lg ${
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center text-amber-500 dark:text-amber-400 mb-3 shadow-lg ${
                       championTeam
                         ? 'bg-gradient-to-tr from-amber-500/30 to-amber-300/20 border border-amber-400/60 shadow-amber-500/20 animate-bounce'
-                        : 'bg-slate-800/80 border border-slate-700'
+                        : 'bg-slate-100 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29]'
                     }`}
                   >
                     <Trophy className="w-8 h-8" />
@@ -658,21 +658,21 @@ export const KnockoutBracket = ({
 
                   {championTeam ? (
                     <>
-                      <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">
+                      <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
                         Tournament Winner
                       </span>
-                      <h4 className="text-base font-black text-white mt-1 line-clamp-1">
+                      <h4 className="text-base font-black text-slate-900 dark:text-white mt-1 line-clamp-1">
                         {championTeam.name}
                       </h4>
-                      <span className="text-xs text-emerald-400 font-bold mt-2 flex items-center gap-1">
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-2 flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         Qualified & Crowned
                       </span>
                     </>
                   ) : (
                     <>
-                      <span className="text-xs font-bold text-slate-400">Trophy Awaiting</span>
-                      <span className="text-[10px] text-slate-500 mt-1">
+                      <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Trophy Awaiting</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
                         Winner of Final will be crowned here
                       </span>
                     </>
@@ -685,7 +685,7 @@ export const KnockoutBracket = ({
       </div>
 
       {/* ── Footer Navigation Help & Legend ────────────────────────────────── */}
-      <div className="relative z-10 px-6 py-3 border-t border-slate-800 bg-slate-950 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+      <div className="relative z-10 px-6 py-3 border-t border-slate-100 dark:border-[#1E3A29] bg-slate-50/80 dark:bg-[#07130C] flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
@@ -696,12 +696,12 @@ export const KnockoutBracket = ({
             <span>Live Match</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full border border-dashed border-slate-500 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full border border-dashed border-slate-400 dark:border-slate-500 inline-block" />
             <span>TBD / Pending</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-[11px] text-slate-500">
+        <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500">
           <span>Tip: Select any round tab above to focus or swipe horizontally to view all rounds</span>
         </div>
       </div>

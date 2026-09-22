@@ -168,11 +168,11 @@ export const MatchFormModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="bg-white dark:bg-[#141C2E] rounded-2xl w-full max-w-2xl shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col my-auto max-h-full">
+      <div className="bg-white dark:bg-[#101C14] rounded-2xl w-full max-w-2xl shadow-xl border border-slate-200 dark:border-[#1E3A29] flex flex-col my-auto max-h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#1E3A29]">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
+            <div className="p-2.5 bg-green-50 dark:bg-green-950/40 rounded-xl text-green-600 dark:text-green-400">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
@@ -186,7 +186,7 @@ export const MatchFormModal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-[#16261C] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -197,7 +197,7 @@ export const MatchFormModal = ({
           {/* Tournament Selection */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-              <Trophy className="w-3.5 h-3.5 text-blue-500" />
+              <Trophy className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
               Tournament <span className="text-red-500">*</span>
             </label>
             <CustomSelect
@@ -220,7 +220,7 @@ export const MatchFormModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-blue-500" />
+                <Shield className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
                 Home Team <span className="text-red-500">*</span>
               </label>
               <CustomSelect
@@ -242,7 +242,7 @@ export const MatchFormModal = ({
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-purple-500" />
+                <Shield className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 Away Team <span className="text-red-500">*</span>
               </label>
               <CustomSelect
@@ -270,9 +270,9 @@ export const MatchFormModal = ({
                 name="matchDate"
                 value={formData.matchDate}
                 onChange={handleChange}
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.matchDate ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border ${
+                  errors.matchDate ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
+                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500`}
               />
               {errors.matchDate && <p className="text-xs text-red-500 mt-1">{errors.matchDate}</p>}
             </div>
@@ -287,9 +287,9 @@ export const MatchFormModal = ({
                 name="kickoffTime"
                 value={formData.kickoffTime}
                 onChange={handleChange}
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.kickoffTime ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border ${
+                  errors.kickoffTime ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
+                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500`}
               />
               {errors.kickoffTime && <p className="text-xs text-red-500 mt-1">{errors.kickoffTime}</p>}
             </div>
@@ -305,9 +305,9 @@ export const MatchFormModal = ({
                 value={formData.venue}
                 onChange={handleChange}
                 placeholder="e.g. Main Stadium Pitch 1"
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border ${
-                  errors.venue ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border ${
+                  errors.venue ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
+                } rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500`}
               />
               {errors.venue && <p className="text-xs text-red-500 mt-1">{errors.venue}</p>}
             </div>
@@ -335,18 +335,18 @@ export const MatchFormModal = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-[#1E3A29]">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#16261C] rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || tournaments.length === 0}
-              className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl transition-colors shadow-lg shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 active:bg-green-800 rounded-xl transition-colors shadow-lg shadow-green-500/20 disabled:opacity-50 flex items-center gap-2"
             >
               {isLoading ? (
                 <>

@@ -4,11 +4,11 @@ import { Trophy, Award, Shield, ChevronUp, ChevronDown, Minus, Info } from 'luci
 export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading = false }) => {
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-sm animate-pulse space-y-4">
+      <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] p-6 shadow-sm animate-pulse space-y-4">
         <div className="h-6 w-48 bg-slate-200 dark:bg-slate-700/60 rounded-lg"></div>
         <div className="space-y-2">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/40 rounded-xl"></div>
+            <div key={i} className="h-12 bg-slate-100 dark:bg-[#16261C] rounded-xl"></div>
           ))}
         </div>
       </div>
@@ -30,9 +30,9 @@ export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading
     }
 
     return (
-      <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+      <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-[#1E3A29] shadow-xs">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800 text-[11px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400 select-none">
+          <thead className="bg-slate-50 dark:bg-[#07130C]/80 border-b border-slate-200/80 dark:border-[#1E3A29] text-[11px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400 select-none">
             <tr>
               <th className="py-3 px-3 sm:px-4 text-center w-12 sm:w-16">Pos</th>
               <th className="py-3 px-3 sm:px-4 min-w-[140px] sm:min-w-[200px]">Club</th>
@@ -43,12 +43,12 @@ export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading
               <th className="py-3 px-2 sm:px-3 text-center hidden md:table-cell">GF</th>
               <th className="py-3 px-2 sm:px-3 text-center hidden md:table-cell">GA</th>
               <th className="py-3 px-2 sm:px-3 text-center">GD</th>
-              <th className="py-3 px-3 sm:px-4 text-center font-black text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/30">
+              <th className="py-3 px-3 sm:px-4 text-center font-black text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-950/30">
                 Pts
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#141C2E]">
+          <tbody className="divide-y divide-slate-100 dark:divide-[#1E3A29] bg-white dark:bg-[#101C14]">
             {tableData.map((row, index) => {
               const pos = row.position || index + 1;
               const isLeader = pos === 1;
@@ -61,7 +61,7 @@ export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading
               return (
                 <tr
                   key={row.team?.id || index}
-                  className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40 ${
+                  className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-[#16261C] ${
                     isLeader ? 'bg-amber-50/30 dark:bg-amber-950/10' : ''
                   }`}
                 >
@@ -73,7 +73,7 @@ export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading
                           1
                         </span>
                       ) : isTopThree ? (
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-bold text-xs">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300 font-bold text-xs">
                           {pos}
                         </span>
                       ) : (
@@ -87,7 +87,7 @@ export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading
                   {/* Team Info */}
                   <td className="py-3.5 px-3 sm:px-4">
                     <div className="flex items-center gap-2.5 sm:gap-3">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 overflow-hidden shrink-0 border border-slate-200/60 dark:border-slate-700">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-100 dark:bg-[#16261C] flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300 overflow-hidden shrink-0 border border-slate-200/60 dark:border-[#1E3A29]">
                         {row.team?.logoUrl ? (
                           <img src={row.team.logoUrl} alt={row.team.name} className="w-full h-full object-cover" />
                         ) : (
@@ -134,7 +134,7 @@ export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading
                       {gdFormatted}
                     </span>
                   </td>
-                  <td className="py-3.5 px-3 sm:px-4 text-center text-xs sm:text-sm font-black text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/30">
+                  <td className="py-3.5 px-3 sm:px-4 text-center text-xs sm:text-sm font-black text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-950/30">
                     {row.points ?? 0}
                   </td>
                 </tr>
@@ -147,10 +147,10 @@ export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading
   };
 
   return (
-    <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6 shadow-sm space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+    <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] p-4 sm:p-6 shadow-sm space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-[#1E3A29]">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+          <div className="p-2 rounded-xl bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400">
             <Trophy className="w-5 h-5" />
           </div>
           <div>
@@ -170,7 +170,7 @@ export const LeagueStandings = ({ standings = [], tournamentName = '', isLoading
             <span>1st / Champion</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
             <span>Top 3</span>
           </div>
         </div>

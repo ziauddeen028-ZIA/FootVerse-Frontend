@@ -93,7 +93,7 @@ const StatusBadge = ({ status }) => {
     case STATUS.SCHEDULED:
     default:
       return (
-        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-500/15 text-blue-500 border border-blue-500/30 tracking-wider uppercase">
+        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20 tracking-wider uppercase">
           Scheduled
         </span>
       );
@@ -105,8 +105,8 @@ const StatusBadge = ({ status }) => {
 const TeamBadge = ({ team, side, isPublicView }) => {
   const colors =
     side === 'home'
-      ? 'bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400'
-      : 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400';
+      ? 'bg-green-500/10 border-green-500/30 text-green-600 dark:text-green-400'
+      : 'bg-slate-500/10 border-slate-500/30 text-slate-700 dark:text-slate-300';
 
   const isTBD = !team || (!team.name && !team.shortName);
 
@@ -126,7 +126,7 @@ const TeamBadge = ({ team, side, isPublicView }) => {
         )}
       </div>
       <span className={`text-base font-bold text-center leading-tight max-w-[120px] ${
-        isTBD ? 'text-slate-400 dark:text-slate-500 italic' : 'text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition'
+        isTBD ? 'text-slate-400 dark:text-slate-500 italic' : 'text-slate-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition'
       }`}>
         {team?.name || 'TBD'}
       </span>
@@ -146,7 +146,7 @@ const TeamBadge = ({ team, side, isPublicView }) => {
 
 // ─── Score Display ────────────────────────────────────────────────────────────
 
-const ScoreDisplay = ({ score, teamId, teamName, isLoggingAllowed, isReadOnly, onLogGoal, color = 'blue' }) => (
+const ScoreDisplay = ({ score, teamId, teamName, isLoggingAllowed, isReadOnly, onLogGoal, color = 'green' }) => (
   <div className="flex flex-col items-center gap-1.5">
     <span className="text-5xl sm:text-6xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
       {score}
@@ -159,9 +159,9 @@ const ScoreDisplay = ({ score, teamId, teamName, isLoggingAllowed, isReadOnly, o
         type="button"
         onClick={() => onLogGoal(teamId)}
         className={`mt-1 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${
-          color === 'purple'
-            ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-purple-200/60 dark:border-purple-800/60'
-            : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200/60 dark:border-blue-800/60'
+          color === 'slate'
+            ? 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-[#16261C] hover:bg-slate-200 dark:hover:bg-[#1E3A29] border border-slate-200 dark:border-[#1E3A29]'
+            : 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40 hover:bg-green-100 dark:hover:bg-green-900/60 border border-green-200/60 dark:border-green-800/60'
         }`}
         title={`Log goal for ${teamName || 'team'}`}
       >
@@ -196,8 +196,8 @@ const EventBadge = ({ type }) => {
       );
     case 'substitution':
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-bold">
-          <RefreshCw className="w-3.5 h-3.5 text-blue-500" /> Substitution
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 text-xs font-bold">
+          <RefreshCw className="w-3.5 h-3.5 text-green-500" /> Substitution
         </span>
       );
     default:
@@ -283,11 +283,11 @@ const TieResolutionModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div
-        className="w-full max-w-lg bg-white dark:bg-[#141C2E] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-lg bg-white dark:bg-[#101C14] rounded-3xl border border-slate-200 dark:border-[#1E3A29] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/30">
+        <div className="p-6 border-b border-slate-100 dark:border-[#1E3A29] flex items-start justify-between gap-3 bg-slate-50/50 dark:bg-[#07130C]/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
               <Trophy className="w-5 h-5" />
@@ -306,7 +306,7 @@ const TieResolutionModal = ({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-[#16261C] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -318,7 +318,7 @@ const TieResolutionModal = ({
             <span className="font-semibold text-xs text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
               {match.homeTeam?.name || 'Home Team'}
             </span>
-            <span className="font-black text-sm text-slate-900 dark:text-white px-2 py-0.5 bg-white dark:bg-slate-800 rounded-md border border-amber-300/40 dark:border-amber-700/40 tabular-nums">
+            <span className="font-black text-sm text-slate-900 dark:text-white px-2 py-0.5 bg-white dark:bg-[#16261C] rounded-md border border-amber-300/40 dark:border-amber-700/40 tabular-nums">
               {homeScore} – {awayScore}
             </span>
             <span className="font-semibold text-xs text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
@@ -332,12 +332,12 @@ const TieResolutionModal = ({
 
         {/* Tab Selection */}
         <div className="p-6 overflow-y-auto space-y-5 flex-1">
-          <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl">
+          <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 dark:bg-[#07130C] rounded-2xl">
             <button
               type="button"
               onClick={() => setTieMethod('penalty')}
               className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 ${tieMethod === 'penalty'
-                  ? 'bg-white dark:bg-[#141C2E] text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/60 dark:border-slate-800'
+                  ? 'bg-white dark:bg-[#101C14] text-green-600 dark:text-green-400 shadow-sm border border-slate-200/60 dark:border-[#1E3A29]'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
             >
@@ -348,7 +348,7 @@ const TieResolutionModal = ({
               type="button"
               onClick={() => setTieMethod('toss')}
               className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 ${tieMethod === 'toss'
-                  ? 'bg-white dark:bg-[#141C2E] text-amber-600 dark:text-amber-400 shadow-sm border border-slate-200/60 dark:border-slate-800'
+                  ? 'bg-white dark:bg-[#101C14] text-amber-600 dark:text-amber-400 shadow-sm border border-slate-200/60 dark:border-[#1E3A29]'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
             >
@@ -359,7 +359,7 @@ const TieResolutionModal = ({
               type="button"
               onClick={() => setTieMethod('extra_time')}
               className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 ${tieMethod === 'extra_time'
-                  ? 'bg-white dark:bg-[#141C2E] text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/60 dark:border-slate-800'
+                  ? 'bg-white dark:bg-[#101C14] text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/60 dark:border-[#1E3A29]'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
             >
@@ -371,15 +371,15 @@ const TieResolutionModal = ({
           {/* TAB 1: Penalties */}
           {tieMethod === 'penalty' && (
             <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/40">
-                <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+              <div className="p-4 rounded-2xl bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-800/40">
+                <p className="text-xs text-green-700 dark:text-green-300 font-medium">
                   Enter the penalty shootout result. The team with higher penalties will be recorded as the knockout winner.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 {/* Home Team Penalties */}
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-center space-y-2">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-center space-y-2">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300 line-clamp-1">
                     {match.homeTeam?.name || 'Home Team'}
                   </span>
@@ -390,7 +390,7 @@ const TieResolutionModal = ({
                       max="30"
                       value={homePenalties}
                       onChange={(e) => setHomePenalties(e.target.value)}
-                      className="w-20 h-12 text-center text-2xl font-black bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 tabular-nums"
+                      className="w-20 h-12 text-center text-2xl font-black bg-white dark:bg-[#101C14] border border-slate-300 dark:border-[#1E3A29] rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 tabular-nums"
                     />
                   </div>
                   <span className="text-[10px] uppercase font-bold text-slate-400">
@@ -399,7 +399,7 @@ const TieResolutionModal = ({
                 </div>
 
                 {/* Away Team Penalties */}
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-center space-y-2">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-center space-y-2">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300 line-clamp-1">
                     {match.awayTeam?.name || 'Away Team'}
                   </span>
@@ -410,7 +410,7 @@ const TieResolutionModal = ({
                       max="30"
                       value={awayPenalties}
                       onChange={(e) => setAwayPenalties(e.target.value)}
-                      className="w-20 h-12 text-center text-2xl font-black bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 tabular-nums"
+                      className="w-20 h-12 text-center text-2xl font-black bg-white dark:bg-[#101C14] border border-slate-300 dark:border-[#1E3A29] rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 tabular-nums"
                     />
                   </div>
                   <span className="text-[10px] uppercase font-bold text-slate-400">
@@ -458,18 +458,18 @@ const TieResolutionModal = ({
                   type="button"
                   onClick={() => setTossWinnerId(match.homeTeamId)}
                   className={`p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-2 ${tossWinnerId === match.homeTeamId
-                      ? 'bg-blue-500/10 border-blue-500 dark:bg-blue-500/20 ring-2 ring-blue-500/30'
-                      : 'bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                      ? 'bg-green-500/10 border-green-500 dark:bg-green-500/20 ring-2 ring-green-500/30'
+                      : 'bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] hover:border-slate-300'
                     }`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 flex items-center justify-center font-bold text-xs text-blue-600 dark:text-blue-400">
+                  <div className="w-10 h-10 rounded-xl bg-green-500/10 dark:bg-green-500/20 border border-green-500/30 flex items-center justify-center font-bold text-xs text-green-600 dark:text-green-400">
                     {match.homeTeam?.shortName || 'HOME'}
                   </div>
                   <span className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
                     {match.homeTeam?.name || 'Home Team'}
                   </span>
                   {tossWinnerId === match.homeTeamId && (
-                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-950/60 px-2 py-0.5 rounded-full">
                       Toss Winner ✓
                     </span>
                   )}
@@ -479,18 +479,18 @@ const TieResolutionModal = ({
                   type="button"
                   onClick={() => setTossWinnerId(match.awayTeamId)}
                   className={`p-4 rounded-2xl border text-center transition-all flex flex-col items-center gap-2 ${tossWinnerId === match.awayTeamId
-                      ? 'bg-purple-500/10 border-purple-500 dark:bg-purple-500/20 ring-2 ring-purple-500/30'
-                      : 'bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                      ? 'bg-slate-200/60 dark:bg-[#1E3A29] border-slate-400 dark:border-green-600/40 ring-2 ring-slate-400/30'
+                      : 'bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] hover:border-slate-300'
                     }`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30 flex items-center justify-center font-bold text-xs text-purple-600 dark:text-purple-400">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#16261C] border border-slate-300 dark:border-[#1E3A29] flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300">
                     {match.awayTeam?.shortName || 'AWAY'}
                   </div>
                   <span className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
                     {match.awayTeam?.name || 'Away Team'}
                   </span>
                   {tossWinnerId === match.awayTeamId && (
-                    <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-[#1E3A29] px-2 py-0.5 rounded-full">
                       Toss Winner ✓
                     </span>
                   )}
@@ -516,12 +516,12 @@ const TieResolutionModal = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-end gap-3">
+        <div className="p-6 border-t border-slate-100 dark:border-[#1E3A29] bg-slate-50/50 dark:bg-[#07130C]/50 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E3A29] text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#16261C] transition-colors"
           >
             Cancel
           </button>
@@ -532,7 +532,7 @@ const TieResolutionModal = ({
             disabled={isLoading || (tieMethod === 'penalty' && !isPenValid) || (tieMethod === 'toss' && !tossWinnerId)}
             className={`px-6 py-2.5 rounded-xl text-xs font-bold text-white transition-all shadow-md flex items-center gap-2 ${tieMethod === 'extra_time'
                 ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 shadow-emerald-500/20'
-                : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 shadow-blue-500/20'
+                : 'bg-green-600 hover:bg-green-700 active:bg-green-800 shadow-green-500/20'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {isLoading ? (
@@ -1323,7 +1323,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
           <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse" />
           <div className="h-7 w-48 bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse" />
         </div>
-        <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 p-10 animate-pulse flex flex-col items-center gap-6">
+        <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-10 animate-pulse flex flex-col items-center gap-6">
           <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded-xl" />
           <div className="grid grid-cols-3 gap-8 w-full max-w-lg">
             <div className="flex flex-col items-center gap-3">
@@ -1432,7 +1432,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
             to={isPublic ? `/tournaments/${match.tournamentId || match.tournament.id}` : `/organizer/matches?tournament=${match.tournamentId || match.tournament.id}`}
             className="flex items-center gap-1.5 hover:underline"
           >
-            <Trophy className="w-4 h-4 text-blue-500" />
+            <Trophy className="w-4 h-4 text-green-600 dark:text-green-400" />
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               {match.tournament.name}
             </span>
@@ -1447,16 +1447,16 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
       </div>
 
       {/* ── Main Scoreboard Card ─────────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] shadow-sm overflow-hidden">
         {/* Status + Timer bar */}
         <div
-          className={`px-6 py-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 ${currentStatus === STATUS.LIVE
+          className={`px-6 py-3 flex items-center justify-between border-b border-slate-100 dark:border-[#1E3A29] ${currentStatus === STATUS.LIVE
               ? 'bg-red-500/5'
               : currentStatus === STATUS.HALFTIME
                 ? 'bg-amber-500/5'
                 : isFinished
                   ? 'bg-emerald-500/5'
-                  : 'bg-slate-50 dark:bg-slate-900/30'
+                  : 'bg-slate-50 dark:bg-[#07130C]/40'
             }`}
         >
           <StatusBadge status={currentStatus} />
@@ -1486,7 +1486,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                 isLoggingAllowed={isLoggingAllowed}
                 isReadOnly={isReadOnly}
                 onLogGoal={handleQuickLogGoal}
-                color="blue"
+                color="green"
               />
             </div>
 
@@ -1519,7 +1519,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                 isLoggingAllowed={isLoggingAllowed}
                 isReadOnly={isReadOnly}
                 onLogGoal={handleQuickLogGoal}
-                color="purple"
+                color="slate"
               />
             </div>
           </div>
@@ -1527,13 +1527,13 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
 
         {/* ── Control Bar ────────────────────────────────────────────────── */}
         {!isFinished && !isReadOnly && (
-          <div className="px-6 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 flex flex-wrap items-center justify-center gap-3">
+          <div className="px-6 py-5 border-t border-slate-100 dark:border-[#1E3A29] bg-slate-50 dark:bg-[#07130C]/40 flex flex-wrap items-center justify-center gap-3">
             {currentStatus === STATUS.SCHEDULED && (
               hasBothTeams ? (
                 <button
                   onClick={handleStartMatch}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-green-500/20 transition-all disabled:opacity-50"
                 >
                   {isSaving ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1580,7 +1580,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                 <button
                   onClick={handleResume}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-green-500/20 transition-all disabled:opacity-50"
                 >
                   {isSaving ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1604,7 +1604,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
 
         {/* Finished banner */}
         {isFinished && (
-          <div className="px-6 py-5 border-t border-slate-100 dark:border-slate-800 bg-emerald-500/5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="px-6 py-5 border-t border-slate-100 dark:border-[#1E3A29] bg-emerald-500/5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
               ✅ Match ended — final score recorded.
             </p>
@@ -1621,7 +1621,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
 
       {/* ── Info Cards Row ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-        <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-3">
+        <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-4 flex items-center gap-3">
           <Clock className="w-5 h-5 text-slate-400" />
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Kickoff</p>
@@ -1639,7 +1639,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-3">
+        <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-4 flex items-center gap-3">
           <Radio className={`w-5 h-5 ${currentStatus === STATUS.LIVE ? 'text-red-500 animate-pulse' : 'text-slate-400'}`} />
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Timer</p>
@@ -1649,8 +1649,8 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-3">
-          <Trophy className="w-5 h-5 text-blue-500" />
+        <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-4 flex items-center gap-3">
+          <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Current Score</p>
             <p className="font-black text-slate-900 dark:text-white text-lg tracking-wider">
@@ -1669,9 +1669,9 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
 
       {/* ── STEP 7B.3: FULL TIME MATCH SUMMARY SECTION ───────────────────────── */}
       {isFinished && (
-        <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-6 shadow-sm space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-100 dark:border-[#1E3A29] pb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-bold text-lg">
                 🏆
@@ -1687,7 +1687,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
             </div>
 
             {/* Winner / Result Badge */}
-            <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/20 flex items-center gap-2">
+            <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-600/10 to-emerald-600/10 border border-green-500/20 flex items-center gap-2">
               <span className="text-lg">{winnerIcon}</span>
               <span className="text-sm font-black text-slate-900 dark:text-white">
                 {winnerText} ({homeScore} – {awayScore})
@@ -1724,22 +1724,22 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
               <span className="text-2xl">🟨</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/15 flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/15 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                <p className="text-xs font-bold uppercase tracking-wider text-green-600 dark:text-green-400">
                   Substitutions
                 </p>
                 <p className="text-2xl font-black text-slate-900 dark:text-white">
                   {totalSubs}
                 </p>
               </div>
-              <RefreshCw className="w-6 h-6 text-blue-500" />
+              <RefreshCw className="w-6 h-6 text-green-500" />
             </div>
           </div>
 
           {/* Event Breakdown Lists */}
           {events.length === 0 ? (
-            <div className="p-6 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 text-center">
+            <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] text-center">
               <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
                 No events recorded.
               </p>
@@ -1747,7 +1747,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
               {/* Goal Scorers */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
                   <span>⚽</span> Goal Scorers ({goalEvents.length})
                 </h4>
@@ -1764,7 +1764,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                         <div key={g.id} className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                           <span className="font-mono text-slate-500">{g.minute}'</span>
                           {pId && isPublic ? (
-                            <Link to={`/players?id=${pId}`} className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                            <Link to={`/players?id=${pId}`} className="hover:text-green-600 dark:hover:text-green-400 hover:underline">
                               {pName}
                             </Link>
                           ) : (
@@ -1785,7 +1785,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
               </div>
 
               {/* Cards (Yellow & Red) */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
                   <span>🟨</span> Cards Disciplinary ({totalCards})
                 </h4>
@@ -1803,7 +1803,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                           <span className="w-2.5 h-3.5 bg-amber-400 rounded-[2px] border border-amber-500 shadow-sm inline-block" />
                           <span className="font-mono text-slate-500">{c.minute}'</span>
                           {pId && isPublic ? (
-                            <Link to={`/players?id=${pId}`} className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                            <Link to={`/players?id=${pId}`} className="hover:text-green-600 dark:hover:text-green-400 hover:underline">
                               {pName}
                             </Link>
                           ) : (
@@ -1829,7 +1829,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                           <span className="w-2.5 h-3.5 bg-red-600 rounded-[2px] border border-red-700 shadow-sm inline-block" />
                           <span className="font-mono text-slate-500">{c.minute}'</span>
                           {pId && isPublic ? (
-                            <Link to={`/players?id=${pId}`} className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                            <Link to={`/players?id=${pId}`} className="hover:text-green-600 dark:hover:text-green-400 hover:underline">
                               {pName}
                             </Link>
                           ) : (
@@ -1850,9 +1850,9 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
               </div>
 
               {/* Substitutions */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                  <RefreshCw className="w-3.5 h-3.5 text-blue-500" /> Substitutions ({subEvents.length})
+                  <RefreshCw className="w-3.5 h-3.5 text-green-500" /> Substitutions ({subEvents.length})
                 </h4>
                 {subEvents.length === 0 ? (
                   <p className="text-xs text-slate-400 italic">No substitutions made</p>
@@ -1887,7 +1887,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
       <div className="space-y-6 pt-4">
         {/* Section Header */}
         <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <Activity className="w-5 h-5 text-green-600 dark:text-green-400" />
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">
             {isReadOnly ? 'Event Timeline' : 'Match Events Logger'}
           </h2>
@@ -1895,7 +1895,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
 
         {/* Event Form Card — hidden in read-only mode */}
         {!isReadOnly && (
-          <div id="match-event-form" className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+          <div id="match-event-form" className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-6 shadow-sm">
             <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-4">
               Log New Event
             </h3>
@@ -1911,12 +1911,12 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
               {eventType === 'substitution' && (
                 <div className={`p-3 rounded-xl border flex flex-wrap items-center justify-between gap-2 text-xs transition-all ${
                   substitutionMode === SUB_MODES.ROLLING
-                    ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300'
-                    : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                    ? 'bg-green-50/70 dark:bg-green-950/30 border-green-200 dark:border-green-800/60 text-green-700 dark:text-green-300'
+                    : 'bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-slate-600 dark:text-slate-400'
                 }`}>
                   <div className="flex items-center gap-2 font-semibold">
                     {substitutionMode === SUB_MODES.ROLLING ? (
-                      <RefreshCw className="w-4 h-4 text-blue-500 shrink-0" />
+                      <RefreshCw className="w-4 h-4 text-green-500 shrink-0" />
                     ) : (
                       <Shield className="w-4 h-4 text-slate-400 shrink-0" />
                     )}
@@ -1928,10 +1928,10 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-[11px] font-bold shrink-0">
-                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] text-slate-700 dark:text-slate-300">
                       Pitch: {activeSubState.fieldSize}
                     </span>
-                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29] text-slate-700 dark:text-slate-300">
                       Squad: {activeSubState.squadSize}
                     </span>
                   </div>
@@ -1948,7 +1948,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                     value={eventType}
                     disabled={!isLoggingAllowed || isSubmittingEvent}
                     onChange={(e) => setEventType(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {EVENT_TYPES.map((t) => (
                       <option key={t.value} value={t.value}>
@@ -1967,7 +1967,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                     value={selectedTeamId}
                     disabled={!isLoggingAllowed || isSubmittingEvent}
                     onChange={handleTeamChange}
-                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {match.homeTeamId && (
                       <option value={match.homeTeamId}>
@@ -1989,13 +1989,13 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center justify-between">
                         <span>OUT Player (On Field) <span className="text-red-500">*</span></span>
-                        <span className="text-[10px] text-blue-500 font-bold">{activeSubState.eligibleOutMembers.length} on pitch</span>
+                        <span className="text-[10px] text-green-600 dark:text-green-400 font-bold">{activeSubState.eligibleOutMembers.length} on pitch</span>
                       </label>
                       <select
                         value={playerOutId}
                         disabled={!isLoggingAllowed || isSubmittingEvent}
                         onChange={(e) => setPlayerOutId(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="">Select OUT player...</option>
                         {activeSubState.eligibleOutMembers.length === 0 ? (
@@ -2025,7 +2025,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                         value={playerInId}
                         disabled={!isLoggingAllowed || isSubmittingEvent}
                         onChange={(e) => setPlayerInId(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="">Select IN player...</option>
                         {activeSubState.eligibleInMembers.length === 0 ? (
@@ -2060,7 +2060,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                       value={selectedPlayerId}
                       disabled={!isLoggingAllowed || isSubmittingEvent}
                       onChange={(e) => setSelectedPlayerId(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <option value="">Select player...</option>
                       {activeRoster.map((m) => {
@@ -2094,7 +2094,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                       setMinute(e.target.value);
                       setIsMinuteCustomized(true);
                     }}
-                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
 
@@ -2109,7 +2109,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                     placeholder="e.g. Tactical change"
                     value={details}
                     onChange={(e) => setDetails(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -2124,7 +2124,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                 <button
                   type="submit"
                   disabled={!isLoggingAllowed || isSubmittingEvent}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-sm rounded-xl shadow-md shadow-green-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmittingEvent ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -2139,11 +2139,11 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
         )}
 
         {/* Timeline Section */}
-        <div className="bg-white dark:bg-[#141C2E] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <span>Match Timeline</span>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-[#16261C] text-slate-600 dark:text-slate-400">
                 {events.length}
               </span>
             </h3>
@@ -2151,8 +2151,8 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
 
           {loadingEvents ? (
             <div className="space-y-3">
-              <div className="h-14 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-              <div className="h-14 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
+              <div className="h-14 bg-slate-100 dark:bg-[#16261C] rounded-xl animate-pulse" />
+              <div className="h-14 bg-slate-100 dark:bg-[#16261C] rounded-xl animate-pulse" />
             </div>
           ) : sortedEvents.length === 0 ? (
             <EmptyState
@@ -2171,11 +2171,11 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                 return (
                   <div
                     key={evt.id}
-                    className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 rounded-xl hover:border-slate-300 dark:hover:border-slate-700 transition-all"
+                    className="flex items-center justify-between p-4 bg-slate-50 dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] rounded-xl hover:border-slate-300 dark:hover:border-green-600/30 transition-all"
                   >
                     <div className="flex items-center gap-4 flex-wrap">
                       {/* Minute badge */}
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-black font-mono tracking-wider">
+                      <span className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-[#101C14] text-slate-900 dark:text-slate-100 text-xs font-black font-mono tracking-wider">
                         {evt.minute}'
                       </span>
 
@@ -2193,8 +2193,8 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                             <Link
                               to={`/teams?tab=team&id=${evt.teamId}`}
                               className={`text-xs font-semibold px-2 py-0.5 rounded-md hover:underline ${isHome
-                                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                  : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                  ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                                  : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
                                 }`}
                             >
                               {teamName} ({isHome ? 'Home' : 'Away'})
@@ -2202,8 +2202,8 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                           ) : (
                             <span
                               className={`text-xs font-semibold px-2 py-0.5 rounded-md ${isHome
-                                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                  : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                  ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                                  : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
                                 }`}
                             >
                               {teamName} ({isHome ? 'Home' : 'Away'})
@@ -2214,7 +2214,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                         <>
                           <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
                             {evt.playerId && isPublic ? (
-                              <Link to={`/players?id=${evt.playerId}`} className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                              <Link to={`/players?id=${evt.playerId}`} className="hover:text-green-600 dark:hover:text-green-400 hover:underline">
                                 {playerName}
                               </Link>
                             ) : (
@@ -2225,8 +2225,8 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                               <Link
                                 to={`/teams?tab=team&id=${evt.teamId}`}
                                 className={`text-xs font-semibold px-2 py-0.5 rounded-md hover:underline ${isHome
-                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                    : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                    ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                                    : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
                                   }`}
                               >
                                 {teamName} ({isHome ? 'Home' : 'Away'})
@@ -2234,8 +2234,8 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                             ) : (
                               <span
                                 className={`text-xs font-semibold px-2 py-0.5 rounded-md ${isHome
-                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                    : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                    ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                                    : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
                                   }`}
                               >
                                 {teamName} ({isHome ? 'Home' : 'Away'})
