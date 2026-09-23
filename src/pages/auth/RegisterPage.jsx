@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trophy, Mail, Lock, User, Shield, AlertCircle, ArrowRight, Award } from 'lucide-react';
+import { Trophy, Mail, Lock, User, Shield, AlertCircle, ArrowRight, Award, Eye, EyeOff } from 'lucide-react';
 import { CustomSelect } from '../../components/common/CustomSelect';
 import { useAuth, ROLES } from '../../context/AuthContext';
 
@@ -12,6 +12,8 @@ export const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState(ROLES.PLAYER);
   const [position, setPosition] = useState('Forward');
 
@@ -76,8 +78,8 @@ export const RegisterPage = () => {
         
         {/* Header Branding */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-green-600 text-white font-extrabold text-2xl flex items-center justify-center mx-auto shadow-lg shadow-green-600/30">
-            ⚽
+          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] flex items-center justify-center mx-auto p-1.5 shadow-lg shadow-green-600/10">
+            <img src="/logo.webp" alt="FootVerse Logo" className="w-full h-full object-contain" />
           </div>
           <h2 className="text-2xl font-extrabold font-heading text-slate-900 dark:text-white">
             Join FootVerse Arena
@@ -221,17 +223,29 @@ export const RegisterPage = () => {
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: null }));
                 }}
                 placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
+                className={`w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
                   fieldErrors.password ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
                 }`}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition focus:outline-none cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
             {fieldErrors.password && (
               <p className="text-[11px] text-red-500 font-medium mt-1">{fieldErrors.password}</p>
@@ -246,17 +260,29 @@ export const RegisterPage = () => {
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
               <input
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);
                   if (fieldErrors.confirmPassword) setFieldErrors(prev => ({ ...prev, confirmPassword: null }));
                 }}
                 placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
+                className={`w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-[#16261C] border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 transition ${
                   fieldErrors.confirmPassword ? 'border-red-500' : 'border-slate-200 dark:border-[#1E3A29]'
                 }`}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(prev => !prev)}
+                className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition focus:outline-none cursor-pointer"
+                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
             {fieldErrors.confirmPassword && (
               <p className="text-[11px] text-red-500 font-medium mt-1">{fieldErrors.confirmPassword}</p>

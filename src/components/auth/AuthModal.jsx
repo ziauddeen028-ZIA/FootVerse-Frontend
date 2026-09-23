@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, ShieldCheck, Trophy, Users, Award, AlertCircle } from 'lucide-react';
+import { X, Mail, Lock, User, ShieldCheck, Trophy, Users, Award, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth, ROLES } from '../../context/AuthContext';
 import { CustomSelect } from '../common/CustomSelect';
 
@@ -8,6 +8,7 @@ export const AuthModal = () => {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState(ROLES.PLAYER);
   const [position, setPosition] = useState('Forward');
@@ -46,9 +47,9 @@ export const AuthModal = () => {
         
         {/* Modal Header */}
         <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-[#1E3A29]">
-          <div className="flex items-center space-x-2">
-            <div className="w-9 h-9 rounded-xl bg-green-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-green-600/20">
-              ⚽
+          <div className="flex items-center space-x-2.5">
+            <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] flex items-center justify-center p-1 shadow-md shadow-green-600/10 flex-shrink-0">
+              <img src="/logo.webp" alt="FootVerse Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h3 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white font-heading">
@@ -116,13 +117,25 @@ export const AuthModal = () => {
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-sm focus:ring-2 focus:ring-green-600 focus:outline-none dark:text-white"
+                className="w-full pl-9 pr-10 py-2.5 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-sm focus:ring-2 focus:ring-green-600 focus:outline-none dark:text-white"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition focus:outline-none cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
           </div>
 

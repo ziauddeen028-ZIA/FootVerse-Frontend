@@ -6,7 +6,9 @@ export const AuthLoadingScreen = () => {
       <div className="relative flex items-center justify-center">
         {/* Pulsing ring */}
         <div className="w-20 h-20 rounded-full border-4 border-green-600/30 border-t-green-500 animate-spin" />
-        <span className="absolute text-2xl animate-bounce">⚽</span>
+        <div className="absolute w-10 h-10 flex items-center justify-center">
+          <img src="/logo.webp" alt="FootVerse Logo" className="w-full h-full object-contain animate-pulse" />
+        </div>
       </div>
       <h2 className="mt-6 text-xl font-bold font-heading tracking-tight text-slate-900 dark:text-white">
         FootVerse Arena

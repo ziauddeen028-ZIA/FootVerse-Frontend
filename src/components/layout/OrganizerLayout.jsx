@@ -40,8 +40,12 @@ const OrganizerSidebar = () => {
       {/* Top Logo Brand */}
       <div className="p-6 border-b border-slate-100 dark:border-[#1E3A29]">
         <NavLink to="/" className="flex items-center space-x-3 group">
-          <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md shadow-green-600/20 group-hover:scale-105 transition">
-            ⚽
+          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] flex items-center justify-center p-1 shadow-md shadow-green-600/10 group-hover:scale-105 transition overflow-hidden">
+            <img 
+              src="/logo.webp" 
+              alt="FootVerse Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-heading">

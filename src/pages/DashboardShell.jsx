@@ -98,7 +98,7 @@ export const DashboardShell = () => {
                 </>
               ) : (
                 <>
-                  Welcome to <span className="text-green-400">FootVerse Arena</span> ⚽
+                  Welcome to <span className="text-green-400">FootVerse Arena</span>
                 </>
               )}
             </h1>

@@ -936,73 +936,8 @@ export const HomePage = () => {
 
       </section>
 
-      {/* ─── 4. PLATFORM VALUE PILLARS & FEATURES ─────────────────────────── */}
-      <section className="space-y-6">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-700 dark:text-green-400 text-xs font-bold border border-green-500/20">
-            <Zap className="w-3.5 h-3.5" />
-            <span>Engine Highlights</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
-            Built for Grassroots Glory & Pro Tournaments
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Everything organizers, captains, and footballers need to manage world-class competitions.
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-          <div className="saas-card p-6 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-green-50 dark:bg-green-950/60 text-green-600 dark:text-green-400 flex items-center justify-center border border-green-200/50 dark:border-green-800/50">
-              <Radio className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold font-heading text-slate-900 dark:text-white">
-              Live Scorekeeper & Events
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Log goals, assists, yellow/red cards, and substitutions minute-by-minute with live fan broadcast scorecards.
-            </p>
-          </div>
-
-          <div className="saas-card p-6 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/50">
-              <Layers className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold font-heading text-slate-900 dark:text-white">
-              Automated Brackets & Draw
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Generate single knockout elimination trees, multi-group round-robins, and dynamic tiebreaker points tables.
-            </p>
-          </div>
-
-          <div className="saas-card p-6 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-200/50 dark:border-teal-800/50">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold font-heading text-slate-900 dark:text-white">
-              Player Career Passports
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Track lifetime goal tallies, golden boot races, MVP trophies, and disciplinary histories across every cup.
-            </p>
-          </div>
-
-          <div className="saas-card p-6 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-lime-50 dark:bg-lime-950/60 text-lime-700 dark:text-lime-400 flex items-center justify-center border border-lime-200/50 dark:border-lime-800/50">
-              <Shield className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold font-heading text-slate-900 dark:text-white">
-              Verified Club Rosters
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Digital team registration, jersey number assignments, transfer verification, and lineup management.
-            </p>
-          </div>
-
-        </div>
-      </section>
 
       {/* ─── 5. BOTTOM CTA CALLOUT ────────────────────────────────────────── */}
       <section className="saas-card rounded-3xl p-8 sm:p-10 bg-gradient-to-r from-[#0C1B12] via-[#101C14] to-[#07130C] text-white border border-green-900/40 shadow-xl relative overflow-hidden text-center space-y-5">

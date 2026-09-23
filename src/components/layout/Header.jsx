@@ -162,8 +162,13 @@ export const Header = () => {
     <header className="sticky top-0 z-20 w-full bg-white/95 dark:bg-[#101C14]/95 border-b border-slate-200/85 dark:border-[#1E3A29] backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 transition-colors duration-200">
       <div className="flex items-center justify-between gap-4">
 
-        {/* Search Bar */}
-        <div className="flex items-center flex-1 max-w-md">
+        {/* Search Bar & Mobile Logo */}
+        <div className="flex items-center gap-2.5 flex-1 max-w-md">
+          <Link to="/" className="md:hidden flex items-center flex-shrink-0" aria-label="FootVerse Home">
+            <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] p-0.5 flex items-center justify-center shadow-xs">
+              <img src="/logo.webp" alt="FootVerse Logo" className="w-full h-full object-contain rounded-lg" />
+            </div>
+          </Link>
           <div className="relative w-full">
             <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
             <input

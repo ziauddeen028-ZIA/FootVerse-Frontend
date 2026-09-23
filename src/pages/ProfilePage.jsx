@@ -10,8 +10,8 @@ export const ProfilePage = () => {
   if (!user && activeRole === 'guest') {
     return (
       <div className="max-w-md mx-auto my-12 text-center saas-card rounded-3xl p-8 space-y-4 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29]">
-        <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-950/60 text-green-600 dark:text-green-400 mx-auto flex items-center justify-center text-2xl font-bold">
-          ⚽
+        <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] mx-auto flex items-center justify-center p-2 shadow-md shadow-green-600/10">
+          <img src="/logo.webp" alt="FootVerse Logo" className="w-full h-full object-contain" />
         </div>
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Guest Profile</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">

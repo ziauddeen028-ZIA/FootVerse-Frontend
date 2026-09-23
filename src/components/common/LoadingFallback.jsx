@@ -6,7 +6,9 @@ export const LoadingFallback = ({ message = 'Loading FootVerse...' }) => {
       <div className="relative flex items-center justify-center">
         {/* Pulsing ring */}
         <div className="w-14 h-14 rounded-full border-3 border-green-500/20 border-t-green-500 animate-spin" />
-        <span className="absolute text-xl animate-bounce">⚽</span>
+        <div className="absolute w-7 h-7 flex items-center justify-center">
+          <img src="/logo.webp" alt="FootVerse Logo" className="w-full h-full object-contain animate-pulse" />
+        </div>
       </div>
       <p className="mt-4 text-xs font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400 animate-pulse">
         {message}
