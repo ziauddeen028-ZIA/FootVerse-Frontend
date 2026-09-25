@@ -9,3 +9,5 @@ export { LoadingFallback } from './LoadingFallback';
 export { PageHeader } from './PageHeader';
 export { ScrollToTop } from './ScrollToTop';
 export { Toast } from './Toast';
+export { FirstVisitIntro } from './FirstVisitIntro';
+

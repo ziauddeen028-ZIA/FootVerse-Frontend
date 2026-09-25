@@ -8,6 +8,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { OrganizerLayout } from './components/layout/OrganizerLayout';
 import { ScrollToTop } from './components/common/ScrollToTop';
+import { FirstVisitIntro } from './components/common/FirstVisitIntro';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AuthLoadingScreen } from './components/auth/AuthLoadingScreen';
 import { LoadingFallback } from './components/common/LoadingFallback';
@@ -221,6 +222,7 @@ export default function App() {
           <NotificationProvider>
             <Router>
               <ScrollToTop />
+              <FirstVisitIntro />
               <AppContent />
             </Router>
           </NotificationProvider>
