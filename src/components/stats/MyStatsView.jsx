@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { 
   User, Trophy, ChevronRight, Shield, Activity, CheckCircle2, Flame, Lock, ArrowRight
 } from "lucide-react";
@@ -11,6 +12,25 @@ export const MyStatsView = ({ onSwitchToTeam }) => {
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const detailsRef = useRef(null);
+
+  const handleSelectTournament = (tournamentId) => {
+    setSelectedTournamentId(tournamentId);
+
+    // Smooth scroll to the detailed section accounting for fixed navbar
+    setTimeout(() => {
+      if (detailsRef.current) {
+        const navOffset = 90; // Fixed navbar buffer height in px
+        const elementPosition = detailsRef.current.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 60);
+  };
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return; }
@@ -89,9 +109,9 @@ export const MyStatsView = ({ onSwitchToTeam }) => {
             <p className="text-xs text-slate-400 mt-1">Your personal career performance dashboard</p>
           </div>
           {playerData?.tournaments?.length > 0 && playerData.tournaments[0]?.team && (
-            <button onClick={onSwitchToTeam} className="flex-shrink-0 flex items-center space-x-2 px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-300 text-xs font-bold transition-all">
+            <Link to="/teams-manage" className="flex-shrink-0 flex items-center space-x-2 px-4 py-2 rounded-xl bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-300 text-xs font-bold transition-all">
               <Shield className="w-4 h-4" /><span>My Team</span><ArrowRight className="w-3 h-3" />
-            </button>
+            </Link>
           )}
         </div>
       </div>
@@ -154,7 +174,7 @@ export const MyStatsView = ({ onSwitchToTeam }) => {
             {playerData.tournaments.map((entry) => {
               const isSelected = entry.tournament.id === selectedTournamentId;
               return (
-                <div key={entry.tournament.id} onClick={() => setSelectedTournamentId(entry.tournament.id)}
+                <div key={entry.tournament.id} onClick={() => handleSelectTournament(entry.tournament.id)}
                   className={`cursor-pointer rounded-2xl p-5 transition-all duration-200 saas-card border ${isSelected ? "bg-green-50/70 dark:bg-green-950/30 border-green-600 ring-2 ring-green-600/50 shadow-md" : "bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] hover:border-green-400"}`}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -182,7 +202,7 @@ export const MyStatsView = ({ onSwitchToTeam }) => {
 
       {/* DETAILED TOURNAMENT DRILL-DOWN */}
       {activeTournament && (
-        <div className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#101C14] border border-green-500/30 dark:border-[#1E3A29] shadow-lg space-y-6">
+        <div ref={detailsRef} id="detailed-tournament-performance" className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#101C14] border border-green-500/30 dark:border-[#1E3A29] shadow-lg space-y-6 scroll-mt-24">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#1E3A29] pb-5">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400">Detailed Tournament Performance</span>

@@ -30,6 +30,7 @@ import { useAuth } from '../context/AuthContext';
 import { KnockoutBracket } from '../components/organizer/KnockoutBracket';
 import { LeagueStandings } from '../components/organizer/LeagueStandings';
 import { GroupStageStandings } from '../components/organizer/GroupStageStandings';
+import { TournamentAwardsSummary } from '../components/tournament/TournamentAwardsSummary';
 import { Toast } from '../components/common/Toast';
 import { cleanTournamentDescription } from '../utils/substitutionUtils';
 
@@ -746,6 +747,11 @@ export const TournamentHub = () => {
           </div>
         </div>
 
+      </section>
+
+      {/* ─── TOURNAMENT AWARDS (Top Scorer, Best Goalkeeper, Best Player) ──── */}
+      <section className="saas-card p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29]">
+        <TournamentAwardsSummary tournamentId={tournament.id} />
       </section>
 
       {/* ─── COMPETITION VIEW — FORMAT-AWARE ──────────────────────────────── */}

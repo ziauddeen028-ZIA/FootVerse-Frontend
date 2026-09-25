@@ -11,6 +11,24 @@ const PublicPlayerPanel = ({ playerId, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
+  const detailsRef = useRef(null);
+
+  const handleSelectTournament = (tournamentId) => {
+    setSelectedTournamentId(tournamentId);
+
+    setTimeout(() => {
+      if (detailsRef.current) {
+        const navOffset = 90;
+        const elementPosition = detailsRef.current.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 60);
+  };
 
   useEffect(() => {
     if (!playerId) return;
@@ -116,7 +134,7 @@ const PublicPlayerPanel = ({ playerId, onBack }) => {
             {data.tournaments.map((entry) => {
               const isSelected = entry.tournament.id === selectedTournamentId;
               return (
-                <div key={entry.tournament.id} onClick={() => setSelectedTournamentId(entry.tournament.id)}
+                <div key={entry.tournament.id} onClick={() => handleSelectTournament(entry.tournament.id)}
                   className={`cursor-pointer rounded-2xl p-5 transition-all duration-200 saas-card border ${isSelected ? "bg-green-50/70 dark:bg-green-950/30 border-green-600 ring-2 ring-green-600/50 shadow-md" : "bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] hover:border-green-400"}`}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -144,7 +162,7 @@ const PublicPlayerPanel = ({ playerId, onBack }) => {
 
       {/* Drill-down */}
       {activeTournament && (
-        <div className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#101C14] border border-green-500/30 dark:border-[#1E3A29] shadow-lg space-y-6">
+        <div ref={detailsRef} id="detailed-tournament-performance" className="saas-card rounded-3xl p-6 sm:p-8 bg-white dark:bg-[#101C14] border border-green-500/30 dark:border-[#1E3A29] shadow-lg space-y-6 scroll-mt-24">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#1E3A29] pb-5">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400">Tournament Performance</span>
