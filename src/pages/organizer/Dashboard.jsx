@@ -57,147 +57,35 @@ export const Dashboard = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch primary entities
-        const [tournamentsRes, teamsRes] = await Promise.all([
-          tournamentService.getAll(),
-          teamService.getAll()
-        ]);
+        // Fetch isolated dashboard data from backend
+        const res = await tournamentService.getOrganizerDashboard();
+        
+        if (res?.stats) {
+          setStats({
+            tournaments: res.stats.tournaments ?? 0,
+            teams: res.stats.teams ?? 0,
+            players: res.stats.players ?? 0,
+            upcomingMatches: res.stats.upcomingMatches ?? 0,
+          });
+        }
 
-        const tournaments = tournamentsRes.tournaments || [];
-        const teams = teamsRes.teams || [];
-
-        // Fetch matches for all tournaments concurrently
-        const matchPromises = tournaments.map(t => matchService.getByTournament(t.id).catch(() => ({ matches: [] })));
-        const matchesResults = await Promise.all(matchPromises);
-
-        // Flatten and filter for upcoming matches
-        const allMatches = matchesResults.flatMap(res => res.matches || []);
-        const upcomingMatches = allMatches.filter(m => m.status !== 'Completed' && m.status !== 'completed' && m.status !== 'fulltime').length;
-
-        // Fetch team members (players) across all teams
-        const playersRes = await playerService.getAll();
-        const totalPlayers = playersRes.teamMembers?.length || 0;
-
-        setStats({
-          tournaments: tournaments.length,
-          teams: teams.length,
-          players: totalPlayers,
-          upcomingMatches,
-        });
-
-        // ── Build Dynamic Recent Activity ──────────────────────────────────
-        const activities = [];
-
-        // 1. Tournament Created
-        tournaments.forEach(t => {
-          if (t.createdAt) {
-            activities.push({
-              id: `tournament-created-${t.id}`,
-              type: 'tournament_created',
-              action: `New tournament '${t.name}' was created.`,
-              timestamp: t.createdAt,
-              color: 'bg-green-600',
-              icon: Trophy,
-            });
+        const activities = (res?.recentActivities || []).map(a => {
+          let IconComponent = Trophy;
+          if (a.type === 'team_registered') {
+            IconComponent = Users;
+          } else if (a.type === 'tournament_created' || a.type === 'tournament_completed') {
+            IconComponent = Trophy;
+          } else {
+            IconComponent = Activity;
           }
-        });
-
-        // 2. Team Registered
-        teams.forEach(team => {
-          if (team.createdAt) {
-            const tournamentName = team.tournament?.name || tournaments.find(t => t.id === team.tournamentId)?.name;
-            activities.push({
-              id: `team-registered-${team.id}`,
-              type: 'team_registered',
-              action: tournamentName
-                ? `Team '${team.name}' registered for ${tournamentName}.`
-                : `Team '${team.name}' registered.`,
-              timestamp: team.createdAt,
-              color: 'bg-emerald-600',
-              icon: Users,
-            });
-          }
-        });
-
-        // 3. Tournament Completed — show winner name
-        tournaments.forEach((t, index) => {
-          const tMatches = matchesResults[index]?.matches || [];
-          const isMarkedCompleted = t.status === 'completed';
-          const allMatchesFinished = tMatches.length > 0 && tMatches.every(m => m.status === 'completed' || m.status === 'fulltime');
-
-          if (isMarkedCompleted || allMatchesFinished) {
-            let winnerName = null;
-            let completionTime = t.updatedAt || t.createdAt;
-
-            // Knockout / Hybrid: find Final match
-            const finalMatch = tMatches.find(m => m.roundName && m.roundName.toLowerCase().trim() === 'final');
-            if (finalMatch && (finalMatch.status === 'completed' || finalMatch.status === 'fulltime')) {
-              winnerName = finalMatch.winnerTeam?.name ||
-                (finalMatch.winnerTeamId && (finalMatch.homeTeam?.id === finalMatch.winnerTeamId ? finalMatch.homeTeam?.name : finalMatch.awayTeam?.name)) ||
-                (finalMatch.homeScore > finalMatch.awayScore ? finalMatch.homeTeam?.name : (finalMatch.awayScore > finalMatch.homeScore ? finalMatch.awayTeam?.name : null));
-              completionTime = finalMatch.updatedAt || finalMatch.matchDate || completionTime;
-            }
-
-            // League: calculate standings if no final match
-            if (!winnerName && tMatches.length > 0) {
-              const teamScores = {};
-              tMatches.filter(m => m.status === 'completed' || m.status === 'fulltime').forEach(m => {
-                const hId = m.homeTeamId;
-                const aId = m.awayTeamId;
-                const hName = m.homeTeam?.name || 'Team';
-                const aName = m.awayTeam?.name || 'Team';
-                if (hId) {
-                  if (!teamScores[hId]) teamScores[hId] = { name: hName, pts: 0, gd: 0, gf: 0 };
-                  const hScore = m.homeScore ?? 0;
-                  const aScore = m.awayScore ?? 0;
-                  teamScores[hId].gf += hScore;
-                  teamScores[hId].gd += (hScore - aScore);
-                  if (hScore > aScore) teamScores[hId].pts += 3;
-                  else if (hScore === aScore) teamScores[hId].pts += 1;
-                }
-                if (aId) {
-                  if (!teamScores[aId]) teamScores[aId] = { name: aName, pts: 0, gd: 0, gf: 0 };
-                  const hScore = m.homeScore ?? 0;
-                  const aScore = m.awayScore ?? 0;
-                  teamScores[aId].gf += aScore;
-                  teamScores[aId].gd += (aScore - hScore);
-                  if (aScore > hScore) teamScores[aId].pts += 3;
-                  else if (aScore === hScore) teamScores[aId].pts += 1;
-                }
-              });
-              const sorted = Object.values(teamScores).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-              if (sorted.length > 0) {
-                winnerName = sorted[0].name;
-              }
-            }
-
-            if (isMarkedCompleted || winnerName) {
-              activities.push({
-                id: `tournament-completed-${t.id}`,
-                type: 'tournament_completed',
-                action: winnerName
-                  ? `Tournament '${t.name}' completed. Winner: ${winnerName}`
-                  : `Tournament '${t.name}' completed.`,
-                timestamp: completionTime,
-                color: 'bg-green-600',
-                icon: Trophy,
-              });
-            }
-          }
-        });
-
-        // Sort activities by timestamp descending and keep only the latest 3
-        const latestActivities = activities
-          .filter(a => a.timestamp)
-          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-          .slice(0, 3)
-          .map(a => ({
+          return {
             ...a,
-            time: formatTimeAgo(a.timestamp)
-          }));
+            icon: IconComponent,
+            time: formatTimeAgo(a.timestamp),
+          };
+        });
 
-        setRecentActivities(latestActivities);
-
+        setRecentActivities(activities);
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
         setError('Failed to load dashboard data. Please check your connection and try again.');

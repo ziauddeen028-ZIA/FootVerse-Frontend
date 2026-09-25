@@ -1,7 +1,7 @@
 import api from './api';
 
 export const playerService = {
-  getAll: () => api.get('/team-members'),
+  getAll: (params) => api.get(params ? `/team-members?${new URLSearchParams(params).toString()}` : '/team-members'),
   getByTeam: (teamId) => api.get(`/team-members/team/${teamId}`),
   getByPlayer: (playerId) => api.get(`/team-members/player/${playerId}`),
   create: (data) => api.post('/team-members', data),

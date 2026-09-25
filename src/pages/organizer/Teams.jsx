@@ -288,7 +288,7 @@ export const Teams = () => {
                     {team.tournament?.name || 'Unassigned'}
                   </span>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.preventDefault()}>
+                  <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onClick={(e) => e.preventDefault()}>
                     <button
                       onClick={() => handleOpenEdit(team)}
                       className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-[#16261C] rounded-lg transition-colors"

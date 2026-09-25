@@ -303,7 +303,7 @@ export const Players = () => {
                       {playerMember.position || 'Player'}
                     </span>
 
-                    <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleOpenEdit(playerMember)}
                         className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-[#16261C] rounded-lg transition-colors"
@@ -386,7 +386,7 @@ export const Players = () => {
                   </div>
                 </div>
 
-                {/* Card Footer: Bio / Details & Mobile Actions */}
+                {/* Card Footer: Bio / Details */}
                 <div className="p-4 bg-slate-50 dark:bg-[#16261C] border-t border-slate-100 dark:border-[#1E3A29] flex justify-between items-center gap-2 shrink-0">
                   <div className="flex flex-col min-w-0 pr-1">
                     <span className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
@@ -395,26 +395,6 @@ export const Players = () => {
                     <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase">
                       {team?.shortName || ''}
                     </span>
-                  </div>
-
-                  {/* Mobile Actions */}
-                  <div className="flex md:hidden items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => handleOpenEdit(playerMember)}
-                      className="p-2 text-slate-500 hover:text-green-600 dark:text-slate-400 dark:hover:text-green-400 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-xl transition-colors shadow-xs"
-                      title="Edit Player"
-                      aria-label="Edit Player"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleOpenDelete(playerMember)}
-                      className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] rounded-xl transition-colors shadow-xs"
-                      title="Remove Player"
-                      aria-label="Remove Player"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
               </div>

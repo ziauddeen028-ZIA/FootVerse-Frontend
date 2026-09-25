@@ -20,6 +20,8 @@ import {
   Coins,
   CheckCircle2,
   X,
+  Copy,
+  Zap,
 } from 'lucide-react';
 
 import { Toast } from '../../components/common/Toast';
@@ -35,6 +37,8 @@ import {
   extractTournamentConfig,
   SUB_MODES,
 } from '../../utils/substitutionUtils';
+
+import { useAuth } from '../../context/AuthContext';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -53,6 +57,28 @@ const STATUS = {
   CANCELLED: 'cancelled',
 };
 
+const QUICK_MATCH_STATES = {
+  WAITING_FOR_OPPONENT: 'WAITING_FOR_OPPONENT',
+  READY: 'READY',
+  LIVE: 'LIVE',
+  COMPLETED: 'COMPLETED',
+};
+
+const getQuickMatchState = (m) => {
+  if (!m) return null;
+  const s = m.status?.toLowerCase();
+  if (s === 'fulltime' || s === 'completed' || s === 'cancelled') {
+    return QUICK_MATCH_STATES.COMPLETED;
+  }
+  if (s === 'live' || s === 'halftime') {
+    return QUICK_MATCH_STATES.LIVE;
+  }
+  if (!m.awayTeamId || !m.awayTeam) {
+    return QUICK_MATCH_STATES.WAITING_FOR_OPPONENT;
+  }
+  return QUICK_MATCH_STATES.READY;
+};
+
 const EVENT_TYPES = [
   { value: 'goal', label: 'Goal', icon: '⚽' },
   { value: 'yellow_card', label: 'Yellow Card', icon: '🟨' },
@@ -62,7 +88,41 @@ const EVENT_TYPES = [
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status, isQuickMatch, quickMatchState }) => {
+  if (isQuickMatch && quickMatchState) {
+    switch (quickMatchState) {
+      case QUICK_MATCH_STATES.WAITING_FOR_OPPONENT:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 tracking-wider uppercase">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+            Waiting for Opponent
+          </span>
+        );
+      case QUICK_MATCH_STATES.READY:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 tracking-wider uppercase">
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
+            Ready
+          </span>
+        );
+      case QUICK_MATCH_STATES.LIVE:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-red-500/15 text-red-500 border border-red-500/30 tracking-wider uppercase">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+            Live
+          </span>
+        );
+      case QUICK_MATCH_STATES.COMPLETED:
+        return (
+          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 tracking-wider uppercase">
+            Completed
+          </span>
+        );
+      default:
+        break;
+    }
+  }
+
   switch (status) {
     case STATUS.LIVE:
       return (
@@ -102,11 +162,25 @@ const StatusBadge = ({ status }) => {
 
 // ─── Team Badge ───────────────────────────────────────────────────────────────
 
-const TeamBadge = ({ team, side, isPublicView }) => {
+const TeamBadge = ({ team, side, isPublicView, isWaitingOpponent }) => {
   const colors =
     side === 'home'
       ? 'bg-green-500/10 border-green-500/30 text-green-600 dark:text-green-400'
       : 'bg-slate-500/10 border-slate-500/30 text-slate-700 dark:text-slate-300';
+
+  if (isWaitingOpponent) {
+    return (
+      <div className="flex flex-col items-center gap-2.5 text-center">
+        <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-amber-400/60 dark:border-amber-500/40 bg-amber-500/10 flex flex-col items-center justify-center p-2 text-amber-600 dark:text-amber-400">
+          <Zap className="w-6 h-6 animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-wider mt-1">Waiting</span>
+        </div>
+        <span className="text-xs font-bold text-amber-600 dark:text-amber-400 max-w-[120px] leading-tight">
+          Opponent Joining...
+        </span>
+      </div>
+    );
+  }
 
   const isTBD = !team || (!team.name && !team.shortName);
 
@@ -562,6 +636,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
 
   const isPublic = Boolean(propIsPublic || location.pathname.startsWith('/matches/'));
 
@@ -584,6 +659,27 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
   const [showTieModal, setShowTieModal] = useState(false);
   const [isResolvingTie, setIsResolvingTie] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success' });
+
+  // ── Quick Match & Authorization Detection ─────────────────────────────────
+  const isQuickMatch = Boolean(match && !match.tournamentId && !match.tournament?.id);
+  const quickMatchState = isQuickMatch ? getQuickMatchState(match) : null;
+
+  const isAuthorizedController = useMemo(() => {
+    if (!user || !match) return false;
+    if (user.role === 'admin') return true;
+    if (match.tournamentId || match.tournament?.id) {
+      const orgId = match.tournament?.organizerId || match.organizerId;
+      return user.id === orgId;
+    }
+    // Quick match: Home team manager/member, or Away team manager/member
+    const isHome = match.homeTeam?.managerId === user.id ||
+      (match.homeTeam?.members && match.homeTeam.members.some(m => (m.playerId || m.player?.id) === user.id));
+    const isAway = match.awayTeam?.managerId === user.id ||
+      (match.awayTeam?.members && match.awayTeam.members.some(m => (m.playerId || m.player?.id) === user.id));
+    return Boolean(isHome || isAway);
+  }, [user, match]);
+
+  const isReadOnly = !isAuthorizedController || searchParams.get('readonly') === 'true';
 
   // ── Knockout Match Detection ────────────────────────────────────────────────
   const isKnockoutMatch = useMemo(() => {
@@ -761,6 +857,13 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
         setSelectedTeamId(m.homeTeamId);
       }
 
+      // Initialize timer if live
+      if (m.status === STATUS.LIVE && m.startedAt) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - new Date(m.startedAt).getTime()) / 1000));
+        setTimerSeconds(elapsed);
+        setTimerRunning(true);
+      }
+
       // Fetch rosters & events concurrently
       await Promise.all([
         fetchRosters(m.homeTeamId, m.awayTeamId),
@@ -778,30 +881,88 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
     fetchMatch();
   }, [fetchMatch]);
 
-  // ── Timer ───────────────────────────────────────────────────────────────────
+  // ── Server-synced Timer ─────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!match) return;
+
+    if (match.status === STATUS.LIVE && match.startedAt) {
+      const startTime = new Date(match.startedAt).getTime();
+      const calculateElapsed = () => Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+
+      setTimerSeconds(calculateElapsed());
+      setTimerRunning(true);
+
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(() => {
+        setTimerSeconds(calculateElapsed());
+      }, 1000);
+    } else {
+      setTimerRunning(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [match?.status, match?.startedAt]);
+
+  // ── Live Match & Opponent Waiting Polling ───────────────────────────────────
+
+  useEffect(() => {
+    if (!matchId || !match) return;
+    const isLive = match.status === STATUS.LIVE;
+    const isWaitingOpponent = !match.tournamentId && !match.awayTeamId && match.status === STATUS.SCHEDULED;
+
+    if (!isLive && !isWaitingOpponent) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await matchService.getById(matchId);
+        const m = res.match || res;
+        setMatch(prev => {
+          if (!prev) return m;
+          const statusChanged = prev.status !== m.status;
+          const scoreChanged = prev.homeScore !== m.homeScore || prev.awayScore !== m.awayScore;
+          const awayJoined = prev.awayTeamId !== m.awayTeamId;
+          const startedAtChanged = prev.startedAt !== m.startedAt;
+
+          if (statusChanged || scoreChanged || awayJoined || startedAtChanged) {
+            setHomeScore(m.homeScore ?? 0);
+            setAwayScore(m.awayScore ?? 0);
+            if (awayJoined && m.awayTeamId) {
+              fetchRosters(m.homeTeamId, m.awayTeamId);
+            }
+            return m;
+          }
+          return prev;
+        });
+        fetchEvents();
+      } catch (e) {
+        // silent polling failure
+      }
+    }, 4000);
+
+    return () => clearInterval(pollInterval);
+  }, [matchId, match?.status, match?.awayTeamId, match?.tournamentId, fetchEvents, fetchRosters]);
 
   const startTimer = () => {
     setTimerRunning(true);
-    intervalRef.current = setInterval(() => {
-      setTimerSeconds((s) => s + 1);
-    }, 1000);
   };
 
   const stopTimer = () => {
     setTimerRunning(false);
-    clearInterval(intervalRef.current);
-    intervalRef.current = null;
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
   };
-
-  const resetTimer = () => {
-    stopTimer();
-    setTimerSeconds(0);
-  };
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => clearInterval(intervalRef.current);
-  }, []);
 
   // ── Status Updates ──────────────────────────────────────────────────────────
 
@@ -819,9 +980,16 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
     }
     setIsSaving(true);
     try {
-      await updateMatchInBackend({ status: STATUS.LIVE, homeScore, awayScore });
+      const nowIso = new Date().toISOString();
+      const updated = await updateMatchInBackend({
+        status: STATUS.LIVE,
+        homeScore: homeScore ?? 0,
+        awayScore: awayScore ?? 0,
+        startedAt: nowIso
+      });
       startTimer();
       showToast('Match is now LIVE! ⚽');
+      fetchMatch();
     } catch (err) {
       showToast(err.response?.data?.error || 'Failed to start match.', 'error');
     } finally {
@@ -836,7 +1004,7 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
       await updateMatchInBackend({ status: STATUS.HALFTIME, homeScore, awayScore });
       showToast('Half Time! Timer paused.');
     } catch (err) {
-      startTimer(); // revert timer if save failed
+      startTimer();
       showToast(err.response?.data?.error || 'Failed to set half time.', 'error');
     } finally {
       setIsSaving(false);
@@ -1279,8 +1447,6 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
 
   const sortedEvents = [...events].sort((a, b) => a.minute - b.minute);
 
-  const isReadOnly = isPublic || searchParams.get('readonly') === 'true';
-
   // Match Summary Calculations
   const goalEvents = events.filter((e) => e.eventType === 'goal').sort((a, b) => a.minute - b.minute);
   const yellowCardEvents = events.filter((e) => e.eventType === 'yellow_card').sort((a, b) => a.minute - b.minute);
@@ -1425,9 +1591,9 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
         {isPublic ? 'Back' : 'Back to Matches'}
       </button>
 
-      {/* Meta: Tournament + Venue */}
-      <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-        {match.tournament?.name && (
+      {/* Meta: Tournament / Quick Match + Match Code + Venue */}
+      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+        {match.tournament?.name ? (
           <Link
             to={isPublic ? `/tournaments/${match.tournamentId || match.tournament.id}` : `/organizer/matches?tournament=${match.tournamentId || match.tournament.id}`}
             className="flex items-center gap-1.5 hover:underline"
@@ -1437,7 +1603,30 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
               {match.tournament.name}
             </span>
           </Link>
+        ) : (
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-xs font-bold">
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            <span>Quick Match</span>
+          </div>
         )}
+
+        {(match.matchCode || match.refereeName) && (
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+            <span>Code: {match.matchCode || match.refereeName}</span>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(match.matchCode || match.refereeName);
+                showToast('Match code copied!');
+              }}
+              className="p-0.5 hover:text-green-500 transition"
+              title="Copy Match Code"
+            >
+              <Copy className="w-3 h-3" />
+            </button>
+          </div>
+        )}
+
         {match.venue && (
           <div className="flex items-center gap-1.5">
             <MapPin className="w-4 h-4 text-slate-400" />
@@ -1450,34 +1639,36 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
       <div className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] shadow-sm overflow-hidden">
         {/* Status + Timer bar */}
         <div
-          className={`px-6 py-3 flex items-center justify-between border-b border-slate-100 dark:border-[#1E3A29] ${currentStatus === STATUS.LIVE
+          className={`px-4 sm:px-6 py-3 flex items-center justify-between border-b border-slate-100 dark:border-[#1E3A29] ${
+            currentStatus === STATUS.LIVE
               ? 'bg-red-500/5'
               : currentStatus === STATUS.HALFTIME
                 ? 'bg-amber-500/5'
                 : isFinished
                   ? 'bg-emerald-500/5'
                   : 'bg-slate-50 dark:bg-[#07130C]/40'
-            }`}
+          }`}
         >
-          <StatusBadge status={currentStatus} />
+          <StatusBadge status={currentStatus} isQuickMatch={isQuickMatch} quickMatchState={quickMatchState} />
 
           {/* Timer */}
           <div
-            className={`flex items-center gap-2 font-mono text-xl font-black tabular-nums ${timerRunning
+            className={`flex items-center gap-2 font-mono text-lg sm:text-xl font-black tabular-nums ${
+              timerRunning
                 ? 'text-red-500'
                 : 'text-slate-400 dark:text-slate-500'
-              }`}
+            }`}
           >
-            <Clock className={`w-5 h-5 ${timerRunning ? 'text-red-500' : 'text-slate-400'}`} />
+            <Clock className={`w-4 sm:w-5 h-4 sm:h-5 ${timerRunning ? 'text-red-500 animate-pulse' : 'text-slate-400'}`} />
             {formatTimer(timerSeconds)}
           </div>
         </div>
 
         {/* Scoreboard */}
-        <div className="px-8 py-8">
-          <div className="grid grid-cols-7 items-center gap-4">
+        <div className="px-4 sm:px-8 py-6 sm:py-8">
+          <div className="grid grid-cols-7 items-center gap-2 sm:gap-4">
             {/* Home Team */}
-            <div className="col-span-3 flex flex-col items-center gap-4">
+            <div className="col-span-3 flex flex-col items-center gap-3 sm:gap-4">
               <TeamBadge team={match.homeTeam} side="home" isPublicView={isPublic} />
               <ScoreDisplay
                 score={homeScore}
@@ -1491,27 +1682,32 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
             </div>
 
             {/* Centre divider */}
-            <div className="col-span-1 flex flex-col items-center gap-2">
-              <span className="text-2xl font-black text-slate-300 dark:text-slate-600">—</span>
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+            <div className="col-span-1 flex flex-col items-center gap-1.5 sm:gap-2">
+              <span className="text-xl sm:text-2xl font-black text-slate-300 dark:text-slate-600">—</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 vs
               </span>
-              <span className="text-2xl font-black text-slate-300 dark:text-slate-600">—</span>
+              <span className="text-xl sm:text-2xl font-black text-slate-300 dark:text-slate-600">—</span>
               {isFinished && match.tieBreakMethod === 'penalty' && match.homePenaltyScore !== null && match.awayPenaltyScore !== null && (
-                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 tabular-nums text-center bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                <span className="text-[10px] sm:text-xs font-bold text-amber-600 dark:text-amber-400 tabular-nums text-center bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                   Pen: {match.homePenaltyScore}–{match.awayPenaltyScore}
                 </span>
               )}
               {isFinished && match.tieBreakMethod === 'toss' && (
-                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                <span className="text-[9px] sm:text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                   Coin Toss
                 </span>
               )}
             </div>
 
             {/* Away Team */}
-            <div className="col-span-3 flex flex-col items-center gap-4">
-              <TeamBadge team={match.awayTeam} side="away" isPublicView={isPublic} />
+            <div className="col-span-3 flex flex-col items-center gap-3 sm:gap-4">
+              <TeamBadge
+                team={match.awayTeam}
+                side="away"
+                isPublicView={isPublic}
+                isWaitingOpponent={isQuickMatch && quickMatchState === QUICK_MATCH_STATES.WAITING_FOR_OPPONENT}
+              />
               <ScoreDisplay
                 score={awayScore}
                 teamId={match.awayTeamId}
@@ -1526,14 +1722,47 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
         </div>
 
         {/* ── Control Bar ────────────────────────────────────────────────── */}
-        {!isFinished && !isReadOnly && (
-          <div className="px-6 py-5 border-t border-slate-100 dark:border-[#1E3A29] bg-slate-50 dark:bg-[#07130C]/40 flex flex-wrap items-center justify-center gap-3">
-            {currentStatus === STATUS.SCHEDULED && (
-              hasBothTeams ? (
+        {!isFinished && (
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-t border-slate-100 dark:border-[#1E3A29] bg-slate-50 dark:bg-[#07130C]/40 flex flex-wrap items-center justify-center gap-3">
+            {/* 1. Quick Match Waiting for Opponent */}
+            {isQuickMatch && quickMatchState === QUICK_MATCH_STATES.WAITING_FOR_OPPONENT && (
+              <div className="w-full max-w-lg p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-center space-y-3 animate-fade-in">
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {isAuthorizedController
+                      ? 'Share Match Code with Opponent:'
+                      : 'Waiting for opponent to connect with Match Code:'}
+                  </span>
+                  <span className="px-3.5 py-1 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-mono font-black text-sm tracking-widest shadow-sm">
+                    {match.matchCode || match.refereeName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(match.matchCode || match.refereeName);
+                      showToast('Match code copied! 📋');
+                    }}
+                    className="px-3 py-1 bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                  {isAuthorizedController
+                    ? 'Once the opponent connects their team, the match will become Ready and you will see the Start Match button.'
+                    : 'The match will update automatically as soon as the opposing team joins.'}
+                </p>
+              </div>
+            )}
+
+            {/* 2. Ready to Start Match */}
+            {(currentStatus === STATUS.SCHEDULED || quickMatchState === QUICK_MATCH_STATES.READY) && hasBothTeams && (
+              isAuthorizedController ? (
                 <button
                   onClick={handleStartMatch}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-green-500/20 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-7 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-green-500/25 transition-all disabled:opacity-50"
                 >
                   {isSaving ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1543,61 +1772,85 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                   Start Match
                 </button>
               ) : (
-                <div className="flex items-center gap-2 px-5 py-3 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-semibold">
-                  <Clock className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span>Teams are TBD. Start Match will be enabled once both qualifying teams advance.</span>
+                <div className="flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400 rounded-xl text-xs font-semibold">
+                  <Clock className="w-4 h-4 text-blue-500 shrink-0" />
+                  <span>Match is Ready — Waiting for creator to start match.</span>
                 </div>
               )
             )}
 
-            {currentStatus === STATUS.LIVE && (
-              <>
-                <button
-                  onClick={handleHalfTime}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50"
-                >
-                  {isSaving ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Pause className="w-4 h-4 fill-white" />
-                  )}
-                  Half Time
-                </button>
-                <button
-                  onClick={handleInitiateEndMatch}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-red-500/20 transition-all disabled:opacity-50"
-                >
-                  <Square className="w-4 h-4 fill-white" />
-                  End Match
-                </button>
-              </>
+            {/* 3. Tournament Scheduled with TBD teams */}
+            {!isQuickMatch && currentStatus === STATUS.SCHEDULED && !hasBothTeams && (
+              <div className="flex items-center gap-2 px-5 py-3 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-semibold">
+                <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>Teams are TBD. Start Match will be enabled once both qualifying teams advance.</span>
+              </div>
             )}
 
+            {/* 4. Live Match Controls */}
+            {currentStatus === STATUS.LIVE && (
+              isAuthorizedController ? (
+                <>
+                  <button
+                    onClick={handleHalfTime}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Pause className="w-4 h-4 fill-white" />
+                    )}
+                    Half Time
+                  </button>
+                  <button
+                    onClick={handleInitiateEndMatch}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-red-500/20 transition-all disabled:opacity-50"
+                  >
+                    <Square className="w-4 h-4 fill-white" />
+                    End Match
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-xs font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span>Live Match in Progress</span>
+                </div>
+              )
+            )}
+
+            {/* 5. Half Time Controls */}
             {currentStatus === STATUS.HALFTIME && (
-              <>
-                <button
-                  onClick={handleResume}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-green-500/20 transition-all disabled:opacity-50"
-                >
-                  {isSaving ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-4 h-4" />
-                  )}
-                  Resume 2nd Half
-                </button>
-                <button
-                  onClick={handleInitiateEndMatch}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-red-500/20 transition-all disabled:opacity-50"
-                >
-                  <Square className="w-4 h-4 fill-white" />
-                  End Match
-                </button>
-              </>
+              isAuthorizedController ? (
+                <>
+                  <button
+                    onClick={handleResume}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-green-500/20 transition-all disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4" />
+                    )}
+                    Resume 2nd Half
+                  </button>
+                  <button
+                    onClick={handleInitiateEndMatch}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-red-500/20 transition-all disabled:opacity-50"
+                  >
+                    <Square className="w-4 h-4 fill-white" />
+                    End Match
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl text-xs font-semibold">
+                  <Clock className="w-4 h-4 text-amber-500" />
+                  <span>Half Time Break</span>
+                </div>
+              )
             )}
           </div>
         )}

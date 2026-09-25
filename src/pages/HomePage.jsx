@@ -35,6 +35,8 @@ import { statsService } from '../services/statsService';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { JoinTournamentCodeModal } from '../components/tournament/JoinTournamentCodeModal';
+import { QuickMatchModal } from '../components/match/QuickMatchModal';
+import { JoinQuickMatchModal } from '../components/match/JoinQuickMatchModal';
 import { Toast } from '../components/common/Toast';
 import { cleanTournamentDescription } from '../utils/substitutionUtils';
 
@@ -58,6 +60,8 @@ export const HomePage = () => {
     searchParams.get('tab') === 'my' || location.pathname === '/my-tournaments' ? 'my' : 'all'
   );
   const [isTournamentCodeModalOpen, setIsTournamentCodeModalOpen] = useState(false);
+  const [isQuickMatchModalOpen, setIsQuickMatchModalOpen] = useState(false);
+  const [isJoinQuickMatchOpen, setIsJoinQuickMatchOpen] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success' });
 
   const fetchPublicData = useCallback(async () => {
@@ -368,11 +372,19 @@ export const HomePage = () => {
               </Link>
 
               <Link
+                to="/teams/join"
+                className="px-5 py-3 bg-emerald-700/80 hover:bg-emerald-600 active:bg-emerald-800 text-emerald-100 hover:text-white border border-emerald-500/40 font-bold rounded-2xl text-xs sm:text-sm shadow-md transition flex items-center space-x-2"
+              >
+                <Key className="w-4 h-4 text-green-400" />
+                <span>Join Team</span>
+              </Link>
+
+              <Link
                 to="/matches"
-                className="px-6 py-3 bg-slate-800/80 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700/80 font-bold rounded-2xl text-xs sm:text-sm transition flex items-center space-x-2"
+                className="px-5 py-3 bg-slate-800/80 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700/80 font-bold rounded-2xl text-xs sm:text-sm transition flex items-center space-x-2"
               >
                 <Swords className="w-4 h-4 text-green-400" />
-                <span>Live Match Center</span>
+                <span>Live Matches</span>
               </Link>
 
               {activeRole === ROLES.ORGANIZER && (
@@ -391,7 +403,7 @@ export const HomePage = () => {
                   className="px-5 py-3 bg-emerald-600/80 hover:bg-emerald-600 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-md transition flex items-center space-x-1.5"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Join / Register Free</span>
+                  <span>Register Free</span>
                 </Link>
               )}
             </div>
@@ -413,6 +425,31 @@ export const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* ─── QUICK TEAM JOIN PROMO CARD ──────────────────────────────────── */}
+      <div className="bg-gradient-to-br from-[#0c2e1b] via-[#092215] to-[#05130b] rounded-3xl p-5 sm:p-6 border border-emerald-500/30 shadow-xl shadow-green-950/20 flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden text-white">
+        <div className="flex items-center space-x-4 text-center sm:text-left relative z-10">
+          <div className="w-12 h-12 rounded-2xl bg-green-500/15 border border-green-400/30 flex items-center justify-center text-green-400 shrink-0 mx-auto sm:mx-0 shadow-inner">
+            <Key className="w-6 h-6 text-green-400" />
+          </div>
+          <div>
+            <h3 className="text-base sm:text-lg font-extrabold font-heading text-white tracking-tight">
+              Have a Team Code from your Captain?
+            </h3>
+            <p className="text-xs sm:text-sm text-green-100/85 mt-0.5 font-medium leading-relaxed">
+              Enter your 8-character squad code to join your team roster instantly.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/teams/join"
+          className="w-full sm:w-auto px-5 py-3 bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-lg shadow-green-600/30 transition flex items-center justify-center space-x-2 shrink-0 border border-green-400/30 relative z-10"
+        >
+          <Users className="w-4 h-4" />
+          <span>Enter Team Code</span>
+          <ChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
 
       {/* ─── 2. MATCH SCORECENTER HUB (6 MOST RECENT MATCHES) ─────────────── */}
       <section id="matches-section" className="saas-card p-6 sm:p-8 rounded-3xl space-y-6 scroll-mt-20">
@@ -457,14 +494,31 @@ export const HomePage = () => {
               ))}
             </div>
 
-            {/* View All Matches Button */}
-            <Link
-              to="/matches"
-              className="px-3.5 py-1.5 bg-green-50 dark:bg-green-950/70 hover:bg-green-100 dark:hover:bg-green-900/60 text-green-700 dark:text-green-400 font-bold text-xs rounded-xl border border-green-200/80 dark:border-green-800/80 transition flex items-center space-x-1 whitespace-nowrap"
-            >
-              <span>View All Matches</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
+            {/* Action Buttons: Quick Match, Join Match & View All */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsJoinQuickMatchOpen(true)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#1E3A29] bg-white dark:bg-[#16261C] hover:bg-slate-50 dark:hover:bg-[#1A2E22] text-slate-700 dark:text-slate-200 font-bold text-xs shadow-xs transition flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <span>Join with Code</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsQuickMatchModalOpen(true)}
+                className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 active:from-emerald-700 active:to-green-700 text-white font-bold text-xs rounded-xl shadow-md shadow-green-600/20 transition flex items-center space-x-1.5 whitespace-nowrap"
+              >
+                <Zap className="w-3.5 h-3.5 fill-current" />
+                <span>⚡ Quick Match</span>
+              </button>
+              <Link
+                to="/matches"
+                className="px-3 py-1.5 bg-green-50 dark:bg-green-950/70 hover:bg-green-100 dark:hover:bg-green-900/60 text-green-700 dark:text-green-400 font-bold text-xs rounded-xl border border-green-200/80 dark:border-green-800/80 transition flex items-center space-x-1 whitespace-nowrap"
+              >
+                <span>View All</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -504,11 +558,18 @@ export const HomePage = () => {
                         : 'bg-slate-50/80 dark:bg-[#16261C]/80 border-slate-200/70 dark:border-[#1E3A29]'
                       }`}
                   >
-                    {/* Top Bar: Tournament & Status */}
+                    {/* Top Bar: Tournament / Quick Match & Status */}
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate">
-                        {match.tournament?.name || 'FootVerse Tournament'}
-                      </span>
+                      {match.tournament?.name ? (
+                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate">
+                          {match.tournament.name}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <Zap className="w-3 h-3 fill-current" />
+                          <span>Quick Match</span>
+                        </span>
+                      )}
 
                       {isLive && (
                         <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-[10px] font-black tracking-wider flex items-center space-x-1 flex-shrink-0 animate-pulse">
@@ -974,6 +1035,22 @@ export const HomePage = () => {
         isOpen={isTournamentCodeModalOpen}
         onClose={() => setIsTournamentCodeModalOpen(false)}
         onSuccess={handleTournamentCodeSuccess}
+      />
+
+      <QuickMatchModal
+        isOpen={isQuickMatchModalOpen}
+        onClose={() => setIsQuickMatchModalOpen(false)}
+        onMatchCreated={() => {
+          fetchPublicData();
+        }}
+      />
+
+      <JoinQuickMatchModal
+        isOpen={isJoinQuickMatchOpen}
+        onClose={() => {
+          setIsJoinQuickMatchOpen(false);
+          fetchPublicData();
+        }}
       />
 
       <Toast

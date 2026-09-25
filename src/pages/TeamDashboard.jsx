@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { 
   Shield, 
   Sparkles, 
@@ -24,6 +24,8 @@ import { TeamStatsView } from '../components/stats/TeamStatsView';
 export const TeamDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const [managedTeams, setManagedTeams] = useState([]);
   const [selectedTeamId, setSelectedTeamId] = useState('');
@@ -34,6 +36,13 @@ export const TeamDashboard = () => {
   const [codeCopied, setCodeCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ message: '', type: 'success' });
+
+  // Auto-open Join with Code modal if accessed via /teams/join or ?action=join
+  useEffect(() => {
+    if (location.pathname === '/teams/join' || searchParams.get('action') === 'join') {
+      setIsJoinCodeOpen(true);
+    }
+  }, [location.pathname, searchParams]);
 
   // Load ALL teams the user is affiliated with (manager, captain, or plain member)
   useEffect(() => {

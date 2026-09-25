@@ -17,7 +17,8 @@ import {
   Clock,
   XCircle,
   Check,
-  X
+  X,
+  Key
 } from 'lucide-react';
 import statsService from '../../services/statsService';
 import teamJoinRequestService from '../../services/teamJoinRequestService';
@@ -202,13 +203,22 @@ export const TeamStatsView = ({ initialTeamId = null, hideSelector = false, noTe
             </div>
 
             {user && (
-              <Link
-                to="/teams-manage"
-                className="px-3.5 py-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center space-x-1.5 shrink-0 self-start sm:self-auto"
-              >
-                <Shield className="w-3.5 h-3.5" />
-                <span>Manage / Create Team</span>
-              </Link>
+              <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                <Link
+                  to="/teams/join"
+                  className="px-3.5 py-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center space-x-1.5"
+                >
+                  <Key className="w-3.5 h-3.5" />
+                  <span>Join Team</span>
+                </Link>
+                <Link
+                  to="/teams-manage"
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#1E3A29] font-bold rounded-xl text-xs transition flex items-center justify-center space-x-1.5"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>My Teams</span>
+                </Link>
+              </div>
             )}
           </div>
 

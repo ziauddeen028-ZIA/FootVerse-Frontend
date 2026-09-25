@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { GlobalSearchBar } from './GlobalSearchBar';
 import {
-  Sun, Moon, Search, Bell, ChevronDown, User, LogOut,
+  Sun, Moon, Bell, ChevronDown, User, LogOut,
   CheckCheck, BellOff, CheckCircle2, AlertCircle, Info, RefreshCw
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
@@ -159,7 +160,7 @@ export const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-20 w-full bg-white/95 dark:bg-[#101C14]/95 border-b border-slate-200/85 dark:border-[#1E3A29] backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 transition-colors duration-200">
+    <header className="sticky top-0 z-30 w-full bg-white/95 dark:bg-[#101C14]/95 border-b border-slate-200/85 dark:border-[#1E3A29] backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 transition-colors duration-200">
       <div className="flex items-center justify-between gap-4">
 
         {/* Search Bar & Mobile Logo */}
@@ -169,13 +170,8 @@ export const Header = () => {
               <img src="/logo.webp" alt="FootVerse Logo" className="w-full h-full object-contain rounded-lg" />
             </div>
           </Link>
-          <div className="relative w-full">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search tournaments, teams, players..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#16261C] border border-slate-200 dark:border-[#1E3A29] rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
-            />
+          <div className="w-full">
+            <GlobalSearchBar />
           </div>
         </div>
 

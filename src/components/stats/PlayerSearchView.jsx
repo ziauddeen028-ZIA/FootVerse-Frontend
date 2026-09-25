@@ -302,7 +302,7 @@ export const PlayerSearchView = ({ initialPlayerId = null }) => {
                     </span>
                   )}
                 </div>
-                <span className="text-green-600 dark:text-green-400 font-semibold flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-green-600 dark:text-green-400 font-semibold flex items-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   View Stats <ChevronRight className="w-3 h-3 ml-0.5" />
                 </span>
               </div>

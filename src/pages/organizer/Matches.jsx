@@ -8,6 +8,8 @@ import { Toast } from '../../components/common/Toast';
 import { CustomSelect } from '../../components/common/CustomSelect';
 import { LoadingSkeleton } from '../../components/organizer/LoadingSkeleton';
 import { MatchFormModal } from '../../components/organizer/MatchFormModal';
+import { QuickMatchModal } from '../../components/match/QuickMatchModal';
+import { JoinQuickMatchModal } from '../../components/match/JoinQuickMatchModal';
 import { KnockoutBracket } from '../../components/organizer/KnockoutBracket';
 import { LeagueDashboard } from '../../components/organizer/LeagueDashboard';
 import { TournamentStats } from '../../components/organizer/TournamentStats';
@@ -43,6 +45,8 @@ export const Matches = () => {
 
   // Modals state
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isQuickMatchOpen, setIsQuickMatchOpen] = useState(false);
+  const [isJoinQuickMatchOpen, setIsJoinQuickMatchOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -147,7 +151,9 @@ export const Matches = () => {
     }
 
     // Tournament filter
-    if (tournamentFilter !== 'all') {
+    if (tournamentFilter === 'quick') {
+      result = result.filter(m => !m.tournamentId && !m.tournament?.id);
+    } else if (tournamentFilter !== 'all') {
       result = result.filter(
         m => m.tournamentId === tournamentFilter || m.tournament?.id === tournamentFilter
       );
@@ -317,14 +323,40 @@ export const Matches = () => {
         onClose={() => setToast({ message: '', type: 'success' })}
       />
 
-      {/* Header */}
-      <PageHeader
-        title="Matches"
-        subtitle="Manage and organize all tournament fixtures and game schedules."
-        actionLabel="Create Match"
-        actionIcon={Plus}
-        onAction={handleOpenCreate}
-      />
+      {/* Header with Quick Match action buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white tracking-tight">
+            Matches
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Manage tournament fixtures, schedule games, and run Quick Matches.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsJoinQuickMatchOpen(true)}
+            className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-[#1E3A29] bg-white dark:bg-[#16261C] hover:bg-slate-50 dark:hover:bg-[#1A2E22] text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition flex items-center gap-1.5"
+          >
+            <span>Join with Code</span>
+          </button>
+          <button
+            onClick={() => setIsQuickMatchOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 active:from-emerald-700 active:to-green-700 text-white text-xs font-bold shadow-md shadow-green-600/20 transition flex items-center gap-1.5"
+          >
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            <span>⚡ Quick Match</span>
+          </button>
+          <button
+            onClick={handleOpenCreate}
+            className="px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-xs font-bold shadow-md shadow-green-600/20 transition flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Schedule Match</span>
+          </button>
+        </div>
+      </div>
 
       {/* Filters Bar & View Switcher */}
       <div className="bg-white dark:bg-[#101C14] p-4 rounded-2xl border border-slate-200 dark:border-[#1E3A29] flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
@@ -491,7 +523,8 @@ export const Matches = () => {
                 });
               }}
               options={[
-                { value: 'all', label: 'All Tournaments' },
+                { value: 'all', label: 'All Matches & Tournaments' },
+                { value: 'quick', label: '⚡ Quick Matches' },
                 ...tournaments.map(t => ({ value: t.id, label: t.name }))
               ]}
               icon={Filter}
@@ -612,14 +645,30 @@ export const Matches = () => {
                 key={match.id}
                 className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200 dark:border-[#1E3A29] p-5 hover:border-green-500/50 dark:hover:border-green-500/50 transition-all shadow-sm flex flex-col justify-between"
               >
-                {/* Top info: Tournament Name & Status */}
+                {/* Top info: Tournament / Quick Match Name & Status */}
                 <div className="flex items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-[#1E3A29]">
                   <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                    <Trophy className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
-                      {match.tournament?.name || 'Tournament'}
-                    </span>
-                    {match.roundName && (
+                    {match.tournament?.name ? (
+                      <>
+                        <Trophy className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
+                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                          {match.tournament.name}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 text-emerald-500 fill-current shrink-0" />
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate">
+                          Quick Match
+                        </span>
+                      </>
+                    )}
+                    {match.matchCode && !match.tournament?.name && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-100 dark:bg-[#16261C] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1E3A29]">
+                        {match.matchCode}
+                      </span>
+                    )}
+                    {match.roundName && match.tournament?.name && (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-50 text-green-700 dark:bg-green-950/60 dark:text-green-300 border border-green-200 dark:border-green-800 shrink-0">
                         {match.roundName}
                       </span>
@@ -839,6 +888,25 @@ export const Matches = () => {
         tournaments={tournaments}
         teams={teams}
         isLoading={isSubmitting}
+      />
+
+      {/* Quick Match Modal */}
+      <QuickMatchModal
+        isOpen={isQuickMatchOpen}
+        onClose={() => setIsQuickMatchOpen(false)}
+        onMatchCreated={(newM) => {
+          setMatches(prev => [newM, ...prev]);
+          fetchData();
+        }}
+      />
+
+      {/* Join Quick Match Modal */}
+      <JoinQuickMatchModal
+        isOpen={isJoinQuickMatchOpen}
+        onClose={() => {
+          setIsJoinQuickMatchOpen(false);
+          fetchData();
+        }}
       />
 
       {/* Delete Confirmation Dialog */}

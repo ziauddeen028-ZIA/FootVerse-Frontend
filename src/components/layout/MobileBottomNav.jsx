@@ -1,9 +1,11 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Trophy, Activity, BarChart2, User } from 'lucide-react';
+import { Home, Trophy, Shield, Activity, User } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export const MobileBottomNav = () => {
   const location = useLocation();
+  const { user } = useAuth();
 
   const navItems = [
     { 
@@ -19,16 +21,16 @@ export const MobileBottomNav = () => {
       match: (pathname) => pathname.startsWith('/tournaments')
     },
     { 
+      label: 'Teams', 
+      path: user ? '/teams-manage' : '/teams', 
+      icon: Shield,
+      match: (pathname) => pathname.startsWith('/teams') || pathname === '/teams-manage' || pathname === '/teams/join'
+    },
+    { 
       label: 'Live', 
       path: '/matches?live=true', 
       icon: Activity,
       match: (pathname, search) => (pathname.startsWith('/matches') && search.includes('live=true')) || pathname === '/live'
-    },
-    { 
-      label: 'Stats', 
-      path: '/stats', 
-      icon: BarChart2,
-      match: (pathname) => pathname.startsWith('/stats') || pathname.startsWith('/teams') || pathname.startsWith('/players')
     },
     { 
       label: 'Profile', 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Mail, Shield, Award, Calendar, ChevronLeft, BarChart2 } from 'lucide-react';
+import { User, Mail, Shield, Award, Calendar, ChevronLeft, BarChart2, Key, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth, ROLE_LABELS } from '../context/AuthContext';
 import { MyStatsView } from '../components/stats/MyStatsView';
@@ -86,6 +86,42 @@ export const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Team & Squad Management Quick Card */}
+      {user?.id && (
+        <div className="rounded-3xl p-6 bg-gradient-to-br from-[#0c2e1b] via-[#092215] to-[#05130b] border border-emerald-500/30 shadow-xl shadow-green-950/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-white">
+          <div className="flex items-center space-x-4 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-green-500/15 border border-green-400/30 flex items-center justify-center text-green-400 shrink-0 mx-auto sm:mx-0 shadow-inner">
+              <Shield className="w-6 h-6 text-green-400" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-extrabold font-heading text-white tracking-tight">
+                My Teams & Squad Roster
+              </h3>
+              <p className="text-xs sm:text-sm text-green-100/85 mt-0.5 font-medium leading-relaxed">
+                Manage your squads or enter an 8-character team code to join instantly.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <Link
+              to="/teams/join"
+              className="flex-1 sm:flex-initial px-4 py-2.5 bg-green-600 hover:bg-green-500 text-white font-bold text-xs rounded-xl shadow-md shadow-green-600/20 transition flex items-center justify-center space-x-1.5"
+            >
+              <Key className="w-3.5 h-3.5" />
+              <span>Join with Code</span>
+            </Link>
+            <Link
+              to="/teams-manage"
+              className="flex-1 sm:flex-initial px-4 py-2.5 bg-white dark:bg-[#101C14] hover:bg-slate-100 dark:hover:bg-[#1E3A29] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#1E3A29] font-bold text-xs rounded-xl transition flex items-center justify-center space-x-1.5"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>My Teams</span>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Personal Player Performance & Tournament History */}
       {user?.id && (

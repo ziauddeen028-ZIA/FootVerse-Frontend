@@ -1,7 +1,8 @@
 import api from './api';
 
 export const tournamentService = {
-  getAll: () => api.get('/tournaments'),
+  getAll: (params) => api.get(params ? `/tournaments?${new URLSearchParams(params).toString()}` : '/tournaments'),
+  getOrganizerDashboard: () => api.get('/tournaments/organizer/dashboard'),
   getBySlug: (slug) => api.get(`/tournaments/${slug}`),
   create: (data) => api.post('/tournaments', data),
   update: (id, data) => api.put(`/tournaments/${id}`, data),
