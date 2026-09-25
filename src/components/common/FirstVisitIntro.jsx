@@ -56,11 +56,16 @@ export const FirstVisitIntro = () => {
     const video = videoRef.current;
     video.muted = true;
 
+    // Trigger source evaluation for responsive media queries
+    if (typeof video.load === 'function') {
+      video.load();
+    }
+
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
         console.warn('FootVerse: Autoplay prevented or failed to start:', err);
-        // If autoplay fails completely or is blocked, finish immediately
+        // If autoplay fails completely or is blocked, finish smoothly
         handleFinish();
       });
     }
@@ -100,20 +105,19 @@ export const FirstVisitIntro = () => {
 
   return (
     <div
-      className={`fixed inset-0 z-[999999] bg-black flex items-center justify-center overflow-hidden transition-all duration-700 ease-out select-none ${
+      className={`fixed inset-0 w-screen h-[100dvh] z-[999999] bg-black flex items-center justify-center overflow-hidden transition-all duration-700 ease-out select-none ${
         isFadingOut ? 'opacity-0 pointer-events-none scale-105' : 'opacity-100'
       }`}
       aria-label="FootVerse Intro Video"
       role="dialog"
       aria-modal="true"
     >
-      {/* Background ambient glow/backdrop */}
+      {/* Background backdrop */}
       <div className="absolute inset-0 bg-black" />
 
-      {/* Video player */}
+      {/* Responsive Video Player */}
       <video
         ref={videoRef}
-        src="/Video Project (1).mp4"
         autoPlay
         muted
         playsInline
@@ -121,13 +125,31 @@ export const FirstVisitIntro = () => {
         onEnded={handleFinish}
         onError={handleFinish}
         className="relative z-0 w-full h-full object-cover md:object-contain bg-black max-w-full max-h-full"
-      />
+      >
+        {/* Mobile video: matches phone portrait (<= 767px) and phone landscape (<= 500px height) */}
+        <source
+          src="/Video Project mobile.mp4"
+          media="(max-width: 767px), (max-height: 500px) and (orientation: landscape)"
+          type="video/mp4"
+        />
+        {/* Desktop and tablet video */}
+        <source
+          src="/Video Project (1).mp4"
+          media="(min-width: 768px)"
+          type="video/mp4"
+        />
+        {/* Default fallback */}
+        <source
+          src="/Video Project (1).mp4"
+          type="video/mp4"
+        />
+      </video>
 
-      {/* Skip Button */}
+      {/* Skip Button - Responsive & Accessible */}
       <button
         type="button"
         onClick={handleFinish}
-        className="absolute top-6 right-6 z-10 px-4 py-2 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 backdrop-blur-md text-xs sm:text-sm font-medium tracking-wide transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-2xl hover:scale-105 active:scale-95"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white border border-white/20 backdrop-blur-md text-xs sm:text-sm font-medium tracking-wide transition-all duration-200 flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-2xl hover:scale-105 active:scale-95"
         aria-label="Skip Intro"
       >
         <span>Skip Intro</span>
