@@ -113,71 +113,100 @@ export const TournamentHub = () => {
         setLoading(true);
         setError(null);
 
-        // Check demo fallback first
-        const demo = demoTournaments.find(t => t.id === tournamentId || t.slug === tournamentId);
-        if (demo) {
-          if (isMounted) {
-            setTournament(demo);
-            setTeams(demoTeams);
+        // Fetch tournament from API
+        const res = await tournamentService.getBySlug(tournamentId);
+        const foundTournament = res?.tournament;
+
+        if (foundTournament && isMounted) {
+          setTournament(foundTournament);
+
+          // Fetch teams
+          try {
+            const teamsRes = await teamService.getAll();
+            const allTeams = teamsRes?.teams || [];
+
+            const fetchedTeams = allTeams.filter(
+              t =>
+                t.tournamentId === foundTournament.id ||
+                t.tournament?.id === foundTournament.id
+            );
+
+            if (isMounted) {
+              setTeams(fetchedTeams);
+            }
+          } catch (err) {
+            console.warn('Could not fetch teams list:', err);
           }
-        } else {
-          // Fetch from API by slug or ID
-          const res = await tournamentService.getBySlug(tournamentId);
-          const foundTournament = res?.tournament;
 
-          if (foundTournament && isMounted) {
-            setTournament(foundTournament);
+          // Fetch matches
+          try {
+            const matchesRes = await matchService.getAll();
+            const allMatches = matchesRes?.matches || [];
 
-            // Fetch teams and filter for this tournament
-            try {
-              const teamsRes = await teamService.getAll();
-              const allTeams = teamsRes?.teams || [];
-              const fetchedTeams = allTeams.filter(
-                t => t.tournamentId === foundTournament.id || t.tournament?.id === foundTournament.id
-              );
-              if (isMounted) setTeams(fetchedTeams);
-            } catch (err) {
-              console.warn('Could not fetch teams list:', err);
+            const fetchedMatches = allMatches.filter(
+              m =>
+                m.tournamentId === foundTournament.id ||
+                m.tournament?.id === foundTournament.id
+            );
+
+            if (isMounted) {
+              setMatches(fetchedMatches);
             }
+          } catch (err) {
+            console.warn('Could not fetch matches list:', err);
+          }
 
-            // Fetch matches for this tournament
+          // Fetch standings
+          const fmt = foundTournament.format?.toLowerCase();
+
+          const needsStandings =
+            fmt === 'league' ||
+            fmt === 'round_robin' ||
+            fmt === 'group_stage' ||
+            fmt === 'group_knockout' ||
+            fmt === 'hybrid';
+
+          if (needsStandings) {
+            setStandingsLoading(true);
+
             try {
-              const matchesRes = await matchService.getAll();
-              const allMatches = matchesRes?.matches || [];
-              const fetchedMatches = allMatches.filter(
-                m => m.tournamentId === foundTournament.id || m.tournament?.id === foundTournament.id
-              );
-              if (isMounted) setMatches(fetchedMatches);
-            } catch (err) {
-              console.warn('Could not fetch matches list:', err);
-            }
+              const standingsRes =
+                await tournamentService.getStandings(foundTournament.id);
 
-            // Fetch Standings depending on tournament format
-            const fmt = foundTournament.format?.toLowerCase();
-            const needsStandings = fmt === 'league' || fmt === 'round_robin' || fmt === 'group_stage' || fmt === 'group_knockout' || fmt === 'hybrid';
-            if (needsStandings) {
-              setStandingsLoading(true);
-              try {
-                const standingsRes = await tournamentService.getStandings(foundTournament.id);
-                if (isMounted) {
-                  if (standingsRes?.standings) setStandings(standingsRes.standings);
-                  if (standingsRes?.groups) setGroups(standingsRes.groups);
+              if (isMounted) {
+                if (standingsRes?.standings) {
+                  setStandings(standingsRes.standings);
                 }
-              } catch (err) {
-                console.warn('Could not fetch standings:', err);
-              } finally {
-                if (isMounted) setStandingsLoading(false);
+
+                if (standingsRes?.groups) {
+                  setGroups(standingsRes.groups);
+                }
+              }
+            } catch (err) {
+              console.warn('Could not fetch standings:', err);
+            } finally {
+              if (isMounted) {
+                setStandingsLoading(false);
               }
             }
-          } else {
-            if (isMounted) setError('Tournament not found or has been removed.');
+          }
+        } else {
+          if (isMounted) {
+            setError('Tournament not found or has been removed.');
           }
         }
       } catch (err) {
         console.error('Error loading tournament hub:', err);
-        if (isMounted) setError('Failed to load tournament information. Please try again.');
+
+        if (isMounted) {
+          setError(
+            'Failed to load tournament information. Please try again.'
+          );
+        }
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -415,7 +444,7 @@ export const TournamentHub = () => {
       </div>
 
       {/* ─── TOURNAMENT HERO BANNER ───────────────────────────────────────── */}
-      <section 
+      <section
         className="saas-card rounded-3xl p-4 sm:p-8 md:p-10 text-white border border-slate-800 dark:border-[#1E3A29] shadow-2xl relative overflow-hidden bg-[url('/tournament-bg-2.webp')] md:bg-[url('/tournament-bg.webp')] bg-cover bg-center bg-no-repeat"
       >
         {/* Subtle Dark/Green Overlay for text readability & brand cohesion */}
@@ -823,8 +852,8 @@ export const TournamentHub = () => {
                   key={team.id}
                   onClick={() => handleSelectTeam(team)}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${isSelected
-                      ? 'bg-green-50 dark:bg-green-950/40 border-green-600 ring-2 ring-green-600/40 shadow-md'
-                      : 'bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] hover:border-green-500'
+                    ? 'bg-green-50 dark:bg-green-950/40 border-green-600 ring-2 ring-green-600/40 shadow-md'
+                    : 'bg-white dark:bg-[#101C14] border-slate-200/80 dark:border-[#1E3A29] hover:border-green-500'
                     }`}
                 >
                   <div className="flex items-center space-x-3.5 min-w-0">
