@@ -265,7 +265,7 @@ export const Players = () => {
 
       {/* Data View / Player Grid */}
       {loading ? (
-        <LoadingSkeleton count={3} />
+        <LoadingSkeleton type="player" count={6} />
       ) : error ? (
         <div className="text-center text-red-500 p-10 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-200 dark:border-red-800">
           <p>{error}</p>

@@ -1,6 +1,21 @@
 import React from 'react';
+import { TournamentCardSkeleton } from '../common/TournamentCardSkeleton';
+import { MatchCardSkeleton } from '../common/MatchCardSkeleton';
+import { PlayerCardSkeleton } from '../common/PlayerCardSkeleton';
 
-export const LoadingSkeleton = ({ count = 4 }) => {
+export { TournamentCardSkeleton, MatchCardSkeleton, PlayerCardSkeleton };
+
+export const LoadingSkeleton = ({ count = 4, type = 'default' }) => {
+  if (type === 'tournament' || type === 'tournaments') {
+    return <TournamentCardSkeleton count={count} />;
+  }
+  if (type === 'match' || type === 'matches' || type === 'card') {
+    return <MatchCardSkeleton count={count} />;
+  }
+  if (type === 'player' || type === 'players') {
+    return <PlayerCardSkeleton count={count} />;
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {Array.from({ length: count }).map((_, i) => (

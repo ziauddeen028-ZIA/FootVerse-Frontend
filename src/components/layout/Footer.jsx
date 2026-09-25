@@ -15,7 +15,31 @@ export const Footer = () => {
           <span className="font-bold text-slate-900 dark:text-white">FootVerse</span>
           <span>&copy; {new Date().getFullYear()} All rights reserved. Built with passion. Built for football.</span>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          <a
+            href="/FootVerse-User-Guide.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-green-600 dark:hover:text-green-400 cursor-pointer transition font-medium"
+          >
+            User Guide
+          </a>
+          <a
+            href="https://www.instagram.com/footverse.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-green-600 dark:hover:text-green-400 cursor-pointer transition font-medium"
+          >
+            Instagram
+          </a>
+          <a
+            href="https://youtube.com/@footverse-t6i?si=iJzw3vBT__NNPC1y"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-green-600 dark:hover:text-green-400 cursor-pointer transition font-medium"
+          >
+            YouTube
+          </a>
           <span className="hover:text-green-600 dark:hover:text-green-400 cursor-pointer transition">Privacy Policy</span>
           <span className="hover:text-green-600 dark:hover:text-green-400 cursor-pointer transition">Terms of Service</span>
           <span className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-400 font-semibold text-[10px]">

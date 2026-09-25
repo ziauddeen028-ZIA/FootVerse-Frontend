@@ -309,7 +309,7 @@ export const Matches = () => {
           title="Matches"
           subtitle="Schedule, edit, and organize tournament fixtures."
         />
-        <LoadingSkeleton type="card" count={4} />
+        <LoadingSkeleton type="match" count={6} />
       </div>
     );
   }

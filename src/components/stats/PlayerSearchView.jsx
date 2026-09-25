@@ -4,6 +4,7 @@ import {
   Activity, Flame, ArrowLeft, Lock
 } from "lucide-react";
 import statsService from "../../services/statsService";
+import { PlayerCardSkeleton } from "../common/PlayerCardSkeleton";
 
 // ─── Public Player Stats Panel (drill-down after selecting from search) ───────
 const PublicPlayerPanel = ({ playerId, onBack }) => {
@@ -284,10 +285,7 @@ export const PlayerSearchView = ({ initialPlayerId = null }) => {
 
       {/* Results */}
       {loading ? (
-        <div className="saas-card rounded-2xl p-12 text-center text-slate-400 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29]">
-          <div className="w-6 h-6 border-[3px] border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-sm">Searching...</p>
-        </div>
+        <PlayerCardSkeleton count={6} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" />
       ) : players.length === 0 ? (
         <div className="saas-card rounded-2xl p-10 text-center text-slate-400 bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29]">
           <User className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />

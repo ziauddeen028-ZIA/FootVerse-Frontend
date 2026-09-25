@@ -26,7 +26,10 @@ import {
   Swords,
   Key,
   Hash,
-  CheckCircle2
+  CheckCircle2,
+  BookOpen,
+  ArrowUpRight,
+  HelpCircle
 } from 'lucide-react';
 import { useAuth, ROLES, ROLE_LABELS } from '../context/AuthContext';
 import { tournamentService } from '../services/tournamentService';
@@ -39,6 +42,22 @@ import { QuickMatchModal } from '../components/match/QuickMatchModal';
 import { JoinQuickMatchModal } from '../components/match/JoinQuickMatchModal';
 import { Toast } from '../components/common/Toast';
 import { cleanTournamentDescription } from '../utils/substitutionUtils';
+import { MatchCardSkeleton } from '../components/common/MatchCardSkeleton';
+import { TournamentCardSkeleton } from '../components/common/TournamentCardSkeleton';
+
+const InstagramIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+);
+
+const YouTubeIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+  </svg>
+);
 
 export const HomePage = () => {
   const { activeRole, user } = useAuth();
@@ -174,7 +193,7 @@ export const HomePage = () => {
   const matchGridInnerRef = useRef(null);
   const [matchGridHeight, setMatchGridHeight] = useState('none');
 
-  const allFilteredMatches = displayMatches.filter(m => {
+  const allFilteredMatches = matches.filter(m => {
     if (matchFilter === 'live') return m.status === 'live' || m.status === 'in_progress';
     if (matchFilter === 'upcoming') return m.status === 'scheduled' || m.status === 'upcoming';
     if (matchFilter === 'completed') return m.status === 'completed' || m.status === 'fulltime';
@@ -184,7 +203,7 @@ export const HomePage = () => {
   const matchesPreview = allFilteredMatches.slice(0, 6);
   const hasMoreMatches = isHomePage && allFilteredMatches.length > 6;
   const visibleMatches = (!isHomePage || isMatchesExpanded) ? allFilteredMatches : matchesPreview;
-  const liveMatchesCount = displayMatches.filter(m => m.status === 'live' || m.status === 'in_progress').length;
+  const liveMatchesCount = matches.filter(m => m.status === 'live' || m.status === 'in_progress').length;
 
   useEffect(() => {
     if (!isHomePage || !matchGridInnerRef.current) {
@@ -212,7 +231,7 @@ export const HomePage = () => {
   }, [isMatchesExpanded]);
 
   // Filter tournaments and limit to 6 for concise home display
-  const filteredTournaments = displayTournaments.filter(t => {
+  const filteredTournaments = (tournaments || []).filter(t => {
     if (tournamentFilter === 'knockout') return t.format === 'knockout';
     if (tournamentFilter === 'league') return t.format === 'league' || t.format === 'round_robin';
     if (tournamentFilter === 'group_stage') return t.format === 'group_stage' || t.format === 'group_knockout';
@@ -439,7 +458,9 @@ export const HomePage = () => {
         </div>
 
         {/* Matches Grid */}
-        {visibleMatches.length === 0 ? (
+        {loading ? (
+          <MatchCardSkeleton count={6} />
+        ) : visibleMatches.length === 0 ? (
           <div className="text-center py-10 space-y-2">
             <Radio className="w-8 h-8 text-slate-400 mx-auto" />
             <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No matches found in this category</p>
@@ -692,7 +713,9 @@ export const HomePage = () => {
         {/* ─── SCOPE 1: MY TOURNAMENTS ────────────────────────────────────── */}
         {tournamentScope === 'my' && (
           <div>
-            {myTournaments.length === 0 ? (
+            {loading ? (
+              <TournamentCardSkeleton count={3} />
+            ) : myTournaments.length === 0 ? (
               <div className="p-10 sm:p-12 rounded-3xl bg-green-50/40 dark:bg-green-950/20 border border-green-200/60 dark:border-green-900/40 text-center space-y-5">
                 <div className="w-16 h-16 rounded-3xl bg-green-600/10 dark:bg-green-500/10 flex items-center justify-center mx-auto">
                   <Trophy className="w-8 h-8 text-green-600 dark:text-green-400" />
@@ -817,86 +840,100 @@ export const HomePage = () => {
 
         {/* ─── SCOPE 2: ALL TOURNAMENTS ───────────────────────────────────── */}
         {tournamentScope === 'all' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTournaments.map(t => {
-              const registered = t.registeredTeamsCount || t.registeredTeams || 0;
-              const max = t.maxTeams || 16;
-              const progressPercent = Math.min(Math.round((registered / max) * 100), 100);
+          loading ? (
+            <TournamentCardSkeleton count={6} />
+          ) : filteredTournaments.length === 0 ? (
+            <div className="p-10 sm:p-12 rounded-3xl bg-slate-50/50 dark:bg-[#16261C]/50 border border-slate-200/60 dark:border-[#1E3A29] text-center space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-green-600/10 dark:bg-green-500/10 flex items-center justify-center mx-auto text-green-600 dark:text-green-400">
+                <Trophy className="w-7 h-7" />
+              </div>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No tournaments found</p>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                No active tournaments match this filter right now. Check back soon or create a tournament from the Organizer Console.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTournaments.map(t => {
+                const registered = t.registeredTeamsCount || t.registeredTeams || 0;
+                const max = t.maxTeams || 16;
+                const progressPercent = Math.min(Math.round((registered / max) * 100), 100);
 
-              return (
-                <Link
-                  key={t.id}
-                  to={`/tournaments/${t.id}`}
-                  className="saas-card saas-card-hover p-6 rounded-3xl border flex flex-col justify-between space-y-4 cursor-pointer group"
-                >
-                  <div>
-                    {/* Top Badges */}
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${formatBadgeStyle(t.format)}`}>
-                        {getFormatLabel(t.format)}
-                      </span>
-
-                      <span className="px-2.5 py-1 rounded-xl bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-400 text-[10px] font-bold">
-                        Open Registration
-                      </span>
-                    </div>
-
-                    <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition">
-                      {t.name}
-                    </h3>
-
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                      {cleanTournamentDescription(t.description) || 'Join top regional squads in this high-intensity football competition.'}
-                    </p>
-
-                    <div className="space-y-2.5 pt-4 text-xs">
-                      <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                        <span className="flex items-center space-x-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="truncate max-w-[150px]">{t.location || 'Metropolis'}</span>
+                return (
+                  <Link
+                    key={t.id}
+                    to={`/tournaments/${t.id}`}
+                    className="saas-card saas-card-hover p-6 rounded-3xl border flex flex-col justify-between space-y-4 cursor-pointer group"
+                  >
+                    <div>
+                      {/* Top Badges */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${formatBadgeStyle(t.format)}`}>
+                          {getFormatLabel(t.format)}
                         </span>
-                        <span className="flex items-center space-x-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{t.startDate ? new Date(t.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming'}</span>
+
+                        <span className="px-2.5 py-1 rounded-xl bg-green-100 dark:bg-green-950/80 text-green-700 dark:text-green-400 text-[10px] font-bold">
+                          Open Registration
                         </span>
                       </div>
 
-                      {/* Progress Bar for Registration */}
-                      <div className="space-y-1 pt-1">
-                        <div className="flex justify-between text-[11px]">
-                          <span className="text-slate-500 dark:text-slate-400">Registered Teams</span>
-                          <span className="font-bold text-green-600 dark:text-green-400">
-                            {registered} / {max}
+                      <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white line-clamp-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition">
+                        {t.name}
+                      </h3>
+
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                        {cleanTournamentDescription(t.description) || 'Join top regional squads in this high-intensity football competition.'}
+                      </p>
+
+                      <div className="space-y-2.5 pt-4 text-xs">
+                        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                          <span className="flex items-center space-x-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="truncate max-w-[150px]">{t.location || 'Metropolis'}</span>
+                          </span>
+                          <span className="flex items-center space-x-1.5">
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{t.startDate ? new Date(t.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming'}</span>
                           </span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-[#16261C] rounded-full h-1.5 overflow-hidden">
-                          <div
-                            className="bg-green-600 h-1.5 rounded-full transition-all duration-500"
-                            style={{ width: `${progressPercent}%` }}
-                          />
+
+                        {/* Progress Bar for Registration */}
+                        <div className="space-y-1 pt-1">
+                          <div className="flex justify-between text-[11px]">
+                            <span className="text-slate-500 dark:text-slate-400">Registered Teams</span>
+                            <span className="font-bold text-green-600 dark:text-green-400">
+                              {registered} / {max}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-100 dark:bg-[#16261C] rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="bg-green-600 h-1.5 rounded-full transition-all duration-500"
+                              style={{ width: `${progressPercent}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="pt-2 border-t border-slate-100 dark:border-[#1E3A29] flex items-center justify-between gap-3">
-                    <div>
-                      <span className="text-[10px] text-slate-400 block font-semibold">Entry Fee</span>
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">
-                        {t.entryFee ? `₹ ${t.entryFee}` : 'Free Entry'}
+                    <div className="pt-2 border-t border-slate-100 dark:border-[#1E3A29] flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block font-semibold">Entry Fee</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          {t.entryFee ? `₹ ${t.entryFee}` : 'Free Entry'}
+                        </span>
+                      </div>
+
+                      <span className="px-4 py-2 bg-green-600 group-hover:bg-green-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
+                        <span>View Hub</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
 
-                    <span className="px-4 py-2 bg-green-600 group-hover:bg-green-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5">
-                      <span>View Hub</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-
-                </Link>
-              );
-            })}
-          </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )
         )}
 
         {tournamentScope === 'all' && (
@@ -913,8 +950,114 @@ export const HomePage = () => {
 
       </section>
 
+      {/* ─── 4. HELP & COMMUNITY ────────────────────────────────────────── */}
+      <section id="help-community-section" className="saas-card p-6 sm:p-8 rounded-3xl space-y-6 scroll-mt-20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-[#1E3A29]">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <BookOpen className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white">
+                Help & Community
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Access the official FootVerse documentation, matchday stories, and video guides.
+            </p>
+          </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Card 1: User Guide */}
+          <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] bg-white dark:bg-[#101C14] flex flex-col justify-between space-y-5 group saas-card-hover transition shadow-xs">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-600 dark:text-green-400 shadow-inner">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20">
+                  PDF Guide
+                </span>
+              </div>
+              <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition">
+                FootVerse User Guide
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Get started with detailed instructions and guidelines for using the platform effectively.
+              </p>
+            </div>
+            <a
+              href="/FootVerse-User-Guide.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold rounded-xl text-xs shadow-md shadow-green-600/20 transition flex items-center justify-center space-x-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Read User Guide</span>
+              <ArrowUpRight className="w-3.5 h-3.5 opacity-80" />
+            </a>
+          </div>
 
+          {/* Card 2: Instagram */}
+          <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] bg-white dark:bg-[#101C14] flex flex-col justify-between space-y-5 group saas-card-hover transition shadow-xs">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-600 dark:text-pink-400 shadow-inner">
+                  <InstagramIcon className="w-6 h-6" />
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-pink-500/10 text-pink-700 dark:text-pink-400 border border-pink-500/20">
+                  @footverse.app
+                </span>
+              </div>
+              <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">
+                Instagram Community
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Follow our official page for community updates.
+              </p>
+            </div>
+            <a
+              href="https://www.instagram.com/footverse.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full px-4 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-white font-bold rounded-xl text-xs shadow-sm border border-slate-700/50 dark:border-[#1E3A29] transition flex items-center justify-center space-x-2"
+            >
+              <InstagramIcon className="w-4 h-4 text-pink-500" />
+              <span>Instagram</span>
+              <ArrowUpRight className="w-3.5 h-3.5 opacity-80" />
+            </a>
+          </div>
+
+          {/* Card 3: YouTube */}
+          <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] bg-white dark:bg-[#101C14] flex flex-col justify-between space-y-5 group saas-card-hover transition shadow-xs">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-400 shadow-inner">
+                  <YouTubeIcon className="w-6 h-6" />
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20">
+                  Official Channel
+                </span>
+              </div>
+              <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition">
+                YouTube Channel
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Subscribe our channel for tutorial guides.
+              </p>
+            </div>
+            <a
+              href="https://youtube.com/@footverse-t6i?si=iJzw3vBT__NNPC1y"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full px-4 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-white font-bold rounded-xl text-xs shadow-sm border border-slate-700/50 dark:border-[#1E3A29] transition flex items-center justify-center space-x-2"
+            >
+              <YouTubeIcon className="w-4 h-4 text-red-500" />
+              <span>YouTube</span>
+              <ArrowUpRight className="w-3.5 h-3.5 opacity-80" />
+            </a>
+          </div>
+        </div>
+      </section>
 
       {/* ─── 5. BOTTOM CTA CALLOUT ────────────────────────────────────────── */}
       <section className="saas-card rounded-3xl p-8 sm:p-10 bg-gradient-to-r from-[#0C1B12] via-[#101C14] to-[#07130C] text-white border border-green-900/40 shadow-xl relative overflow-hidden text-center space-y-5">
