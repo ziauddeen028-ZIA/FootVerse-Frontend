@@ -72,60 +72,6 @@ export const TournamentHub = () => {
   // Ref for auto-scrolling to roster section
   const rosterRef = useRef(null);
 
-  // Fallback demo data for demo IDs or when backend has no entries yet
-  const demoTournaments = [
-    {
-      id: 'demo-t1',
-      slug: 'champions-cup-2026',
-      name: 'Champions Cup 2026',
-      format: 'knockout',
-      status: 'registration_open',
-      location: 'Metropolis Arena, Pitch A',
-      startDate: '2026-08-15',
-      endDate: '2026-08-30',
-      maxTeams: 16,
-      registeredTeamsCount: 12,
-      entryFee: 150,
-      description: 'The premier knockout championship for elite clubs across the metro region. Winner takes home the championship trophy and regional recognition.'
-    },
-    {
-      id: 'demo-t2',
-      slug: 'footverse-super-league',
-      name: 'FootVerse Super League',
-      format: 'league',
-      status: 'ongoing',
-      location: 'National Sports Complex',
-      startDate: '2026-09-01',
-      endDate: '2026-11-20',
-      maxTeams: 10,
-      registeredTeamsCount: 8,
-      entryFee: 200,
-      description: 'Double round-robin league season with weekly televised fixtures, official referees, and MVP season awards.'
-    },
-    {
-      id: 'demo-t3',
-      slug: 'all-stars-invitational',
-      name: 'All-Stars Invitational',
-      format: 'group_stage',
-      status: 'registration_open',
-      location: 'Downtown Arena',
-      startDate: '2026-10-05',
-      endDate: '2026-10-25',
-      maxTeams: 8,
-      registeredTeamsCount: 6,
-      entryFee: 100,
-      description: 'Hybrid tournament featuring group stage qualifiers followed by an intense single-elimination knockout final.'
-    }
-  ];
-
-  const demoTeams = [
-    { id: 'dt1', name: 'Strikers FC', shortName: 'STK', city: 'Metropolis', primaryColor: '#16A34A', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 7, draws: 1, losses: 0, goalsFor: 22, goalsAgainst: 6, isCaptain: true },
-    { id: 'dt2', name: 'Titans FC', shortName: 'TTN', city: 'Metro East', primaryColor: '#059669', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 6, draws: 1, losses: 1, goalsFor: 19, goalsAgainst: 8 },
-    { id: 'dt3', name: 'Galacticos', shortName: 'GLX', city: 'Westside', primaryColor: '#0D9488', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 5, draws: 2, losses: 1, goalsFor: 17, goalsAgainst: 10 },
-    { id: 'dt4', name: 'Apex Predators', shortName: 'APX', city: 'Highland', primaryColor: '#10B981', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 4, draws: 2, losses: 2, goalsFor: 14, goalsAgainst: 12 },
-    { id: 'dt5', name: 'Thunder FC', shortName: 'THN', city: 'North Bay', primaryColor: '#D97706', secondaryColor: '#000000', matchesPlayed: 8, wins: 3, draws: 1, losses: 4, goalsFor: 11, goalsAgainst: 15 },
-    { id: 'dt6', name: 'Vipers SC', shortName: 'VPR', city: 'Southside', primaryColor: '#DC2626', secondaryColor: '#FFFFFF', matchesPlayed: 8, wins: 2, draws: 2, losses: 4, goalsFor: 9, goalsAgainst: 14 }
-  ];
 
   const handleSelectTeam = async (team) => {
     if (selectedTeam?.id === team.id) {

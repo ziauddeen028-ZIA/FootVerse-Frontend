@@ -30,48 +30,7 @@ export const DashboardShell = () => {
     }
   }, [activeRole, navigate]);
 
-  // Mock data for Phase 1 preview
-  const liveMatch = {
-    league: 'FootVerse Premier League • Week 8',
-    homeTeam: 'Strikers FC',
-    awayTeam: 'Titans FC',
-    homeScore: 2,
-    awayScore: 1,
-    minute: "67'",
-    stadium: 'Arena Park, Pitch A',
-    possession: '54% - 46%',
-    shotsOnTarget: '6 - 4'
-  };
 
-  const upcomingTournament = {
-    name: 'Champions Cup 2026',
-    format: 'Knockout • 16 Teams',
-    prizePool: '$10,000',
-    startDate: 'Aug 15, 2026',
-    teamsRegistered: 13,
-    maxTeams: 16,
-    city: 'Metropolis'
-  };
-
-  const topScorers = [
-    { rank: 1, name: 'Marcus Rashford', team: 'Strikers FC', goals: 12, assists: 4, matches: 8 },
-    { rank: 2, name: 'Erling Haaland', team: 'Titans FC', goals: 11, assists: 2, matches: 7 },
-    { rank: 3, name: 'Kylian Mbappé', team: 'Galacticos', goals: 9, assists: 6, matches: 8 },
-    { rank: 4, name: 'Bukayo Saka', team: 'Gunners FC', goals: 7, assists: 8, matches: 7 },
-  ];
-
-  const teamRankings = [
-    { rank: 1, team: 'Strikers FC', p: 8, w: 7, d: 1, l: 0, pts: 22, form: ['W', 'W', 'W', 'D', 'W'] },
-    { rank: 2, team: 'Titans FC', p: 8, w: 6, d: 1, l: 1, pts: 19, form: ['W', 'W', 'L', 'W', 'W'] },
-    { rank: 3, team: 'Galacticos', p: 8, w: 5, d: 2, l: 1, pts: 17, form: ['D', 'W', 'W', 'W', 'L'] },
-    { rank: 4, team: 'Apex Predators', p: 8, w: 4, d: 2, l: 2, pts: 14, form: ['L', 'W', 'D', 'W', 'W'] },
-  ];
-
-  const recentMatches = [
-    { home: 'Galacticos', away: 'Apex Predators', homeScore: 3, awayScore: 1, date: 'Yesterday', mvp: 'K. Mbappé' },
-    { home: 'Thunder FC', away: 'Vipers SC', homeScore: 0, awayScore: 2, date: '2 days ago', mvp: 'D. Nunez' },
-    { home: 'Gunners FC', away: 'Spartans', homeScore: 4, awayScore: 2, date: '3 days ago', mvp: 'B. Saka' },
-  ];
 
   const isGuest = !user || activeRole === ROLES.GUEST;
 
