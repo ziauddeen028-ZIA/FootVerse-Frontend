@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Shield, Star, Award, Sparkles, ExternalLink } from 'lucide-react';
+import { Trophy, Shield, Star, Award, Sparkles, ExternalLink, Edit2, Plus } from 'lucide-react';
 import { tournamentService } from '../../services/tournamentService';
+import { BestPlayerModal } from './BestPlayerModal';
 
 // Module-level cache to deduplicate requests across cards
 const statsCache = new Map();
@@ -72,38 +73,54 @@ const MiniAvatar = ({ url, name, ringColor = 'ring-amber-400/40', badgeIcon: Bad
  * 3-Column Desktop Grid / Responsive Mobile Stack
  * Publicly visible to all users (spectators, players, organizers)
  * Clickable player names link directly to `/players?id=${playerId}`
+ * Organizers can select / change the Best Player (MVP Award) directly from this card.
  */
-export const TournamentAwardsSummary = ({ tournamentId, initialAwards = null }) => {
+export const TournamentAwardsSummary = ({
+  tournamentId,
+  initialAwards = null,
+  isOrganizer = false,
+  onAwardsChange = null
+}) => {
   const [awards, setAwards] = useState(initialAwards);
   const [loading, setLoading] = useState(!initialAwards);
+  const [isBPModalOpen, setIsBPModalOpen] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    if (initialAwards) {
-      setAwards(initialAwards);
-      setLoading(false);
-      return;
-    }
-
+  const loadAwards = async () => {
     if (!tournamentId) {
       setAwards(null);
       setLoading(false);
       return;
     }
-
     setLoading(true);
-    fetchTournamentAwards(tournamentId).then((data) => {
-      if (isMounted) {
-        setAwards(data);
-        setLoading(false);
-      }
-    });
+    try {
+      const data = await fetchTournamentAwards(tournamentId);
+      setAwards(data);
+    } catch (e) {
+      console.warn('Failed to load awards:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return () => {
-      isMounted = false;
-    };
+  useEffect(() => {
+    if (initialAwards) {
+      setAwards(initialAwards);
+      setLoading(false);
+      return;
+    }
+    loadAwards();
   }, [tournamentId, initialAwards]);
+
+  const handleSavedBestPlayer = (savedPlayer) => {
+    clearTournamentAwardsCache(tournamentId);
+    setAwards((prev) => ({
+      ...prev,
+      bestPlayer: savedPlayer
+    }));
+    if (onAwardsChange) {
+      onAwardsChange(savedPlayer);
+    }
+  };
 
   const topScorer = awards?.topScorer;
   const bestKeeper = awards?.bestKeeper;
@@ -361,7 +378,21 @@ export const TournamentAwardsSummary = ({ tournamentId, initialAwards = null }) 
               <span>⭐</span>
               <span className="tracking-wide uppercase font-extrabold text-[10px]">Best Player</span>
             </span>
-            <span className="text-[9.5px] font-semibold text-violet-600/90 dark:text-violet-400/90">MVP Award</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[9.5px] font-semibold text-violet-600/90 dark:text-violet-400/90">MVP Award</span>
+              {isOrganizer && bestPlayerName && (
+                <button
+                  type="button"
+                  id="edit-mvp-btn"
+                  onClick={() => setIsBPModalOpen(true)}
+                  className="inline-flex items-center gap-1 text-[9.5px] font-bold text-violet-700 dark:text-violet-300 hover:text-violet-900 dark:hover:text-white bg-violet-100 dark:bg-violet-900/40 hover:bg-violet-200 px-1.5 py-0.5 rounded-md transition-colors"
+                  title="Change MVP selection"
+                >
+                  <Edit2 className="w-2.5 h-2.5" />
+                  <span>Change</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Body */}
@@ -427,8 +458,30 @@ export const TournamentAwardsSummary = ({ tournamentId, initialAwards = null }) 
                   </span>
                 </div>
               </>
+            ) : isOrganizer ? (
+              /* Organizer Select Best Player CTA */
+              <div className="flex items-center justify-between w-full py-0.5">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 min-w-0">
+                  <div className="w-7 h-7 rounded-full border border-dashed border-violet-500/40 dark:border-violet-500/30 flex items-center justify-center text-xs text-violet-600 dark:text-violet-400 shrink-0">
+                    ⭐
+                  </div>
+                  <div className="flex flex-col leading-tight min-w-0">
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">Pending Pick</span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 truncate">Choose MVP player</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  id="select-mvp-btn"
+                  onClick={() => setIsBPModalOpen(true)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 shadow-sm shadow-violet-600/30 transition shrink-0 hover:scale-105 active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Select MVP</span>
+                </button>
+              </div>
             ) : (
-              /* Polished Empty State (Navigation Disabled) */
+              /* Spectator Empty State */
               <div className="flex items-center justify-between w-full py-0.5 cursor-default select-none pointer-events-none">
                 <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
                   <div className="w-7 h-7 rounded-full border border-dashed border-violet-500/30 dark:border-violet-500/20 flex items-center justify-center text-xs text-violet-500">
@@ -447,6 +500,17 @@ export const TournamentAwardsSummary = ({ tournamentId, initialAwards = null }) 
           </div>
         </div>
       </div>
+
+      {/* Best Player Selection Modal */}
+      {isOrganizer && (
+        <BestPlayerModal
+          isOpen={isBPModalOpen}
+          onClose={() => setIsBPModalOpen(false)}
+          tournamentId={tournamentId}
+          currentBestPlayer={bestPlayer}
+          onSaved={handleSavedBestPlayer}
+        />
+      )}
     </div>
   );
 };

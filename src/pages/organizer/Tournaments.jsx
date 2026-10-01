@@ -239,11 +239,16 @@ export const Tournaments = () => {
     if (!selectedTournamentForBracket) return;
     setIsGeneratingBracket(true);
     try {
-      const res = await tournamentService.generateKnockout(selectedTournamentForBracket.id, options);
+      const isGroup = selectedTournamentForBracket.format === 'group_stage' || 
+                      selectedTournamentForBracket.format === 'group_knockout' || 
+                      selectedTournamentForBracket.format === 'hybrid';
+      const res = isGroup
+        ? await tournamentService.generateHybridBracket(selectedTournamentForBracket.id, options)
+        : await tournamentService.generateKnockout(selectedTournamentForBracket.id, options);
       showToast(res.message || 'Knockout bracket generated successfully!');
       setIsBracketConfirmOpen(false);
       setSelectedTournamentForBracket(null);
-      fetchTournaments();
+      await fetchTournaments();
     } catch (err) {
       showToast(err.message || 'Failed to generate knockout bracket.', 'error');
     } finally {
@@ -264,7 +269,7 @@ export const Tournaments = () => {
       showToast(res.message || `${isGroup ? 'Group stage' : 'League'} fixtures generated successfully!`);
       setIsLeagueConfirmOpen(false);
       setSelectedTournamentForLeague(null);
-      fetchTournaments();
+      await fetchTournaments();
     } catch (err) {
       showToast(err.message || 'Failed to generate fixtures.', 'error');
     } finally {
@@ -548,14 +553,24 @@ export const Tournaments = () => {
                       Generate Bracket
                     </button>
                   )}
-                  {(tournament.format === 'league' || tournament.format === 'group_stage' || tournament.format === 'group_knockout') && (tournament.registeredTeamsCount || 0) >= 2 && tournament.status !== 'completed' && (
+                  {tournament.format === 'league' && (tournament.registeredTeamsCount || 0) >= 2 && tournament.status !== 'completed' && (
                     <button
                       onClick={() => handleOpenGenerateLeague(tournament)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/60 border border-green-200 dark:border-green-800/60 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors shadow-sm"
-                      title={tournament.format === 'league' ? "Generate Round-Robin League Fixtures" : "Generate Group Fixtures"}
+                      title="Generate Round-Robin League Fixtures"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
-                      {tournament.format === 'league' ? 'Generate Fixtures' : 'Generate Group Fixtures'}
+                      Generate Fixtures
+                    </button>
+                  )}
+                  {(tournament.format === 'group_stage' || tournament.format === 'group_knockout') && !tournament.hasGroupFixtures && (tournament.groupMatchesCount ?? 0) === 0 && (tournament.registeredTeamsCount || 0) >= 2 && tournament.status !== 'completed' && (
+                    <button
+                      onClick={() => handleOpenGenerateLeague(tournament)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/60 border border-green-200 dark:border-green-800/60 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors shadow-sm"
+                      title="Generate Group Fixtures"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Generate Group Fixtures
                     </button>
                   )}
                   <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">

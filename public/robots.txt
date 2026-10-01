@@ -12,7 +12,6 @@ Allow: /register
 # Disallow private user and organizer routes
 Disallow: /organizer/
 Disallow: /profile
-Disallow: /notifications
 Disallow: /settings
 Disallow: /admin
 Disallow: /matches-manage

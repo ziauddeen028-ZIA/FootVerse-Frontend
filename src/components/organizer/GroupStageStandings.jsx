@@ -248,7 +248,11 @@ export const GroupStageStandings = ({
           </div>
 
           <button
-            onClick={onGenerateKnockout}
+            id="generate-knockout-bracket-btn"
+            onClick={() => {
+              const qualifyingTeamsList = groups.flatMap(g => g.standings?.slice(0, qualifyingTeamsPerGroup) ?? []).map(s => s.team).filter(Boolean);
+              onGenerateKnockout(qualifyingTeamsList);
+            }}
             disabled={isGeneratingKnockout}
             className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white transition-all shadow-md ${
               isGeneratingKnockout

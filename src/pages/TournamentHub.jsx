@@ -32,6 +32,7 @@ import { useAuth } from '../context/AuthContext';
 import { KnockoutBracket } from '../components/organizer/KnockoutBracket';
 import { LeagueStandings } from '../components/organizer/LeagueStandings';
 import { GroupStageStandings } from '../components/organizer/GroupStageStandings';
+import { GenerateBracketModal } from '../components/organizer/GenerateBracketModal';
 import { TournamentAwardsSummary } from '../components/tournament/TournamentAwardsSummary';
 import { Toast } from '../components/common/Toast';
 import { cleanTournamentDescription, extractTournamentConfig } from '../utils/substitutionUtils';
@@ -70,6 +71,11 @@ export const TournamentHub = () => {
   const [isGenerateFixturesConfirmOpen, setIsGenerateFixturesConfirmOpen] = useState(false);
   const [isGeneratingFixtures, setIsGeneratingFixtures] = useState(false);
 
+  // Knockout Bracket Generation state (from group stage)
+  const [isBracketModalOpen, setIsBracketModalOpen] = useState(false);
+  const [isGeneratingKnockout, setIsGeneratingKnockout] = useState(false);
+  const [qualifiedTeamsForModal, setQualifiedTeamsForModal] = useState(null);
+
   // Code-join state (Captain/Manager joining via invite code)
   const [codeInput, setCodeInput] = useState('');
   const [codeTeamId, setCodeTeamId] = useState('');
@@ -90,6 +96,18 @@ export const TournamentHub = () => {
   const allTeamsHaveGroup = useMemo(() => {
     return teams.length >= 2 && teams.every(t => t.groupName && t.groupName.trim() !== '');
   }, [teams]);
+
+  // Group stage completion: all group matches have finished
+  const groupStageComplete = useMemo(() => {
+    return groupFixtures.length > 0 && groupFixtures.every(
+      m => m.status === 'fulltime' || m.status === 'completed'
+    );
+  }, [groupFixtures]);
+
+  // Whether knockout bracket matches already exist
+  const hasKnockoutBracket = useMemo(() => {
+    return matches.some(m => m.bracketPosition != null);
+  }, [matches]);
 
   const handleSelectTeam = async (team) => {
     if (selectedTeam?.id === team.id) {
@@ -232,6 +250,49 @@ export const TournamentHub = () => {
       setToast({ message: errMsg, type: 'error' });
     } finally {
       setIsGeneratingFixtures(false);
+    }
+  };
+  // Handle Open Knockout Bracket Generator Modal (Organizer / Admin)
+  const handleOpenGenerateKnockout = (teamsList = null) => {
+    if (teamsList && Array.isArray(teamsList) && teamsList.length > 0) {
+      setQualifiedTeamsForModal(teamsList);
+    } else if (groups && groups.length > 0) {
+      const config = extractTournamentConfig(tournament);
+      const qCount = config.qualifyingTeamsPerGroup || 2;
+      const qTeams = groups.flatMap(g => 
+        (g.standings || []).slice(0, qCount).map(s => s.team)
+      ).filter(Boolean);
+      setQualifiedTeamsForModal(qTeams);
+    } else {
+      setQualifiedTeamsForModal(null);
+    }
+    setIsBracketModalOpen(true);
+  };
+
+  // Handle Knockout Bracket Generation Submission (Organizer / Admin)
+  const handleGenerateHybridBracket = async (options = {}) => {
+    if (!tournament?.id) return;
+    setIsGeneratingKnockout(true);
+    try {
+      const config = extractTournamentConfig(tournament);
+      const qCount = config.qualifyingTeamsPerGroup || 2;
+      const payload = {
+        ...options,
+        qualifyingTeamsPerGroup: qCount
+      };
+      const res = await tournamentService.generateHybridBracket(tournament.id, payload);
+      setToast({
+        message: res.message || 'Knockout bracket generated successfully!',
+        type: 'success'
+      });
+      setIsBracketModalOpen(false);
+      await fetchTournamentDetails();
+    } catch (err) {
+      console.error('Failed to generate knockout bracket:', err);
+      const errMsg = err.response?.data?.error || err.message || 'Failed to generate knockout bracket.';
+      setToast({ message: errMsg, type: 'error' });
+    } finally {
+      setIsGeneratingKnockout(false);
     }
   };
 
@@ -744,7 +805,7 @@ export const TournamentHub = () => {
 
       {/* ─── TOURNAMENT AWARDS (Top Scorer, Best Goalkeeper, Best Player) ──── */}
       <section className="saas-card p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#101C14] border border-slate-200/80 dark:border-[#1E3A29]">
-        <TournamentAwardsSummary tournamentId={tournament.id} />
+        <TournamentAwardsSummary tournamentId={tournament.id} isOrganizer={isOrganizer} />
       </section>
 
       {/* ─── COMPETITION VIEW — FORMAT-AWARE ──────────────────────────────── */}
@@ -850,6 +911,10 @@ export const TournamentHub = () => {
                   <GroupStageStandings 
                     groups={groups} 
                     qualifyingTeamsPerGroup={qualifyingTeamsPerGroup}
+                    groupStageComplete={groupStageComplete}
+                    hasKnockoutBracket={hasKnockoutBracket}
+                    isGeneratingKnockout={isGeneratingKnockout}
+                    onGenerateKnockout={isOrganizer ? handleOpenGenerateKnockout : null}
                   />
                 )}
               </div>
@@ -1140,6 +1205,16 @@ export const TournamentHub = () => {
         onConfirm={handleGenerateGroupFixtures}
         onCancel={() => setIsGenerateFixturesConfirmOpen(false)}
         isLoading={isGeneratingFixtures}
+      />
+
+      {/* Generate Knockout Bracket Modal (Organizer / Admin) */}
+      <GenerateBracketModal
+        isOpen={isBracketModalOpen}
+        onClose={() => setIsBracketModalOpen(false)}
+        tournament={tournament}
+        qualifiedTeams={qualifiedTeamsForModal}
+        onGenerate={handleGenerateHybridBracket}
+        isLoading={isGeneratingKnockout}
       />
 
       {/* Toast Notification Component */}

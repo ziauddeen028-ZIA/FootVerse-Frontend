@@ -659,6 +659,8 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
   const [showTieModal, setShowTieModal] = useState(false);
   const [isResolvingTie, setIsResolvingTie] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success' });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdatedText, setLastUpdatedText] = useState('');
 
   // ── Quick Match & Authorization Detection ─────────────────────────────────
   const isQuickMatch = Boolean(match && !match.tournamentId && !match.tournament?.id);
@@ -876,6 +878,42 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
       setLoading(false);
     }
   }, [matchId, fetchEvents, fetchRosters]);
+
+  const handleManualRefresh = useCallback(async () => {
+    if (isRefreshing || !matchId) return;
+    setIsRefreshing(true);
+    try {
+      const res = await matchService.getById(matchId);
+      const m = res.match || res;
+      setMatch(m);
+      setHomeScore(m.homeScore ?? 0);
+      setAwayScore(m.awayScore ?? 0);
+
+      if (m.homeTeamId && !selectedTeamId) {
+        setSelectedTeamId(m.homeTeamId);
+      }
+
+      if (m.status === STATUS.LIVE && m.startedAt) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - new Date(m.startedAt).getTime()) / 1000));
+        setTimerSeconds(elapsed);
+        setTimerRunning(true);
+      } else {
+        setTimerRunning(false);
+      }
+
+      await Promise.all([
+        fetchRosters(m.homeTeamId, m.awayTeamId),
+        fetchEvents(),
+      ]);
+
+      setLastUpdatedText('Updated just now');
+    } catch (err) {
+      console.error('Error manually refreshing match:', err);
+      showToast('Failed to refresh match updates. Please try again.', 'error');
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing, matchId, selectedTeamId, fetchRosters, fetchEvents]);
 
   useEffect(() => {
     fetchMatch();
@@ -1718,6 +1756,27 @@ export const LiveMatch = ({ isPublic: propIsPublic } = {}) => {
                 color="slate"
               />
             </div>
+          </div>
+
+          {/* Manual Refresh Option */}
+          <div className="mt-5 pt-3 flex flex-wrap items-center justify-center gap-2.5 border-t border-slate-100/80 dark:border-[#1E3A29]/60">
+            <button
+              type="button"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              id="refresh-match-btn"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/90 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-[#1E3A29] text-xs font-semibold shadow-2xs hover:shadow-xs active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Refresh for latest score, events, and match updates"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-green-600 dark:text-green-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing updates...' : 'Refresh for latest updates'}</span>
+            </button>
+            {lastUpdatedText && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg animate-in fade-in duration-200">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                <span>{lastUpdatedText}</span>
+              </span>
+            )}
           </div>
         </div>
 

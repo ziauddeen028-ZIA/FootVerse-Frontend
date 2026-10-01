@@ -2,7 +2,6 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';
 
 // Layouts & Guards (loaded synchronously for fast scaffolding)
 import { PublicLayout } from './components/layout/PublicLayout';
@@ -26,7 +25,6 @@ const StatsHub = lazy(() => import('./pages/StatsHub').then(m => ({ default: m.S
 const TournamentHub = lazy(() => import('./pages/TournamentHub').then(m => ({ default: m.TournamentHub })));
 const PublicMatchDetail = lazy(() => import('./pages/PublicMatchDetail').then(m => ({ default: m.PublicMatchDetail })));
 const PublicTeamDetail = lazy(() => import('./pages/PublicTeamDetail').then(m => ({ default: m.PublicTeamDetail })));
-const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const TeamDashboard = lazy(() => import('./pages/TeamDashboard').then(m => ({ default: m.TeamDashboard })));
 
 // Lazy-loaded Organizer Pages (Heavy components loaded on-demand)
@@ -105,26 +103,6 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notifications"
-          element={
-            <ProtectedRoute>
-              <NotificationsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notifications-preview"
-          element={
-            <ProtectedRoute>
-              <ModulePreviewPage
-                title="Notifications Center"
-                moduleName="Alerts, Team Invites & Match Reminders"
-                phaseText="Phase 3"
-              />
             </ProtectedRoute>
           }
         />
@@ -219,13 +197,11 @@ export default function App() {
     <ThemeProvider>
       <ErrorBoundary>
         <AuthProvider>
-          <NotificationProvider>
-            <Router>
-              <ScrollToTop />
-              <FirstVisitIntro />
-              <AppContent />
-            </Router>
-          </NotificationProvider>
+          <Router>
+            <ScrollToTop />
+            <FirstVisitIntro />
+            <AppContent />
+          </Router>
         </AuthProvider>
       </ErrorBoundary>
     </ThemeProvider>

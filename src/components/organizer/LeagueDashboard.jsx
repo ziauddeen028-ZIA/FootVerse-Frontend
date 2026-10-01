@@ -23,6 +23,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { LeagueStandings } from './LeagueStandings';
 import { GroupStageStandings } from './GroupStageStandings';
+import { KnockoutBracket } from './KnockoutBracket';
+import { GenerateBracketModal } from './GenerateBracketModal';
 import { CustomSelect } from '../common/CustomSelect';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Toast } from '../common/Toast';
@@ -48,10 +50,12 @@ export const LeagueDashboard = ({
   const [loadingStandings, setLoadingStandings] = useState(false);
   const [activeMatchday, setActiveMatchday] = useState('all');
 
-  // Fixture generation state
+  // Fixture & Bracket generation state
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingKnockout, setIsGeneratingKnockout] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isBracketModalOpen, setIsBracketModalOpen] = useState(false);
+  const [qualifiedTeamsForModal, setQualifiedTeamsForModal] = useState(null);
   const [toast, setToast] = useState({ message: '', type: 'success' });
 
   const showToast = (message, type = 'success') => {
@@ -211,15 +215,35 @@ export const LeagueDashboard = ({
     }
   };
 
-  // Handle generating knockout bracket from group stage qualifiers
-  const handleGenerateGroupKnockout = async () => {
+  // Open review modal for generating knockout bracket from group qualifiers
+  const handleOpenGenerateKnockout = (teamsList = null) => {
+    if (teamsList && Array.isArray(teamsList) && teamsList.length > 0) {
+      setQualifiedTeamsForModal(teamsList);
+    } else if (standingsData.groups && standingsData.groups.length > 0) {
+      const qTeams = standingsData.groups.flatMap(g => 
+        (g.standings || []).slice(0, qualifyingTeamsPerGroup).map(s => s.team)
+      ).filter(Boolean);
+      setQualifiedTeamsForModal(qTeams);
+    } else {
+      setQualifiedTeamsForModal(null);
+    }
+    setIsBracketModalOpen(true);
+  };
+
+  // Handle generating knockout bracket from group stage qualifiers (called by modal)
+  const handleGenerateGroupKnockout = async (options = {}) => {
     if (!activeId) return;
     setIsGeneratingKnockout(true);
     try {
-      const res = await tournamentService.generateGroupKnockout(activeId, qualifyingTeamsPerGroup);
+      const payload = {
+        ...options,
+        qualifyingTeamsPerGroup
+      };
+      const res = await tournamentService.generateHybridBracket(activeId, payload);
       showToast(
         res.message || `Knockout bracket generated! ${res.totalMatches} matches created.`
       );
+      setIsBracketModalOpen(false);
       if (onRefresh) await onRefresh();
       await fetchStandings(activeId);
     } catch (err) {
@@ -448,7 +472,7 @@ export const LeagueDashboard = ({
           hasKnockoutBracket={hasKnockoutBracket}
           isGeneratingKnockout={isGeneratingKnockout}
           qualifyingTeamsPerGroup={qualifyingTeamsPerGroup}
-          onGenerateKnockout={handleGenerateGroupKnockout}
+          onGenerateKnockout={handleOpenGenerateKnockout}
         />
       ) : (
         <LeagueStandings
@@ -647,6 +671,24 @@ export const LeagueDashboard = ({
         </div>
       )}
 
+      {/* Knockout Playoff Tree Section (if bracket exists) */}
+      {hasKnockoutBracket && (
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              Knockout Stage Playoff Tree
+            </h3>
+          </div>
+          <KnockoutBracket
+            matches={tournamentMatches}
+            tournaments={tournaments}
+            selectedTournamentId={activeId}
+            onMatchClick={(m) => navigate(`/organizer/matches/${m.id}/live?tournament=${activeId}`)}
+          />
+        </div>
+      )}
+
       {/* Confirmation Dialog for Fixture Generation */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
@@ -658,6 +700,16 @@ export const LeagueDashboard = ({
         onConfirm={handleGenerateFixtures}
         onCancel={() => setIsConfirmOpen(false)}
         isLoading={isGenerating}
+      />
+
+      {/* Knockout Bracket Generation / Review Modal */}
+      <GenerateBracketModal
+        isOpen={isBracketModalOpen}
+        onClose={() => setIsBracketModalOpen(false)}
+        tournament={currentTournament}
+        qualifiedTeams={qualifiedTeamsForModal}
+        onGenerate={handleGenerateGroupKnockout}
+        isLoading={isGeneratingKnockout}
       />
     </div>
   );

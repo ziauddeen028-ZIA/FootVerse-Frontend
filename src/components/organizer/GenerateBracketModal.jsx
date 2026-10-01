@@ -15,13 +15,66 @@ import {
 } from 'lucide-react';
 import { CustomSelect } from '../common/CustomSelect';
 import { teamService } from '../../services/teamService';
+import { tournamentService } from '../../services/tournamentService';
+import { extractTournamentConfig } from '../../utils/substitutionUtils';
+
+/**
+ * Computes standard crossover pairings for qualified teams from groups:
+ * e.g., 4 groups x 2 qualifiers (8 teams):
+ * QF 1: 1st Group A vs 2nd Group B
+ * QF 2: 1st Group C vs 2nd Group D
+ * QF 3: 1st Group B vs 2nd Group A
+ * QF 4: 1st Group D vs 2nd Group C
+ */
+const pairGroupQualifiers = (groups, qualifyingTeamsPerGroup) => {
+  const G = groups.length;
+  const Q = qualifyingTeamsPerGroup;
+
+  if (G === 2 && Q === 1) {
+    return [groups[0].standings[0]?.team, groups[1].standings[0]?.team].filter(Boolean);
+  }
+
+  if (G % 2 === 0 && Q === 2) {
+    const topHalf = [];
+    const bottomHalf = [];
+
+    for (let k = 0; k < G / 2; k++) {
+      const g1 = groups[2 * k];
+      const g2 = groups[2 * k + 1];
+
+      if (g1?.standings?.[0]?.team && g2?.standings?.[1]?.team) {
+        topHalf.push(g1.standings[0].team);
+        topHalf.push(g2.standings[1].team);
+      }
+
+      if (g2?.standings?.[0]?.team && g1?.standings?.[1]?.team) {
+        bottomHalf.push(g2.standings[0].team);
+        bottomHalf.push(g1.standings[1].team);
+      }
+    }
+
+    return [...topHalf, ...bottomHalf];
+  }
+
+  // General fallback
+  const result = [];
+  for (let pos = 0; pos < Q; pos++) {
+    for (let g = 0; g < G; g++) {
+      if (groups[g]?.standings?.[pos]?.team) {
+        result.push(groups[g].standings[pos].team);
+      }
+    }
+  }
+  return result;
+};
 
 export const GenerateBracketModal = ({
   isOpen,
   onClose,
   tournament,
   onGenerate,
-  isLoading = false
+  isLoading = false,
+  qualifiedTeams = null
 }) => {
   const [mode, setMode] = useState('automatic'); // 'automatic' | 'manual'
   const [teams, setTeams] = useState([]);
@@ -29,15 +82,61 @@ export const GenerateBracketModal = ({
   const [matchups, setMatchups] = useState([]);
   const [error, setError] = useState(null);
 
-  // Load registered teams for this tournament
+  const isGroupFormat = useMemo(() => {
+    const fmt = tournament?.format?.toLowerCase();
+    return fmt === 'group_stage' || fmt === 'group_knockout' || fmt === 'hybrid';
+  }, [tournament]);
+
+  const tournamentConfig = useMemo(() => {
+    return extractTournamentConfig(tournament);
+  }, [tournament]);
+
+  const qualifyingTeamsPerGroup = tournamentConfig.qualifyingTeamsPerGroup || 2;
+
+  // Load qualified teams for group stage OR registered teams for pure knockout
   useEffect(() => {
     if (!isOpen || !tournament?.id) return;
     setError(null);
     setMode('automatic');
 
-    const fetchTournamentTeams = async () => {
+    const loadTeams = async () => {
       try {
         setLoadingTeams(true);
+
+        // Case 1: qualifiedTeams prop provided explicitly
+        if (qualifiedTeams && Array.isArray(qualifiedTeams) && qualifiedTeams.length > 0) {
+          setTeams(qualifiedTeams);
+          const numM = Math.floor(qualifiedTeams.length / 2);
+          const initialMatchups = Array.from({ length: numM }, (_, i) => ({
+            matchNumber: i + 1,
+            homeTeamId: qualifiedTeams[2 * i]?.id || '',
+            awayTeamId: qualifiedTeams[2 * i + 1]?.id || ''
+          }));
+          setMatchups(initialMatchups);
+          return;
+        }
+
+        // Case 2: Group stage tournament format -> fetch standings and extract qualified teams
+        if (isGroupFormat) {
+          const standingsRes = await tournamentService.getStandings(tournament.id);
+          const groups = standingsRes?.groups || [];
+
+          if (groups.length > 0) {
+            const pairedQualifiers = pairGroupQualifiers(groups, qualifyingTeamsPerGroup);
+            setTeams(pairedQualifiers);
+
+            const numM = Math.floor(pairedQualifiers.length / 2);
+            const initialMatchups = Array.from({ length: numM }, (_, i) => ({
+              matchNumber: i + 1,
+              homeTeamId: pairedQualifiers[2 * i]?.id || '',
+              awayTeamId: pairedQualifiers[2 * i + 1]?.id || ''
+            }));
+            setMatchups(initialMatchups);
+            return;
+          }
+        }
+
+        // Case 3: Pure Knockout tournament -> fetch all registered teams
         const res = await teamService.getAll();
         const allTeams = res?.teams || [];
         const regTeams = allTeams.filter(
@@ -45,27 +144,26 @@ export const GenerateBracketModal = ({
         );
         setTeams(regTeams);
 
-        // Initialize empty matchups based on team count
-        const numMatches = Math.floor(regTeams.length / 2);
-        const initialMatchups = Array.from({ length: numMatches }, (_, i) => ({
+        const numM = Math.floor(regTeams.length / 2);
+        const initialMatchups = Array.from({ length: numM }, (_, i) => ({
           matchNumber: i + 1,
-          homeTeamId: '',
-          awayTeamId: ''
+          homeTeamId: regTeams[2 * i]?.id || '',
+          awayTeamId: regTeams[2 * i + 1]?.id || ''
         }));
         setMatchups(initialMatchups);
       } catch (err) {
         console.error('Failed to load teams for bracket generation:', err);
-        setError('Failed to load registered teams for this tournament.');
+        setError('Failed to load teams for bracket generation.');
       } finally {
         setLoadingTeams(false);
       }
     };
 
-    fetchTournamentTeams();
-  }, [isOpen, tournament?.id]);
+    loadTeams();
+  }, [isOpen, tournament?.id, qualifiedTeams, isGroupFormat, qualifyingTeamsPerGroup]);
 
   const teamCount = teams.length;
-  const supportedCounts = [4, 8, 16, 32, 64];
+  const supportedCounts = [2, 4, 8, 16, 32, 64];
   const isValidTeamCount = supportedCounts.includes(teamCount);
   const numMatches = Math.floor(teamCount / 2);
 
@@ -112,6 +210,19 @@ export const GenerateBracketModal = ({
 
   const handleAutoFill = () => {
     setError(null);
+    const newMatchups = [];
+    for (let i = 0; i < numMatches; i++) {
+      newMatchups.push({
+        matchNumber: i + 1,
+        homeTeamId: teams[2 * i]?.id || '',
+        awayTeamId: teams[2 * i + 1]?.id || ''
+      });
+    }
+    setMatchups(newMatchups);
+  };
+
+  const handleShuffle = () => {
+    setError(null);
     const shuffled = [...teams].sort(() => Math.random() - 0.5);
     const newMatchups = [];
     for (let i = 0; i < numMatches; i++) {
@@ -140,13 +251,13 @@ export const GenerateBracketModal = ({
     setError(null);
 
     if (!isValidTeamCount) {
-      setError(`Knockout brackets require 4, 8, 16, 32, or 64 registered teams. Currently: ${teamCount} teams.`);
+      setError(`Knockout brackets require 2, 4, 8, 16, 32, or 64 teams. Currently: ${teamCount} team(s).`);
       return;
     }
 
     if (mode === 'manual') {
       if (!isManualValid) {
-        setError(`Please assign all ${teamCount} registered teams into the ${numMatches} matchups without duplicates.`);
+        setError(`Please assign all ${teamCount} teams into the ${numMatches} matchups without duplicates.`);
         return;
       }
 
@@ -155,9 +266,16 @@ export const GenerateBracketModal = ({
         awayTeamId: m.awayTeamId
       }));
 
-      onGenerate({ mode: 'manual', matchups: payloadMatchups });
+      onGenerate({ 
+        mode: 'manual', 
+        matchups: payloadMatchups,
+        qualifyingTeamsPerGroup 
+      });
     } else {
-      onGenerate({ mode: 'automatic' });
+      onGenerate({ 
+        mode: 'automatic',
+        qualifyingTeamsPerGroup 
+      });
     }
   };
 
@@ -189,13 +307,13 @@ export const GenerateBracketModal = ({
             <div>
               <div className="inline-flex items-center space-x-1.5 text-[11px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-0.5">
                 <Trophy className="w-3 h-3" />
-                <span>Bracket Generator</span>
+                <span>{isGroupFormat ? 'Playoff Bracket Generator' : 'Bracket Generator'}</span>
               </div>
               <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Generate Knockout Bracket
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-sm sm:max-w-md">
-                {tournament.name} • {teamCount} Registered Teams
+                {tournament.name} • {teamCount} {isGroupFormat ? 'Qualified Teams' : 'Registered Teams'}
               </p>
             </div>
           </div>
@@ -222,7 +340,7 @@ export const GenerateBracketModal = ({
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>Automatic Pairing</span>
+              <span>{isGroupFormat ? 'Crossover Pairing' : 'Automatic Pairing'}</span>
             </button>
 
             <button
@@ -257,8 +375,8 @@ export const GenerateBracketModal = ({
                 <span>Unsupported Team Count</span>
               </div>
               <p>
-                Knockout bracket generation requires exactly 4, 8, 16, 32, or 64 teams.
-                Currently, {teamCount} team(s) are registered for this tournament.
+                Knockout bracket generation requires 2, 4, 8, 16, 32, or 64 teams.
+                Currently, {teamCount} team(s) are available.
               </p>
             </div>
           )}
@@ -269,35 +387,38 @@ export const GenerateBracketModal = ({
               <div className="p-5 rounded-2xl bg-green-50/60 dark:bg-green-950/20 border border-green-200 dark:border-green-900/40 space-y-3">
                 <div className="flex items-center space-x-2 text-green-700 dark:text-green-300 font-bold text-xs">
                   <Sparkles className="w-4 h-4" />
-                  <span>Automatic Seeding</span>
+                  <span>{isGroupFormat ? 'Group Crossover Seeding' : 'Automatic Seeding'}</span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  All <strong className="text-slate-900 dark:text-white">{teamCount} registered teams</strong> will be automatically paired into <strong className="text-slate-900 dark:text-white">{numMatches} first-round matches</strong>.
-                  Subsequent round matchups (Quarter Finals, Semi Finals, and Final) are automatically populated as match winners advance.
+                  All <strong className="text-slate-900 dark:text-white">{teamCount} {isGroupFormat ? 'qualified' : 'registered'} teams</strong> will be seeded into <strong className="text-slate-900 dark:text-white">{numMatches} {getRoundOneLabel()}</strong>.
+                  {isGroupFormat
+                    ? ' Crossover pairings ensure top seeds from different groups are matched fairly (e.g. 1st Group A vs 2nd Group B). '
+                    : ' '}
+                  Subsequent round matchups (Quarter Finals, Semi Finals, Final) will automatically populate as match winners advance.
                 </p>
               </div>
 
               {/* Tournament Structure Breakdown */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#16261C] border border-slate-200/80 dark:border-[#1E3A29] space-y-3 text-xs">
                 <h4 className="font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                  <span>Tournament Structure Preview</span>
+                  <span>Tournament Bracket Preview</span>
                   <span className="text-green-600 dark:text-green-400 font-semibold">{numMatches * 2 - 1} Total Matches</span>
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
                   <div className="p-2.5 rounded-xl bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] text-center">
-                    <span className="text-slate-400 block font-semibold">Round 1</span>
+                    <span className="text-slate-400 block font-semibold">{numMatches === 4 ? 'Quarter Finals' : 'Round 1'}</span>
                     <span className="text-slate-900 dark:text-white font-bold">{numMatches} Matches</span>
                   </div>
                   {numMatches >= 4 && (
                     <div className="p-2.5 rounded-xl bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] text-center">
-                      <span className="text-slate-400 block font-semibold">Quarter Finals</span>
-                      <span className="text-slate-900 dark:text-white font-bold">{numMatches / 2} Matches</span>
+                      <span className="text-slate-400 block font-semibold">Semi Finals</span>
+                      <span className="text-slate-900 dark:text-white font-bold">{Math.max(1, Math.floor(numMatches / 2))} Matches</span>
                     </div>
                   )}
-                  {numMatches >= 2 && (
+                  {numMatches >= 8 && (
                     <div className="p-2.5 rounded-xl bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] text-center">
-                      <span className="text-slate-400 block font-semibold">Semi Finals</span>
-                      <span className="text-slate-900 dark:text-white font-bold">{Math.max(1, Math.floor(numMatches / 4))} Matches</span>
+                      <span className="text-slate-400 block font-semibold">Quarter Finals</span>
+                      <span className="text-slate-900 dark:text-white font-bold">4 Matches</span>
                     </div>
                   )}
                   <div className="p-2.5 rounded-xl bg-white dark:bg-[#101C14] border border-slate-200 dark:border-[#1E3A29] text-center">
@@ -332,10 +453,20 @@ export const GenerateBracketModal = ({
                     type="button"
                     onClick={handleAutoFill}
                     className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-slate-700 dark:text-slate-300 text-xs font-semibold transition flex items-center space-x-1"
-                    title="Randomly fill unassigned matchups"
+                    title="Fill using default seeded order"
+                  >
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>Seeded Fill</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleShuffle}
+                    className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#16261C] dark:hover:bg-[#1E3A29] text-slate-700 dark:text-slate-300 text-xs font-semibold transition flex items-center space-x-1"
+                    title="Randomly shuffle matchups"
                   >
                     <Shuffle className="w-3 h-3" />
-                    <span>Auto-Fill</span>
+                    <span>Shuffle</span>
                   </button>
 
                   <button
@@ -366,11 +497,11 @@ export const GenerateBracketModal = ({
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
-                          <span>Match {match.matchNumber}</span>
+                          <span>{numMatches === 4 ? `Quarter Final ${match.matchNumber}` : `Match ${match.matchNumber}`}</span>
                           {isPairComplete && <Check className="w-3.5 h-3.5 text-emerald-500" />}
                         </span>
                         <span className="text-[10px] text-slate-400">
-                          {numMatches === 8 ? `Feeds QF ${Math.floor(idx / 2) + 1}` : 'First Round'}
+                          {numMatches === 8 ? `Feeds QF ${Math.floor(idx / 2) + 1}` : numMatches === 4 ? `Feeds SF ${Math.floor(idx / 2) + 1}` : 'First Round'}
                         </span>
                       </div>
 
@@ -386,7 +517,7 @@ export const GenerateBracketModal = ({
                               const isSelectedElsewhere = selectedTeamIds.has(t.id) && t.id !== match.homeTeamId;
                               return {
                                 value: t.id,
-                                label: `${t.name} ${t.city ? `(${t.city})` : ''} ${isSelectedElsewhere ? '• [Selected]' : ''}`,
+                                label: `${t.name} ${t.groupName ? `(${t.groupName})` : ''} ${t.city ? `(${t.city})` : ''} ${isSelectedElsewhere ? '• [Selected]' : ''}`,
                                 disabled: isSelectedElsewhere
                               };
                             })}
@@ -404,7 +535,7 @@ export const GenerateBracketModal = ({
                               const isSelectedElsewhere = selectedTeamIds.has(t.id) && t.id !== match.awayTeamId;
                               return {
                                 value: t.id,
-                                label: `${t.name} ${t.city ? `(${t.city})` : ''} ${isSelectedElsewhere ? '• [Selected]' : ''}`,
+                                label: `${t.name} ${t.groupName ? `(${t.groupName})` : ''} ${t.city ? `(${t.city})` : ''} ${isSelectedElsewhere ? '• [Selected]' : ''}`,
                                 disabled: isSelectedElsewhere
                               };
                             })}

@@ -31,8 +31,11 @@ export async function fetchApi(endpoint, options = {}, retries = 1) {
     headers,
   };
 
+  const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
   try {
     const response = await fetch(url, config);
+    const duration = Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - startTime);
+    console.log(`[API PERF] ${cleanEndpoint} | ${duration}ms`);
     let data;
     try {
       data = await response.json();

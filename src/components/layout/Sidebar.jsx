@@ -8,18 +8,15 @@ import {
   UserCheck, 
   BarChart3, 
   Radio, 
-  Bell, 
   Settings, 
   LogOut, 
   User,
   Shield
 } from 'lucide-react';
 import { useAuth, ROLE_LABELS } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
 
 export const Sidebar = () => {
   const { user, profile, activeRole, logout } = useAuth();
-  const { unreadCount } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -83,13 +80,6 @@ export const Sidebar = () => {
       icon: Radio, 
       isLive: true,
       match: (pathname, search) => (pathname.startsWith('/matches') && search.includes('live=true')) || pathname === '/live'
-    },
-    { 
-      label: 'Notifications', 
-      path: '/notifications', 
-      icon: Bell, 
-      badge: unreadCount > 0 ? (unreadCount > 9 ? '9+' : String(unreadCount)) : null,
-      match: (pathname) => pathname.startsWith('/notifications')
     },
   ];
 
