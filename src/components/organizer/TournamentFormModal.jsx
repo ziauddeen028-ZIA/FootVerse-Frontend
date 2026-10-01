@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trophy, Users, GitMerge, Zap, Settings, CheckCircle2, Info, RefreshCw, Shield } from 'lucide-react';
+import { X, Trophy, Users, GitMerge, Zap, Settings, CheckCircle2, Info, RefreshCw, Shield, Layers, Shuffle, RotateCcw, AlertCircle, Loader2 } from 'lucide-react';
 import { extractTournamentConfig, buildTournamentDescriptionWithConfig, cleanTournamentDescription, SUB_MODES } from '../../utils/substitutionUtils';
 import { CustomSelect } from '../common/CustomSelect';
+import { teamService } from '../../services/teamService';
 
 export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = null, isLoading = false }) => {
   const [formData, setFormData] = useState({
@@ -28,6 +29,13 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
   });
 
   const [errors, setErrors] = useState({});
+
+  // Registered teams and group assignments state (for Group Stage Edit Tournament)
+  const [registeredTeams, setRegisteredTeams] = useState([]);
+  const [teamAssignments, setTeamAssignments] = useState({});
+  const [initialTeamAssignments, setInitialTeamAssignments] = useState({});
+  const [isTeamsLoading, setIsTeamsLoading] = useState(false);
+  const [teamsError, setTeamsError] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -79,6 +87,47 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
     }
   }, [isOpen, initialData]);
 
+  // Fetch registered teams for Group Stage Edit Tournament
+  useEffect(() => {
+    if (isOpen && initialData?.id && formData.format === 'group_stage') {
+      let isMounted = true;
+      const fetchTournamentTeams = async () => {
+        setIsTeamsLoading(true);
+        setTeamsError(null);
+        try {
+          const res = await teamService.getAll({ tournamentId: initialData.id });
+          if (!isMounted) return;
+          const teamsList = res.teams || [];
+          setRegisteredTeams(teamsList);
+          const initialMap = {};
+          teamsList.forEach(t => {
+            initialMap[t.id] = t.groupName || '';
+          });
+          setTeamAssignments(initialMap);
+          setInitialTeamAssignments(initialMap);
+        } catch (err) {
+          console.error('Failed to load registered teams for group assignment:', err);
+          if (isMounted) {
+            setTeamsError('Failed to load registered teams.');
+          }
+        } finally {
+          if (isMounted) {
+            setIsTeamsLoading(false);
+          }
+        }
+      };
+      fetchTournamentTeams();
+      return () => {
+        isMounted = false;
+      };
+    } else if (!isOpen) {
+      setRegisteredTeams([]);
+      setTeamAssignments({});
+      setInitialTeamAssignments({});
+      setTeamsError(null);
+    }
+  }, [isOpen, initialData?.id, formData.format]);
+
   if (!isOpen) return null;
 
   // Helper to dynamically calculate bracket round names from team count
@@ -103,6 +152,86 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
     return { roundName, totalRounds };
   };
 
+  // Dynamic group generation based on Number of Groups
+  const numGroups = Math.max(1, Math.min(32, Number(formData.numberOfGroups) || 1));
+  const teamsPerGroupLimit = Math.max(2, Number(formData.teamsPerGroup) || 4);
+
+  const getGroupName = (index) => {
+    if (index < 26) {
+      return `Group ${String.fromCharCode(65 + index)}`;
+    }
+    const first = String.fromCharCode(65 + Math.floor(index / 26) - 1);
+    const second = String.fromCharCode(65 + (index % 26));
+    return `Group ${first}${second}`;
+  };
+
+  const groupOptionsList = Array.from({ length: numGroups }, (_, i) => getGroupName(i));
+
+  // Count teams assigned in each group
+  const groupCounts = {};
+  groupOptionsList.forEach(g => {
+    groupCounts[g] = 0;
+  });
+  Object.entries(teamAssignments).forEach(([teamId, g]) => {
+    if (g && groupCounts[g] !== undefined) {
+      groupCounts[g] += 1;
+    }
+  });
+
+  const unassignedTeamsCount = registeredTeams.filter(
+    t => !teamAssignments[t.id] || !groupOptionsList.includes(teamAssignments[t.id])
+  ).length;
+
+  const handleTeamGroupChange = (teamId, newGroup) => {
+    setTeamAssignments(prev => ({
+      ...prev,
+      [teamId]: newGroup || ''
+    }));
+    if (errors.groupAssignment) {
+      setErrors(prev => ({ ...prev, groupAssignment: null }));
+    }
+  };
+
+  // Auto-distribute unassigned teams into available groups without exceeding capacity
+  const handleAutoAssign = () => {
+    const updated = { ...teamAssignments };
+    const currentCounts = {};
+    groupOptionsList.forEach(g => {
+      currentCounts[g] = Object.values(updated).filter(v => v === g).length;
+    });
+
+    const unassigned = registeredTeams.filter(t => !updated[t.id] || !groupOptionsList.includes(updated[t.id]));
+
+    let groupIdx = 0;
+    unassigned.forEach(team => {
+      for (let i = 0; i < groupOptionsList.length; i++) {
+        const targetGroup = groupOptionsList[(groupIdx + i) % groupOptionsList.length];
+        if ((currentCounts[targetGroup] || 0) < teamsPerGroupLimit) {
+          updated[team.id] = targetGroup;
+          currentCounts[targetGroup] = (currentCounts[targetGroup] || 0) + 1;
+          groupIdx = (groupIdx + i + 1) % groupOptionsList.length;
+          break;
+        }
+      }
+    });
+
+    setTeamAssignments(updated);
+    if (errors.groupAssignment) {
+      setErrors(prev => ({ ...prev, groupAssignment: null }));
+    }
+  };
+
+  const handleClearAssignments = () => {
+    const cleared = {};
+    registeredTeams.forEach(t => {
+      cleared[t.id] = '';
+    });
+    setTeamAssignments(cleared);
+    if (errors.groupAssignment) {
+      setErrors(prev => ({ ...prev, groupAssignment: null }));
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Tournament Name is required.';
@@ -125,6 +254,16 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
         newErrors.qualifyingTeamsPerGroup = 'At least 1 qualifying team required.';
       } else if (Number(formData.qualifyingTeamsPerGroup) >= Number(formData.teamsPerGroup)) {
         newErrors.qualifyingTeamsPerGroup = 'Qualifying teams must be less than teams per group.';
+      }
+
+      // Group Assignment validation (Group Stage Edit Tournament)
+      if (initialData && formData.format === 'group_stage') {
+        for (const [g, count] of Object.entries(groupCounts)) {
+          if (count > teamsPerGroupLimit) {
+            newErrors.groupAssignment = `${g} has ${count} teams assigned, which exceeds the max capacity of ${teamsPerGroupLimit} teams per group.`;
+            break;
+          }
+        }
       }
     }
 
@@ -159,7 +298,15 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
       const finalDesc = buildTournamentDescriptionWithConfig(
         cleanDesc,
         formData.fieldSize,
-        formData.substitutionMode
+        formData.substitutionMode,
+        {
+          numberOfGroups: (formData.format === 'group_stage' || formData.format === 'hybrid') ? Number(formData.numberOfGroups) : 4,
+          teamsPerGroup: (formData.format === 'group_stage' || formData.format === 'hybrid') ? Number(formData.teamsPerGroup) : 4,
+          qualifyingTeamsPerGroup: (formData.format === 'group_stage' || formData.format === 'hybrid') ? Number(formData.qualifyingTeamsPerGroup) : 2,
+          eliminationType: (formData.format === 'knockout' || formData.format === 'hybrid') ? formData.eliminationType : 'single',
+          includeThirdPlace: (formData.format === 'knockout' || formData.format === 'hybrid') ? Boolean(formData.includeThirdPlace) : true,
+          seedingMethod: (formData.format === 'knockout' || formData.format === 'hybrid') ? formData.seedingMethod : 'seeded',
+        }
       );
 
       const payload = {
@@ -184,7 +331,19 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
         seedingMethod: (formData.format === 'knockout' || formData.format === 'hybrid') ? formData.seedingMethod : undefined,
       };
 
-      onSubmit(payload);
+      // Changed team group assignments (only for group_stage edit)
+      const changedAssignments = {};
+      if (initialData && formData.format === 'group_stage' && registeredTeams.length > 0) {
+        registeredTeams.forEach(t => {
+          const currentGroup = teamAssignments[t.id] || null;
+          const initialGroup = initialTeamAssignments[t.id] || null;
+          if (currentGroup !== initialGroup) {
+            changedAssignments[t.id] = currentGroup;
+          }
+        });
+      }
+
+      onSubmit(payload, changedAssignments);
     }
   };
 
@@ -425,7 +584,7 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
 
               {/* 2. GROUP STAGE CONFIG */}
               {formData.format === 'group_stage' && (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Number of Groups *</label>
@@ -480,6 +639,215 @@ export const TournamentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
                     <div>Total Group Stage Teams: <span className="font-bold text-slate-900 dark:text-white">{totalGroupTeams}</span></div>
                     <div>Qualifying Teams: <span className="font-bold text-blue-600 dark:text-blue-400">{totalAdvancingTeams}</span></div>
                   </div>
+
+                  {/* ─── GROUP ASSIGNMENT SECTION (GROUP STAGE EDIT TOURNAMENT) ───────── */}
+                  {initialData && (
+                    <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 space-y-3.5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+                            <Layers className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                              Group Assignment
+                            </h5>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                              Manually assign registered teams to groups ({groupOptionsList.join(', ')}).
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {registeredTeams.length > 0 && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={handleAutoAssign}
+                                className="px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/50 rounded-lg transition-colors flex items-center gap-1.5"
+                                title="Distribute unassigned teams evenly into groups"
+                              >
+                                <Shuffle className="w-3.5 h-3.5" />
+                                Auto-Distribute
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleClearAssignments}
+                                className="px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1.5"
+                                title="Clear all group assignments"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                Clear All
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Group Capacities */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        {groupOptionsList.map(groupName => {
+                          const count = groupCounts[groupName] || 0;
+                          const isFull = count === teamsPerGroupLimit;
+                          const isOver = count > teamsPerGroupLimit;
+
+                          return (
+                            <div
+                              key={groupName}
+                              className={`p-2.5 rounded-xl border transition-all ${
+                                isOver
+                                  ? 'bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-800 text-red-700 dark:text-red-300'
+                                  : isFull
+                                    ? 'bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+                                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-xs">{groupName}</span>
+                                <span
+                                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                                    isOver
+                                      ? 'bg-red-200 dark:bg-red-900/60 text-red-800 dark:text-red-200'
+                                      : isFull
+                                        ? 'bg-emerald-200 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                  }`}
+                                >
+                                  {isOver ? 'Over' : isFull ? 'Full' : `${teamsPerGroupLimit - count} left`}
+                                </span>
+                              </div>
+                              <div className="mt-1 text-base font-extrabold text-slate-900 dark:text-white">
+                                {count} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">/ {teamsPerGroupLimit}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Error Banner if any */}
+                      {errors.groupAssignment && (
+                        <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded-xl text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span>{errors.groupAssignment}</span>
+                        </div>
+                      )}
+
+                      {/* Loading state */}
+                      {isTeamsLoading && (
+                        <div className="py-8 flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
+                          <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+                          <span className="text-xs">Loading registered teams...</span>
+                        </div>
+                      )}
+
+                      {/* Error state */}
+                      {!isTeamsLoading && teamsError && (
+                        <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-600 dark:text-red-400">
+                          {teamsError}
+                        </div>
+                      )}
+
+                      {/* Empty state (no teams registered) */}
+                      {!isTeamsLoading && !teamsError && registeredTeams.length === 0 && (
+                        <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-center space-y-1">
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            No registered teams yet
+                          </p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                            Teams registered for this tournament will appear here for group assignment.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Teams Table / List */}
+                      {!isTeamsLoading && !teamsError && registeredTeams.length > 0 && (
+                        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                          {registeredTeams.map(team => {
+                            const assignedGroup = teamAssignments[team.id] || '';
+                            const isAssigned = Boolean(assignedGroup && groupOptionsList.includes(assignedGroup));
+
+                            // Build options for this specific team dropdown
+                            const selectOptions = [
+                              { value: '', label: 'Unassigned' },
+                              ...groupOptionsList.map(g => {
+                                const count = groupCounts[g] || 0;
+                                const isCurrent = assignedGroup === g;
+                                const isFull = count >= teamsPerGroupLimit && !isCurrent;
+                                return {
+                                  value: g,
+                                  label: `${g} (${count}/${teamsPerGroupLimit}${isFull ? ' - Full' : ''})`,
+                                  disabled: isFull
+                                };
+                              })
+                            ];
+
+                            return (
+                              <div
+                                key={team.id}
+                                className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+                              >
+                                {/* Team Info */}
+                                <div className="flex items-center gap-3 min-w-0">
+                                  {team.logoUrl ? (
+                                    <img
+                                      src={team.logoUrl}
+                                      alt={team.name}
+                                      className="w-8 h-8 rounded-lg object-contain bg-slate-100 dark:bg-slate-800 p-0.5 shrink-0"
+                                    />
+                                  ) : (
+                                    <div
+                                      className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 text-white shadow-xs"
+                                      style={{ backgroundColor: team.primaryColor || '#1E50FF' }}
+                                    >
+                                      {team.shortName ? team.shortName.slice(0, 2) : team.name.slice(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-bold text-xs text-slate-900 dark:text-white truncate">
+                                        {team.name}
+                                      </span>
+                                      {team.shortName && (
+                                        <span className="px-1.5 py-0.2 text-[10px] font-semibold rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shrink-0">
+                                          {team.shortName}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                                      {team.city || team.homeGround || 'Registered Team'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Group Dropdown & Badge */}
+                                <div className="flex items-center gap-2 shrink-0 sm:w-56">
+                                  <div className="flex-1">
+                                    <CustomSelect
+                                      value={assignedGroup}
+                                      onChange={(val) => handleTeamGroupChange(team.id, val)}
+                                      options={selectOptions}
+                                      placeholder="Select Group"
+                                      buttonClassName="py-1.5 px-2.5 text-xs rounded-lg"
+                                    />
+                                  </div>
+                                  {isAssigned ? (
+                                    <span className="px-2 py-1 text-[11px] font-bold rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shrink-0">
+                                      {assignedGroup}
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 shrink-0">
+                                      None
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

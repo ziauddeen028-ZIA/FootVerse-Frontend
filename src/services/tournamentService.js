@@ -15,6 +15,10 @@ export const tournamentService = {
   // Group Stage → Knockout: works for group_stage and group_knockout formats via the hybrid/generate endpoint
   generateGroupKnockout: (tournamentId, qualifyingTeamsPerGroup = 2) =>
     api.post(`/tournaments/${tournamentId}/hybrid/generate`, { qualifyingTeamsPerGroup }),
+  // Group Stage Fixture Generation
+  generateGroupFixtures: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/group-stage/generate`, data),
+  generateGroupStageFixtures: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/group-stage/generate`, data),
+  // League Fixture Generation
   generateLeague: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/league/generate`, data),
   generateLeagueFixtures: (tournamentId, data = {}) => api.post(`/tournaments/${tournamentId}/league/generate`, data),
   getStandings: (tournamentId) => api.get(`/tournaments/${tournamentId}/standings`),

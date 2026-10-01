@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Trophy,
@@ -18,9 +18,11 @@ import {
   CheckCircle2,
   XCircle,
   Key,
-  Hash
+  Hash,
+  Sparkles
 } from 'lucide-react';
 import { CustomSelect } from '../components/common/CustomSelect';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { tournamentService } from '../services/tournamentService';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
@@ -32,7 +34,7 @@ import { LeagueStandings } from '../components/organizer/LeagueStandings';
 import { GroupStageStandings } from '../components/organizer/GroupStageStandings';
 import { TournamentAwardsSummary } from '../components/tournament/TournamentAwardsSummary';
 import { Toast } from '../components/common/Toast';
-import { cleanTournamentDescription } from '../utils/substitutionUtils';
+import { cleanTournamentDescription, extractTournamentConfig } from '../utils/substitutionUtils';
 
 export const TournamentHub = () => {
   const { tournamentId } = useParams();
@@ -64,6 +66,10 @@ export const TournamentHub = () => {
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success' });
 
+  // Group Fixture Generation state (Organizer only)
+  const [isGenerateFixturesConfirmOpen, setIsGenerateFixturesConfirmOpen] = useState(false);
+  const [isGeneratingFixtures, setIsGeneratingFixtures] = useState(false);
+
   // Code-join state (Captain/Manager joining via invite code)
   const [codeInput, setCodeInput] = useState('');
   const [codeTeamId, setCodeTeamId] = useState('');
@@ -72,6 +78,18 @@ export const TournamentHub = () => {
   // Ref for auto-scrolling to roster section
   const rosterRef = useRef(null);
 
+  const isOrganizer = useMemo(() => {
+    return user && (user.id === tournament?.organizerId || user.role === 'admin');
+  }, [user, tournament]);
+
+  const groupFixtures = useMemo(() => {
+    return matches.filter(m => !m.bracketPosition);
+  }, [matches]);
+
+  const hasGroupFixtures = groupFixtures.length > 0;
+  const allTeamsHaveGroup = useMemo(() => {
+    return teams.length >= 2 && teams.every(t => t.groupName && t.groupName.trim() !== '');
+  }, [teams]);
 
   const handleSelectTeam = async (team) => {
     if (selectedTeam?.id === team.id) {
@@ -105,117 +123,117 @@ export const TournamentHub = () => {
   };
 
   // 1. Load tournament details
-  useEffect(() => {
-    let isMounted = true;
+  const fetchTournamentDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    const fetchTournamentDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+      // Fetch tournament from API
+      const res = await tournamentService.getBySlug(tournamentId);
+      const foundTournament = res?.tournament;
 
-        // Fetch tournament from API
-        const res = await tournamentService.getBySlug(tournamentId);
-        const foundTournament = res?.tournament;
+      if (foundTournament) {
+        setTournament(foundTournament);
 
-        if (foundTournament && isMounted) {
-          setTournament(foundTournament);
+        // Fetch teams
+        try {
+          const teamsRes = await teamService.getAll();
+          const allTeams = teamsRes?.teams || [];
 
-          // Fetch teams
-          try {
-            const teamsRes = await teamService.getAll();
-            const allTeams = teamsRes?.teams || [];
-
-            const fetchedTeams = allTeams.filter(
-              t =>
-                t.tournamentId === foundTournament.id ||
-                t.tournament?.id === foundTournament.id
-            );
-
-            if (isMounted) {
-              setTeams(fetchedTeams);
-            }
-          } catch (err) {
-            console.warn('Could not fetch teams list:', err);
-          }
-
-          // Fetch matches
-          try {
-            const matchesRes = await matchService.getAll();
-            const allMatches = matchesRes?.matches || [];
-
-            const fetchedMatches = allMatches.filter(
-              m =>
-                m.tournamentId === foundTournament.id ||
-                m.tournament?.id === foundTournament.id
-            );
-
-            if (isMounted) {
-              setMatches(fetchedMatches);
-            }
-          } catch (err) {
-            console.warn('Could not fetch matches list:', err);
-          }
-
-          // Fetch standings
-          const fmt = foundTournament.format?.toLowerCase();
-
-          const needsStandings =
-            fmt === 'league' ||
-            fmt === 'round_robin' ||
-            fmt === 'group_stage' ||
-            fmt === 'group_knockout' ||
-            fmt === 'hybrid';
-
-          if (needsStandings) {
-            setStandingsLoading(true);
-
-            try {
-              const standingsRes =
-                await tournamentService.getStandings(foundTournament.id);
-
-              if (isMounted) {
-                if (standingsRes?.standings) {
-                  setStandings(standingsRes.standings);
-                }
-
-                if (standingsRes?.groups) {
-                  setGroups(standingsRes.groups);
-                }
-              }
-            } catch (err) {
-              console.warn('Could not fetch standings:', err);
-            } finally {
-              if (isMounted) {
-                setStandingsLoading(false);
-              }
-            }
-          }
-        } else {
-          if (isMounted) {
-            setError('Tournament not found or has been removed.');
-          }
-        }
-      } catch (err) {
-        console.error('Error loading tournament hub:', err);
-
-        if (isMounted) {
-          setError(
-            'Failed to load tournament information. Please try again.'
+          const fetchedTeams = allTeams.filter(
+            t =>
+              t.tournamentId === foundTournament.id ||
+              t.tournament?.id === foundTournament.id
           );
+
+          setTeams(fetchedTeams);
+        } catch (err) {
+          console.warn('Could not fetch teams list:', err);
         }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
+
+        // Fetch matches
+        try {
+          const matchesRes = await matchService.getAll();
+          const allMatches = matchesRes?.matches || [];
+
+          const fetchedMatches = allMatches.filter(
+            m =>
+              m.tournamentId === foundTournament.id ||
+              m.tournament?.id === foundTournament.id
+          );
+
+          setMatches(fetchedMatches);
+        } catch (err) {
+          console.warn('Could not fetch matches list:', err);
         }
+
+        // Fetch standings
+        const fmt = foundTournament.format?.toLowerCase();
+
+        const needsStandings =
+          fmt === 'league' ||
+          fmt === 'round_robin' ||
+          fmt === 'group_stage' ||
+          fmt === 'group_knockout' ||
+          fmt === 'hybrid';
+
+        if (needsStandings) {
+          setStandingsLoading(true);
+
+          try {
+            const standingsRes =
+              await tournamentService.getStandings(foundTournament.id);
+
+            if (standingsRes?.standings) {
+              setStandings(standingsRes.standings);
+            }
+
+            if (standingsRes?.groups) {
+              setGroups(standingsRes.groups);
+            }
+          } catch (err) {
+            console.warn('Could not fetch standings:', err);
+          } finally {
+            setStandingsLoading(false);
+          }
+        }
+      } else {
+        setError('Tournament not found or has been removed.');
       }
-    };
-
-    fetchTournamentDetails();
-
-    return () => {
-      isMounted = false;
-    };
+    } catch (err) {
+      console.error('Error loading tournament hub:', err);
+      setError(
+        'Failed to load tournament information. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [tournamentId]);
+
+  useEffect(() => {
+    fetchTournamentDetails();
+  }, [fetchTournamentDetails]);
+
+  // Handle Generate Group Fixtures (Organizer / Admin)
+  const handleGenerateGroupFixtures = async () => {
+    if (!tournament?.id) return;
+    setIsGeneratingFixtures(true);
+    try {
+      const res = await tournamentService.generateGroupFixtures(tournament.id);
+      setToast({
+        message: res.message || 'Group stage fixtures generated successfully!',
+        type: 'success'
+      });
+      setIsGenerateFixturesConfirmOpen(false);
+      await fetchTournamentDetails();
+    } catch (err) {
+      console.error('Failed to generate group fixtures:', err);
+      const errMsg = err.response?.data?.error || err.message || 'Failed to generate group fixtures.';
+      setToast({ message: errMsg, type: 'error' });
+    } finally {
+      setIsGeneratingFixtures(false);
+    }
+  };
 
   // 2. Load manager's teams for tournament join request
   useEffect(() => {
@@ -772,21 +790,174 @@ export const TournamentHub = () => {
         }
 
         if (fmt === 'group_stage' || fmt === 'group_knockout' || fmt === 'hybrid') {
+          const tournamentConfig = extractTournamentConfig(tournament);
+          const qualifyingTeamsPerGroup = tournamentConfig.qualifyingTeamsPerGroup || 2;
+
           return (
             <section className="space-y-8">
               <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
-                    Group Stage Tables
-                  </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#101C14] p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] shadow-xs">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="p-2 rounded-xl bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400">
+                      <Trophy className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
+                        Group Stage Tables
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {groups.length} Groups · Standings & Qualification
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Generate Group Fixtures Action (Organizer / Admin) */}
+                  {isOrganizer && !hasGroupFixtures && (
+                    <button
+                      id="generate-group-fixtures-hub-btn"
+                      onClick={() => setIsGenerateFixturesConfirmOpen(true)}
+                      disabled={!allTeamsHaveGroup || isGeneratingFixtures}
+                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shrink-0 ${
+                        allTeamsHaveGroup && !isGeneratingFixtures
+                          ? 'bg-green-600 hover:bg-green-500 text-white shadow-green-600/30 hover:scale-105 active:scale-95'
+                          : 'bg-slate-200 dark:bg-[#16261C] text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200/80 dark:border-[#1E3A29]'
+                      }`}
+                      title={
+                        !allTeamsHaveGroup
+                          ? teams.length < 2
+                            ? 'At least 2 teams required to generate fixtures'
+                            : 'All registered teams must have a group assigned'
+                          : 'Generate round-robin fixtures strictly within each group'
+                      }
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>
+                        {isGeneratingFixtures
+                          ? 'Generating Fixtures...'
+                          : !allTeamsHaveGroup
+                          ? teams.length < 2
+                            ? 'Need 2+ Teams'
+                            : 'Assign Groups to Generate Fixtures'
+                          : 'Generate Group Fixtures'}
+                      </span>
+                    </button>
+                  )}
                 </div>
+
                 {standingsLoading ? (
                   <div className="saas-card p-8 text-center text-slate-400 rounded-2xl">Loading group standings...</div>
                 ) : (
-                  <GroupStageStandings groups={groups} />
+                  <GroupStageStandings 
+                    groups={groups} 
+                    qualifyingTeamsPerGroup={qualifyingTeamsPerGroup}
+                  />
                 )}
               </div>
+
+              {/* Group Stage Matches Section */}
+              {groupFixtures.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E3A29] pb-3">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <h2 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
+                        Group Stage Matches ({groupFixtures.length})
+                      </h2>
+                    </div>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-[#16261C] text-slate-600 dark:text-slate-300">
+                      Round-Robin Group Matches
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {groupFixtures.map((match) => {
+                      const isCompleted = match.status === 'completed' || match.status === 'fulltime';
+                      const isLive = match.status === 'live' || match.status === 'halftime';
+                      const hasScores = match.homeScore !== null && match.awayScore !== null;
+                      const isHomeWinner = isCompleted && ((match.homeScore ?? 0) > (match.awayScore ?? 0));
+                      const isAwayWinner = isCompleted && ((match.awayScore ?? 0) > (match.homeScore ?? 0));
+
+                      return (
+                        <div
+                          key={match.id}
+                          className="bg-white dark:bg-[#101C14] rounded-2xl border border-slate-200/80 dark:border-[#1E3A29] p-4 shadow-xs hover:border-green-500/50 transition-all flex flex-col justify-between space-y-3"
+                        >
+                          {/* Round Header & Status */}
+                          <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-100 dark:border-[#1E3A29]">
+                            <span className="font-bold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40 px-2.5 py-0.5 rounded-md border border-green-200/50 dark:border-green-800/50">
+                              {match.roundName || 'Group Match'}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                              isLive
+                                ? 'bg-red-500 text-white animate-pulse'
+                                : isCompleted
+                                ? 'bg-slate-100 text-slate-700 dark:bg-[#16261C] dark:text-slate-300'
+                                : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
+                            }`}>
+                              {match.status}
+                            </span>
+                          </div>
+
+                          {/* Match Teams & Score */}
+                          <div className="grid grid-cols-7 items-center gap-2 text-center py-1">
+                            {/* Home */}
+                            <div className="col-span-3 flex flex-col items-center gap-1 min-w-0">
+                              <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-[#16261C] flex items-center justify-center font-bold text-xs overflow-hidden border border-slate-200/60 dark:border-[#1E3A29]">
+                                {match.homeTeam?.logoUrl ? (
+                                  <img src={match.homeTeam.logoUrl} alt={match.homeTeam.name} loading="lazy" className="w-full h-full object-cover" />
+                                ) : (
+                                  match.homeTeam?.shortName || match.homeTeam?.name?.substring(0, 3).toUpperCase() || 'HOM'
+                                )}
+                              </div>
+                              <span className={`text-xs truncate w-full ${isHomeWinner ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-300'}`}>
+                                {match.homeTeam?.name || 'TBD'}
+                              </span>
+                            </div>
+
+                            {/* Score / VS */}
+                            <div className="col-span-1 flex flex-col items-center">
+                              {isCompleted || isLive || hasScores ? (
+                                <span className="text-xs font-black bg-slate-100 dark:bg-[#16261C] text-slate-900 dark:text-white px-2 py-1 rounded-lg tabular-nums">
+                                  {match.homeScore ?? 0} : {match.awayScore ?? 0}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-extrabold text-slate-400 bg-slate-50 dark:bg-[#16261C]/60 px-1.5 py-0.5 rounded">
+                                  VS
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Away */}
+                            <div className="col-span-3 flex flex-col items-center gap-1 min-w-0">
+                              <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-[#16261C] flex items-center justify-center font-bold text-xs overflow-hidden border border-slate-200/60 dark:border-[#1E3A29]">
+                                {match.awayTeam?.logoUrl ? (
+                                  <img src={match.awayTeam.logoUrl} alt={match.awayTeam.name} loading="lazy" className="w-full h-full object-cover" />
+                                ) : (
+                                  match.awayTeam?.shortName || match.awayTeam?.name?.substring(0, 3).toUpperCase() || 'AWY'
+                                )}
+                              </div>
+                              <span className={`text-xs truncate w-full ${isAwayWinner ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-300'}`}>
+                                {match.awayTeam?.name || 'TBD'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Link to Match */}
+                          <div className="pt-2 border-t border-slate-100 dark:border-[#1E3A29] flex justify-between items-center text-[11px] text-slate-400">
+                            <span>{match.matchDate ? new Date(match.matchDate).toLocaleDateString() : 'TBD'}</span>
+                            <Link
+                              to={`/matches/${match.id}`}
+                              className="text-green-600 dark:text-green-400 font-semibold hover:underline flex items-center gap-0.5"
+                            >
+                              Match Details <ChevronRight className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
@@ -959,6 +1130,17 @@ export const TournamentHub = () => {
           )}
         </section>
       )}
+
+      {/* Confirm Dialog for Group Fixture Generation */}
+      <ConfirmDialog
+        isOpen={isGenerateFixturesConfirmOpen}
+        title="Generate Group Stage Fixtures"
+        message={`Are you sure you want to generate group-stage fixtures for "${tournament?.name}"? This will automatically create round-robin pairings strictly within each assigned group across structured matchdays.`}
+        confirmLabel="Generate Fixtures"
+        onConfirm={handleGenerateGroupFixtures}
+        onCancel={() => setIsGenerateFixturesConfirmOpen(false)}
+        isLoading={isGeneratingFixtures}
+      />
 
       {/* Toast Notification Component */}
       <Toast

@@ -28,6 +28,7 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Toast } from '../common/Toast';
 import { tournamentService } from '../../services/tournamentService';
 import { matchService } from '../../services/matchService';
+import { extractTournamentConfig } from '../../utils/substitutionUtils';
 
 export const LeagueDashboard = ({
   selectedTournamentId = null,
@@ -61,12 +62,24 @@ export const LeagueDashboard = ({
   const currentTournament = useMemo(() => {
     if (!selectedTournamentId || selectedTournamentId === 'all') {
       // Find the first league tournament if available
-      return tournaments.find(t => t.format === 'league') || tournaments[0] || null;
+      return tournaments.find(t => t.format === 'league' || t.format === 'group_stage' || t.format === 'group_knockout') || tournaments[0] || null;
     }
     return tournaments.find(t => t.id === selectedTournamentId) || null;
   }, [selectedTournamentId, tournaments]);
 
   const activeId = currentTournament?.id || null;
+
+  const isGroupTournament = useMemo(() => {
+    return currentTournament?.format === 'group_stage' || 
+           currentTournament?.format === 'group_knockout' || 
+           currentTournament?.format === 'hybrid';
+  }, [currentTournament]);
+
+  const tournamentConfig = useMemo(() => {
+    return extractTournamentConfig(currentTournament);
+  }, [currentTournament]);
+
+  const qualifyingTeamsPerGroup = tournamentConfig.qualifyingTeamsPerGroup || 2;
 
   // Filter matches for current tournament
   const tournamentMatches = useMemo(() => {
@@ -79,6 +92,14 @@ export const LeagueDashboard = ({
     if (!activeId) return [];
     return teams.filter(t => t.tournamentId === activeId || t.tournament?.id === activeId);
   }, [teams, activeId]);
+
+  const allTeamsAssigned = useMemo(() => {
+    if (!tournamentTeams || tournamentTeams.length < 2) return false;
+    if (isGroupTournament) {
+      return tournamentTeams.every(t => t.groupName && t.groupName.trim() !== '');
+    }
+    return true;
+  }, [tournamentTeams, isGroupTournament]);
 
   // Fetch standings when active tournament changes
   const fetchStandings = async (tourneyId) => {
@@ -169,19 +190,21 @@ export const LeagueDashboard = ({
     return tournamentMatches.some(m => m.bracketPosition != null);
   }, [tournamentMatches]);
 
-  // Handle generating league fixtures
+  // Handle generating fixtures (league vs group stage)
   const handleGenerateFixtures = async () => {
     if (!activeId) return;
     setIsGenerating(true);
     try {
-      const res = await tournamentService.generateLeagueFixtures(activeId);
-      showToast(res.message || 'Round-robin fixtures generated successfully!');
+      const res = isGroupTournament
+        ? await tournamentService.generateGroupFixtures(activeId)
+        : await tournamentService.generateLeagueFixtures(activeId);
+      showToast(res.message || `${isGroupTournament ? 'Group stage' : 'League'} fixtures generated successfully!`);
       setIsConfirmOpen(false);
       if (onRefresh) await onRefresh();
       await fetchStandings(activeId);
     } catch (err) {
       console.error('Error generating fixtures:', err);
-      const errMsg = err.response?.data?.error || err.message || 'Failed to generate league fixtures.';
+      const errMsg = err.response?.data?.error || err.message || 'Failed to generate fixtures.';
       showToast(errMsg, 'error');
     } finally {
       setIsGenerating(false);
@@ -193,7 +216,7 @@ export const LeagueDashboard = ({
     if (!activeId) return;
     setIsGeneratingKnockout(true);
     try {
-      const res = await tournamentService.generateGroupKnockout(activeId, 2);
+      const res = await tournamentService.generateGroupKnockout(activeId, qualifyingTeamsPerGroup);
       showToast(
         res.message || `Knockout bracket generated! ${res.totalMatches} matches created.`
       );
@@ -370,10 +393,12 @@ export const LeagueDashboard = ({
           </div>
           <div className="max-w-md mx-auto space-y-1.5">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Generate Full League Schedule
+              {isGroupTournament ? 'Generate Group Stage Schedule' : 'Generate Full League Schedule'}
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-              Automatically create round-robin pairings where every registered team plays each other across structured matchdays.
+              {isGroupTournament
+                ? 'Automatically create round-robin pairings strictly within each assigned group across structured matchdays.'
+                : 'Automatically create round-robin pairings where every registered team plays each other across structured matchdays.'}
             </p>
             <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold">
               {tournamentTeams.length} teams currently registered
@@ -382,12 +407,21 @@ export const LeagueDashboard = ({
 
           <button
             onClick={() => setIsConfirmOpen(true)}
-            disabled={tournamentTeams.length < 2 || isGenerating}
+            disabled={!allTeamsAssigned || isGenerating}
             className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all shadow-md ${
-              tournamentTeams.length >= 2
+              allTeamsAssigned && !isGenerating
                 ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30 hover:scale-105'
                 : 'bg-slate-400 cursor-not-allowed opacity-60'
             }`}
+            title={
+              !allTeamsAssigned
+                ? tournamentTeams.length < 2
+                  ? 'Register at least 2 teams first'
+                  : 'Assign all teams to groups first'
+                : isGroupTournament
+                ? 'Generate round-robin fixtures strictly within each group'
+                : 'Generate round-robin league schedule'
+            }
           >
             <Sparkles className="w-4 h-4" />
             <span>
@@ -395,6 +429,10 @@ export const LeagueDashboard = ({
                 ? 'Generating...'
                 : tournamentTeams.length < 2
                 ? 'Register at least 2 teams first'
+                : isGroupTournament && !allTeamsAssigned
+                ? 'Assign all teams to groups first'
+                : isGroupTournament
+                ? 'Generate Group Fixtures'
                 : 'Generate League Fixtures'}
             </span>
           </button>
@@ -409,6 +447,7 @@ export const LeagueDashboard = ({
           groupStageComplete={groupStageComplete}
           hasKnockoutBracket={hasKnockoutBracket}
           isGeneratingKnockout={isGeneratingKnockout}
+          qualifyingTeamsPerGroup={qualifyingTeamsPerGroup}
           onGenerateKnockout={handleGenerateGroupKnockout}
         />
       ) : (
@@ -426,7 +465,7 @@ export const LeagueDashboard = ({
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                League Fixtures
+                {isGroupTournament ? 'Group Stage Fixtures' : 'League Fixtures'}
               </h3>
               <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-[#16261C] text-slate-600 dark:text-slate-300">
                 {displayedMatches.length} matches
@@ -611,8 +650,10 @@ export const LeagueDashboard = ({
       {/* Confirmation Dialog for Fixture Generation */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
-        title="Generate Round-Robin League Fixtures"
-        message={`Are you sure you want to generate all league fixtures for "${currentTournament?.name}"? This will pair every registered team against one another across structured matchdays.`}
+        title={isGroupTournament ? "Generate Group Stage Fixtures" : "Generate Round-Robin League Fixtures"}
+        message={isGroupTournament
+          ? `Are you sure you want to generate group-stage fixtures for "${currentTournament?.name}"? This will pair teams strictly within their assigned groups.`
+          : `Are you sure you want to generate all league fixtures for "${currentTournament?.name}"? This will pair every registered team against one another across structured matchdays.`}
         confirmLabel="Generate Schedule"
         onConfirm={handleGenerateFixtures}
         onCancel={() => setIsConfirmOpen(false)}

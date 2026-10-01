@@ -32,17 +32,23 @@ export const cleanTournamentDescription = (description = '') => {
 };
 
 /**
- * Extracts tournament configuration (fieldSize, substitutionMode) from tournament object.
+ * Extracts tournament configuration from tournament object.
  * Supports direct properties as well as embedded configuration in metadata/description.
  *
  * @param {Object} tournament - Tournament object or Match object containing tournament
- * @returns {{ fieldSize: number, substitutionMode: string, cleanDescription: string }}
+ * @returns {{ fieldSize: number, substitutionMode: string, numberOfGroups: number, teamsPerGroup: number, qualifyingTeamsPerGroup: number, eliminationType: string, includeThirdPlace: boolean, seedingMethod: string, cleanDescription: string }}
  */
 export const extractTournamentConfig = (tournament) => {
   if (!tournament) {
     return {
       fieldSize: 11,
       substitutionMode: SUB_MODES.NORMAL,
+      numberOfGroups: 4,
+      teamsPerGroup: 4,
+      qualifyingTeamsPerGroup: 2,
+      eliminationType: 'single',
+      includeThirdPlace: true,
+      seedingMethod: 'seeded',
       cleanDescription: '',
     };
   }
@@ -51,6 +57,12 @@ export const extractTournamentConfig = (tournament) => {
   let fieldSize = tObj.fieldSize ? Number(tObj.fieldSize) : 11;
   let substitutionMode = tObj.substitutionMode || SUB_MODES.NORMAL;
   let cleanDescription = cleanTournamentDescription(tObj.description);
+  let numberOfGroups = tObj.numberOfGroups ? Number(tObj.numberOfGroups) : 4;
+  let teamsPerGroup = tObj.teamsPerGroup ? Number(tObj.teamsPerGroup) : 4;
+  let qualifyingTeamsPerGroup = tObj.qualifyingTeamsPerGroup ? Number(tObj.qualifyingTeamsPerGroup) : 2;
+  let eliminationType = tObj.eliminationType || 'single';
+  let includeThirdPlace = tObj.includeThirdPlace !== undefined ? tObj.includeThirdPlace : true;
+  let seedingMethod = tObj.seedingMethod || 'seeded';
 
   if (tObj.description) {
     const configMatch = tObj.description.match(/<!--config:([\s\S]*?)-->/i);
@@ -59,6 +71,12 @@ export const extractTournamentConfig = (tournament) => {
         const parsed = JSON.parse(configMatch[1]);
         if (parsed.fieldSize) fieldSize = Number(parsed.fieldSize);
         if (parsed.substitutionMode) substitutionMode = parsed.substitutionMode;
+        if (parsed.numberOfGroups) numberOfGroups = Number(parsed.numberOfGroups);
+        if (parsed.teamsPerGroup) teamsPerGroup = Number(parsed.teamsPerGroup);
+        if (parsed.qualifyingTeamsPerGroup) qualifyingTeamsPerGroup = Number(parsed.qualifyingTeamsPerGroup);
+        if (parsed.eliminationType) eliminationType = parsed.eliminationType;
+        if (parsed.includeThirdPlace !== undefined) includeThirdPlace = parsed.includeThirdPlace;
+        if (parsed.seedingMethod) seedingMethod = parsed.seedingMethod;
       } catch (e) {
         // ignore parse error and keep fallback
       }
@@ -73,27 +91,41 @@ export const extractTournamentConfig = (tournament) => {
   return {
     fieldSize: (!isNaN(fieldSize) && fieldSize > 0) ? fieldSize : 11,
     substitutionMode,
+    numberOfGroups: (!isNaN(numberOfGroups) && numberOfGroups > 0) ? numberOfGroups : 4,
+    teamsPerGroup: (!isNaN(teamsPerGroup) && teamsPerGroup > 0) ? teamsPerGroup : 4,
+    qualifyingTeamsPerGroup: (!isNaN(qualifyingTeamsPerGroup) && qualifyingTeamsPerGroup > 0) ? qualifyingTeamsPerGroup : 2,
+    eliminationType,
+    includeThirdPlace,
+    seedingMethod,
     cleanDescription,
   };
 };
 
 /**
- * Embeds fieldSize and substitutionMode into description string for lossless persistence.
+ * Embeds full configuration into description string for lossless persistence.
  *
  * @param {string} userDescription - Human-written description
  * @param {number} fieldSize - Number of players on field
  * @param {string} substitutionMode - 'normal' | 'rolling'
+ * @param {Object} [extraConfig] - Additional format config
  * @returns {string} Description with embedded metadata tag
  */
 export const buildTournamentDescriptionWithConfig = (
   userDescription = '',
   fieldSize = 11,
-  substitutionMode = SUB_MODES.NORMAL
+  substitutionMode = SUB_MODES.NORMAL,
+  extraConfig = {}
 ) => {
   const cleanDesc = cleanTournamentDescription(userDescription);
   const config = {
     fieldSize: Number(fieldSize) || 11,
     substitutionMode: substitutionMode === SUB_MODES.ROLLING ? SUB_MODES.ROLLING : SUB_MODES.NORMAL,
+    numberOfGroups: Number(extraConfig.numberOfGroups) || 4,
+    teamsPerGroup: Number(extraConfig.teamsPerGroup) || 4,
+    qualifyingTeamsPerGroup: Number(extraConfig.qualifyingTeamsPerGroup) || 2,
+    eliminationType: extraConfig.eliminationType || 'single',
+    includeThirdPlace: extraConfig.includeThirdPlace !== undefined ? Boolean(extraConfig.includeThirdPlace) : true,
+    seedingMethod: extraConfig.seedingMethod || 'seeded',
   };
   return `${cleanDesc} <!--config:${JSON.stringify(config)}-->`.trim();
 };

@@ -19,6 +19,7 @@ export const GroupStageStandings = ({
   groupStageComplete = false,
   hasKnockoutBracket = false,
   isGeneratingKnockout = false,
+  qualifyingTeamsPerGroup = 2,
   onGenerateKnockout
 }) => {
   if (isLoading) {
@@ -87,7 +88,7 @@ export const GroupStageStandings = ({
             {groupStandings.map((row, index) => {
               const pos = row.position || index + 1;
               const isLeader = pos === 1;
-              const isQualifying = pos === 2;
+              const isQualifying = pos <= qualifyingTeamsPerGroup;
               const gd = row.goalDifference ?? (row.goalsFor - row.goalsAgainst);
               const gdFormatted = gd > 0 ? `+${gd}` : gd;
 
@@ -102,11 +103,11 @@ export const GroupStageStandings = ({
                   <td className="py-3.5 px-3 sm:px-4 text-center">
                     <div className="flex items-center justify-center">
                       {isLeader ? (
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-white font-extrabold text-xs shadow-xs">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-white font-extrabold text-xs shadow-xs" title="Group Leader (Qualifies)">
                           1
                         </span>
                       ) : isQualifying ? (
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300 font-bold text-xs">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300 font-bold text-xs" title={`Rank ${pos} (Qualifies)`}>
                           {pos}
                         </span>
                       ) : (
@@ -167,6 +168,15 @@ export const GroupStageStandings = ({
     );
   };
 
+  const getPositionBadgeEmoji = (pos) => {
+    if (pos === 1) return '🥇';
+    if (pos === 2) return '🥈';
+    if (pos === 3) return '🥉';
+    return '🎖️';
+  };
+
+  const totalQualifyingTeams = groups.length * qualifyingTeamsPerGroup;
+
   return (
     <div className="space-y-6">
       {groups.map((group) => (
@@ -190,15 +200,11 @@ export const GroupStageStandings = ({
               </div>
             </div>
             {/* Qualifying indicator */}
-            <div className="hidden sm:flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <span>1st — Qualifies</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                <span>2nd — Qualifies</span>
-              </div>
+            <div className="hidden sm:flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 font-semibold border border-green-200 dark:border-green-800/50">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                Top {qualifyingTeamsPerGroup} Qualify for Knockout
+              </span>
             </div>
           </div>
 
@@ -219,11 +225,11 @@ export const GroupStageStandings = ({
                 Group Stage Complete — Generate Knockout Stage
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                All group fixtures are finished. The top 2 teams from each group have qualified.
+                All group fixtures are finished. The top {qualifyingTeamsPerGroup} team{qualifyingTeamsPerGroup > 1 ? 's' : ''} from each group have qualified ({totalQualifyingTeams} total teams).
               </p>
               {/* Show qualified teams */}
               <div className="flex flex-wrap gap-2 pt-1">
-                {groups.flatMap(g => g.standings?.slice(0, 2) ?? []).map((s, i) => (
+                {groups.flatMap(g => g.standings?.slice(0, qualifyingTeamsPerGroup) ?? []).map((s, i) => (
                   <span
                     key={s.team?.id || i}
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border ${
@@ -232,7 +238,7 @@ export const GroupStageStandings = ({
                         : 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800/60'
                     }`}
                   >
-                    <span>{s.position === 1 ? '🥇' : '🥈'}</span>
+                    <span>{getPositionBadgeEmoji(s.position)}</span>
                     {s.team?.name}
                     <span className="font-normal opacity-60 text-[10px]">{s.points}pts</span>
                   </span>
@@ -251,7 +257,7 @@ export const GroupStageStandings = ({
             }`}
           >
             <Zap className="w-4 h-4" />
-            {isGeneratingKnockout ? 'Generating Bracket...' : 'Generate Knockout Bracket'}
+            {isGeneratingKnockout ? 'Generating Bracket...' : `Generate Knockout Bracket (${totalQualifyingTeams} Teams)`}
             {!isGeneratingKnockout && <ChevronRight className="w-4 h-4" />}
           </button>
         </div>

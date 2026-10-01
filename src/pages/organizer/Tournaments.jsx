@@ -12,6 +12,7 @@ import { GenerateBracketModal } from '../../components/organizer/GenerateBracket
 
 import { tournamentService } from '../../services/tournamentService';
 import { tournamentJoinRequestService } from '../../services/tournamentJoinRequestService';
+import { teamService } from '../../services/teamService';
 import { cleanTournamentDescription } from '../../utils/substitutionUtils';
 
 const STATUS_OPTIONS = [
@@ -187,12 +188,22 @@ export const Tournaments = () => {
     setIsLeagueConfirmOpen(true);
   };
 
-  const handleFormSubmit = async (formData) => {
+  const handleFormSubmit = async (formData, teamAssignments = null) => {
     setIsSubmitting(true);
     try {
       if (selectedTournament) {
         // Edit
         const res = await tournamentService.update(selectedTournament.id, formData);
+
+        // If team group assignments are provided, save each team assignment
+        if (teamAssignments && Object.keys(teamAssignments).length > 0) {
+          await Promise.all(
+            Object.entries(teamAssignments).map(([teamId, groupName]) =>
+              teamService.update(teamId, { groupName: groupName || null })
+            )
+          );
+        }
+
         setTournaments(prev => prev.map(t => t.id === selectedTournament.id ? res.tournament : t));
         showToast('Tournament updated successfully.');
       } else {
@@ -244,13 +255,18 @@ export const Tournaments = () => {
     if (!selectedTournamentForLeague) return;
     setIsGeneratingLeague(true);
     try {
-      const res = await tournamentService.generateLeague(selectedTournamentForLeague.id);
-      showToast(res.message || 'League fixtures generated successfully!');
+      const isGroup = selectedTournamentForLeague.format === 'group_stage' || 
+                      selectedTournamentForLeague.format === 'group_knockout' || 
+                      selectedTournamentForLeague.format === 'hybrid';
+      const res = isGroup
+        ? await tournamentService.generateGroupFixtures(selectedTournamentForLeague.id)
+        : await tournamentService.generateLeague(selectedTournamentForLeague.id);
+      showToast(res.message || `${isGroup ? 'Group stage' : 'League'} fixtures generated successfully!`);
       setIsLeagueConfirmOpen(false);
       setSelectedTournamentForLeague(null);
       fetchTournaments();
     } catch (err) {
-      showToast(err.message || 'Failed to generate league fixtures.', 'error');
+      showToast(err.message || 'Failed to generate fixtures.', 'error');
     } finally {
       setIsGeneratingLeague(false);
     }
@@ -532,14 +548,14 @@ export const Tournaments = () => {
                       Generate Bracket
                     </button>
                   )}
-                  {tournament.format === 'league' && (tournament.registeredTeamsCount || 0) >= 2 && tournament.status !== 'completed' && (
+                  {(tournament.format === 'league' || tournament.format === 'group_stage' || tournament.format === 'group_knockout') && (tournament.registeredTeamsCount || 0) >= 2 && tournament.status !== 'completed' && (
                     <button
                       onClick={() => handleOpenGenerateLeague(tournament)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/60 border border-green-200 dark:border-green-800/60 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors shadow-sm"
-                      title="Generate Round-Robin League Fixtures"
+                      title={tournament.format === 'league' ? "Generate Round-Robin League Fixtures" : "Generate Group Fixtures"}
                     >
                       <Sparkles className="w-3.5 h-3.5" />
-                      Generate Fixtures
+                      {tournament.format === 'league' ? 'Generate Fixtures' : 'Generate Group Fixtures'}
                     </button>
                   )}
                   <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -574,8 +590,10 @@ export const Tournaments = () => {
 
       <ConfirmDialog 
         isOpen={isLeagueConfirmOpen}
-        title="Generate League Fixtures"
-        message={`Are you sure you want to generate round-robin league fixtures for "${selectedTournamentForLeague?.name}"? This will pair every registered team against one another across structured matchdays.`}
+        title={selectedTournamentForLeague?.format === 'league' ? "Generate League Fixtures" : "Generate Group Stage Fixtures"}
+        message={selectedTournamentForLeague?.format === 'league'
+          ? `Are you sure you want to generate round-robin league fixtures for "${selectedTournamentForLeague?.name}"? This will pair every registered team against one another across structured matchdays.`
+          : `Are you sure you want to generate group-stage fixtures for "${selectedTournamentForLeague?.name}"? This will pair teams strictly within their assigned groups across structured matchdays.`}
         confirmLabel="Generate Fixtures"
         onConfirm={handleGenerateLeagueConfirm}
         onCancel={() => {
